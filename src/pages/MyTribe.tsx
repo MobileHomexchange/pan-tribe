@@ -41,6 +41,10 @@ export default function MyTribe() {
               <i className="fas fa-home"></i>
               <span>Home</span>
             </a>
+            <a href="/friends" className="flex items-center gap-2 px-4 py-2 text-white hover:bg-primary rounded-md transition-colors">
+              <i className="fas fa-heart"></i>
+              <span>Friends</span>
+            </a>
             <a href="/my-tribe" className="flex items-center gap-2 px-4 py-2 text-white bg-primary rounded-md">
               <i className="fas fa-user-friends"></i>
               <span>My Tribe</span>
