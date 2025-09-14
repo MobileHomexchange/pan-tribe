@@ -11,6 +11,7 @@ import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import Video from "./pages/Video";
 import SocialCommerce from "./pages/SocialCommerce";
+import AdsManager from "./pages/AdsManager";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/video" element={<Video />} />
             <Route path="/social-commerce" element={<SocialCommerce />} />
+            <Route path="/ads" element={<AdsManager />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
