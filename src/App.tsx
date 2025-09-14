@@ -9,7 +9,7 @@ import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
 import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
-import Video from "./pages/Video";
+import Memories from "./pages/Memories";
 import SocialCommerce from "./pages/SocialCommerce";
 import AdsManager from "./pages/AdsManager";
 import Events from "./pages/Events";
@@ -32,7 +32,7 @@ const App = () => (
             <Route path="/friends" element={<Friends />} />
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/profile/:userId" element={<Profile />} />
-            <Route path="/video" element={<Video />} />
+            <Route path="/memories" element={<Memories />} />
             <Route path="/social-commerce" element={<SocialCommerce />} />
             <Route path="/ads" element={<AdsManager />} />
         <Route path="/events" element={<Events />} />
