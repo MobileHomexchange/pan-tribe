@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
+import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/my-tribe" element={<MyTribe />} />
           <Route path="/friends" element={<Friends />} />
+          <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/profile/:userId" element={<Profile />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

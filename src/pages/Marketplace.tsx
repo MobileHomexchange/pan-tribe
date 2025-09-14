@@ -1,0 +1,325 @@
+import { useState } from "react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { TopBar } from "@/components/layout/TopBar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Heart, Share2, MapPin, Plus, Crown, ChevronDown, Store, Filter } from "lucide-react";
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  location: string;
+  seller: {
+    name: string;
+    avatar: string;
+  };
+  image: string;
+  badge?: string;
+  isFeatured?: boolean;
+}
+
+const Marketplace = () => {
+  const [savedProducts, setSavedProducts] = useState<Set<string>>(new Set());
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const products: Product[] = [
+    {
+      id: "1",
+      title: "Designer Sneakers - Like New",
+      price: 120,
+      location: "Accra, Ghana",
+      seller: { name: "Kwame", avatar: "KA" },
+      image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      badge: "Featured",
+      isFeatured: true
+    },
+    {
+      id: "2",
+      title: "Handmade African Print Dress",
+      price: 85,
+      location: "Lagos, Nigeria",
+      seller: { name: "Amina", avatar: "AD" },
+      image: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+    },
+    {
+      id: "3",
+      title: "Wireless Headphones - Black",
+      price: 45,
+      location: "Nairobi, Kenya",
+      seller: { name: "Thabo", avatar: "TJ" },
+      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+    },
+    {
+      id: "4",
+      title: "Smart Watch - Latest Model",
+      price: 250,
+      location: "Accra, Ghana",
+      seller: { name: "Nia", avatar: "NM" },
+      image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+    },
+    {
+      id: "5",
+      title: "Limited Edition Sneakers",
+      price: 75,
+      location: "Johannesburg, SA",
+      seller: { name: "Elias", avatar: "ES" },
+      image: "https://images.unsplash.com/photo-1491553895911-0055eca6402d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80"
+    },
+    {
+      id: "6",
+      title: "Handcrafted Leather Bag",
+      price: 35,
+      location: "Dakar, Senegal",
+      seller: { name: "Fatou", avatar: "FD" },
+      image: "https://images.unsplash.com/photo-1585386959984-a4155224a1ad?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80",
+      badge: "Free Shipping"
+    }
+  ];
+
+  const toggleSave = (productId: string) => {
+    setSavedProducts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(productId)) {
+        newSet.delete(productId);
+      } else {
+        newSet.add(productId);
+      }
+      return newSet;
+    });
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        
+        <div className="flex-1 flex flex-col">
+          <TopBar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+          
+          <main className="flex-1 pt-16 px-5 pb-5">
+            <div className="max-w-7xl mx-auto p-6">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <Store className="h-8 w-8 text-primary" />
+            Marketplace
+          </h1>
+          <Button className="bg-primary hover:bg-primary/90">
+            <Plus className="w-4 h-4 mr-2" />
+            Create Listing
+          </Button>
+        </div>
+
+        {/* Filters */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5" />
+              Filter Listings
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Location</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Current Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">Current Location</SelectItem>
+                    <SelectItem value="accra">Accra, Ghana</SelectItem>
+                    <SelectItem value="lagos">Lagos, Nigeria</SelectItem>
+                    <SelectItem value="nairobi">Nairobi, Kenya</SelectItem>
+                    <SelectItem value="johannesburg">Johannesburg, SA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Category</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="electronics">Electronics</SelectItem>
+                    <SelectItem value="clothing">Clothing & Accessories</SelectItem>
+                    <SelectItem value="home">Home & Garden</SelectItem>
+                    <SelectItem value="vehicles">Vehicles</SelectItem>
+                    <SelectItem value="art">Art & Collectibles</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Price Range</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any Price" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Price</SelectItem>
+                    <SelectItem value="0-20">Under $20</SelectItem>
+                    <SelectItem value="20-50">$20 - $50</SelectItem>
+                    <SelectItem value="50-100">$50 - $100</SelectItem>
+                    <SelectItem value="100-500">$100 - $500</SelectItem>
+                    <SelectItem value="500+">Over $500</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="text-sm font-medium mb-2 block">Delivery Method</label>
+                <Select>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any Delivery" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any Delivery</SelectItem>
+                    <SelectItem value="pickup">Local Pickup</SelectItem>
+                    <SelectItem value="shipping">Shipping Available</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Subscription Banner */}
+        <Card className="mb-6 bg-gradient-to-r from-primary to-primary-dark text-primary-foreground">
+          <CardContent className="flex flex-col md:flex-row justify-between items-center p-6">
+            <div>
+              <h3 className="text-xl font-semibold mb-2 flex items-center gap-2">
+                <Crown className="w-5 h-5 text-accent" />
+                Sell Commission-Free with Pro Subscription
+              </h3>
+              <p className="text-primary-foreground/90 max-w-2xl">
+                Upgrade to Pro and pay 0% commission on all your sales. Only $9.99/month for unlimited listings.
+              </p>
+            </div>
+            <Button variant="secondary" className="mt-4 md:mt-0">
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade Now
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Products Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+          {products.map((product, index) => (
+            <div key={product.id}>
+              <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+                <div className="relative">
+                  <img 
+                    src={product.image} 
+                    alt={product.title}
+                    className="w-full h-48 object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  {product.badge && (
+                    <Badge 
+                      className={`absolute top-2 left-2 ${
+                        product.isFeatured ? 'bg-primary' : 'bg-secondary'
+                      }`}
+                    >
+                      {product.badge}
+                    </Badge>
+                  )}
+                </div>
+                <CardContent className="p-4">
+                  <div className="text-lg font-bold text-primary mb-1">
+                    ${product.price}
+                  </div>
+                  <h3 className="font-semibold mb-2 text-foreground line-clamp-2">
+                    {product.title}
+                  </h3>
+                  <div className="flex items-center text-sm text-muted-foreground mb-3">
+                    <MapPin className="w-3 h-3 mr-1" />
+                    {product.location}
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="w-6 h-6">
+                        <AvatarFallback className="text-xs bg-gradient-to-br from-primary to-primary-dark text-primary-foreground">
+                          {product.seller.avatar}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-muted-foreground">
+                        {product.seller.name}
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-8 h-8 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Share functionality
+                        }}
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-8 h-8 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleSave(product.id);
+                        }}
+                      >
+                        <Heart 
+                          className={`w-4 h-4 ${
+                            savedProducts.has(product.id) 
+                              ? 'fill-destructive text-destructive' 
+                              : ''
+                          }`} 
+                        />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Ad Placement every 3rd item */}
+              {(index + 1) % 3 === 0 && (
+                <Card className="bg-gradient-to-r from-primary to-primary-dark text-primary-foreground">
+                  <CardContent className="text-center p-6">
+                    <div className="text-3xl mb-3 text-accent">📢</div>
+                    <h3 className="text-lg font-semibold mb-2">Sponsored Listing</h3>
+                    <p className="text-primary-foreground/90 mb-4 text-sm">
+                      Reach more buyers with promoted listings
+                    </p>
+                    <Button variant="secondary" size="sm">
+                      Promote Your Item
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Load More Button */}
+        <div className="text-center">
+          <Button variant="outline" size="lg">
+            <ChevronDown className="w-4 h-4 mr-2" />
+            Load More Listings
+          </Button>
+        </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+};
+
+export default Marketplace;
