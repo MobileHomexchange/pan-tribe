@@ -10,6 +10,7 @@ import Friends from "./pages/Friends";
 import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import Video from "./pages/Video";
+import SocialCommerce from "./pages/SocialCommerce";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/video" element={<Video />} />
+            <Route path="/social-commerce" element={<SocialCommerce />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

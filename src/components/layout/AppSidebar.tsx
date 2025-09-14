@@ -36,6 +36,7 @@ const mainItems = [
   { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
   { title: "Video", url: "/video", icon: Video },
   { title: "Marketplace", url: "/marketplace", icon: Store },
+  { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
   { title: "Feeds", url: "/feeds", icon: Newspaper },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Ads Manager", url: "/ads", icon: TrendingUp },
