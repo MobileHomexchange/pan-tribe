@@ -2,7 +2,6 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { 
   Users, 
-  History, 
   Bookmark, 
   UserCheck, 
   Video, 
@@ -31,7 +30,6 @@ import {
 
 const mainItems = [
   { title: "Friends", url: "/friends", icon: Users },
-  { title: "Memories", url: "/memories", icon: History },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
   { title: "Video", url: "/video", icon: Video },
