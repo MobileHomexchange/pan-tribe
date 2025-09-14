@@ -117,7 +117,7 @@ export function GroupChat() {
       <div className="flex-1 p-5 overflow-y-auto space-y-4">
         {messages.map((message) => (
           <div key={message.id} className="flex gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-pan-black flex items-center justify-center font-bold text-sm text-accent flex-shrink-0">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-black flex items-center justify-center font-bold text-sm text-accent flex-shrink-0">
               {message.author.initials}
             </div>
             <div className="flex-1">

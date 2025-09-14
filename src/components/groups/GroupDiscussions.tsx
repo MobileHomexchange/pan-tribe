@@ -60,7 +60,7 @@ export function GroupDiscussions() {
         {mockPosts.map((post) => (
           <div key={post.id} className="bg-background rounded-lg p-4 shadow-sm border border-border">
             <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-pan-black flex items-center justify-center font-bold text-accent mr-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-black flex items-center justify-center font-bold text-accent mr-3">
                 {post.author.initials}
               </div>
               <div>
