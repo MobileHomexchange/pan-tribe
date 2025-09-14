@@ -57,6 +57,26 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Pan-African themed colors
+        pan: {
+          red: "hsl(var(--pan-red))",
+          black: "hsl(var(--pan-black))",
+          green: "hsl(var(--pan-green))",
+          gold: "hsl(var(--pan-gold))",
+        },
+        light: {
+          gold: "hsl(var(--light-gold))",
+          green: "hsl(var(--light-green))",
+          red: "hsl(var(--light-red))",
+        },
+        social: {
+          hover: "hsl(var(--fb-hover))",
+          border: "hsl(var(--fb-border))",
+          muted: "hsl(var(--text-muted))",
+          "post-hover": "hsl(var(--post-hover))",
+          like: "hsl(var(--like-color))",
+          comment: "hsl(var(--comment-color))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

@@ -8,51 +8,70 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Pan-African color palette */
+    --pan-red: 0 77% 52%;
+    --pan-black: 0 0% 0%;
+    --pan-green: 155 100% 27%;
+    --pan-gold: 48 97% 54%;
+    
+    /* Light variants */
+    --light-gold: 48 84% 92%;
+    --light-green: 155 52% 90%;
+    --light-red: 0 68% 96%;
+    
+    /* Social media grays */
+    --fb-hover: 210 10% 96%;
+    --fb-border: 210 8% 88%;
+    --text-muted: 210 6% 46%;
+    
+    /* Core design tokens */
+    --background: 210 10% 96%;
+    --foreground: 0 0% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 0 0% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --popover-foreground: 0 0% 13%;
+    
+    /* Pan-African themed tokens */
+    --primary: 155 100% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 84% 92%;
+    --secondary-foreground: 0 0% 13%;
+    --muted: 210 10% 96%;
+    --muted-foreground: 210 6% 46%;
+    --accent: 48 97% 54%;
+    --accent-foreground: 0 0% 13%;
+    --destructive: 0 77% 52%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 210 8% 88%;
+    --input: 0 0% 100%;
+    --ring: 155 100% 27%;
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Sidebar tokens */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 155 100% 27%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 48 84% 92%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 210 8% 88%;
+    --sidebar-ring: 155 100% 27%;
+    
+    /* Social media specific */
+    --post-hover: 210 10% 98%;
+    --like-color: 155 100% 27%;
+    --comment-color: 210 6% 46%;
+    
+    /* Gradients */
+    --gradient-pan: linear-gradient(135deg, hsl(var(--pan-green)), hsl(var(--pan-black)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--pan-gold)), hsl(var(--pan-red)));
+    --shadow-elegant: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
