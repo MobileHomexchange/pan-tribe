@@ -1,9 +1,9 @@
 import { Layout } from "@/components/layout/Layout";
-import { VideoConference } from "@/components/groups/VideoConference";
-import { GroupDiscussions } from "@/components/groups/GroupDiscussions";
-import { GroupChat } from "@/components/groups/GroupChat";
+import { TribeConference } from "@/components/tribe/TribeConference";
+import { TribeDiscussions } from "@/components/tribe/TribeDiscussions";
+import { TribeChat } from "@/components/tribe/TribeChat";
 
-export default function Groups() {
+export default function MyTribe() {
   return (
     <div className="min-h-screen bg-background">
       {/* Top Navigation */}
@@ -45,9 +45,9 @@ export default function Groups() {
               <i className="fas fa-users"></i>
               <span>My Tribe</span>
             </a>
-            <a href="/groups" className="flex items-center gap-2 px-4 py-2 text-white bg-primary rounded-md">
+            <a href="/my-tribe" className="flex items-center gap-2 px-4 py-2 text-white bg-primary rounded-md">
               <i className="fas fa-user-friends"></i>
-              <span>Groups</span>
+              <span>My Tribe</span>
             </a>
             <a href="#" className="flex items-center gap-2 px-4 py-2 text-white hover:bg-primary rounded-md transition-colors">
               <i className="fas fa-video"></i>
@@ -73,12 +73,12 @@ export default function Groups() {
       {/* Main Content */}
       <div className="flex p-5 gap-5">
         <div className="flex-1 lg:flex-[2] space-y-5">
-          <VideoConference />
-          <GroupDiscussions />
+          <TribeConference />
+          <TribeDiscussions />
         </div>
         
         <div className="hidden lg:block w-80">
-          <GroupChat />
+          <TribeChat />
         </div>
       </div>
 

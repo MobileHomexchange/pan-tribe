@@ -2,13 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 
-export function VideoConference() {
+export function TribeConference() {
   const [isLive, setIsLive] = useState(false);
 
   return (
     <div className="bg-card rounded-xl p-5 shadow-card border border-border">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-        <h2 className="text-2xl font-bold text-foreground">African Music Lovers Group</h2>
+        <h2 className="text-2xl font-bold text-foreground">African Music Lovers Tribe</h2>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
             <i className="fas fa-video mr-2"></i>

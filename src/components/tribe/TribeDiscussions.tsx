@@ -42,13 +42,13 @@ const mockPosts: GroupPost[] = [
   }
 ];
 
-export function GroupDiscussions() {
+export function TribeDiscussions() {
   return (
     <div className="bg-card rounded-xl p-5 shadow-card border border-border">
       <div className="flex justify-between items-center mb-5 pb-3 border-b border-border">
         <h3 className="text-xl font-semibold text-foreground flex items-center gap-3">
           <i className="fas fa-file-alt text-primary"></i>
-          Group Discussions
+          Tribe Discussions
         </h3>
         <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
           <i className="fas fa-plus mr-2"></i>

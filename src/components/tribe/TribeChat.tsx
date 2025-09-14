@@ -53,7 +53,7 @@ const autoReplyMessages = [
   { name: "Nia Mbeki", initials: "NM", message: "Interesting perspective." }
 ];
 
-export function GroupChat() {
+export function TribeChat() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -104,7 +104,7 @@ export function GroupChat() {
       <div className="flex justify-between items-center p-5 border-b border-border">
         <h3 className="text-xl font-semibold text-foreground flex items-center gap-3">
           <i className="fas fa-comments text-primary"></i>
-          Group Chat
+          Tribe Chat
         </h3>
         <div className="flex items-center gap-3">
           <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">

@@ -33,7 +33,7 @@ const mainItems = [
   { title: "Friends", url: "/friends", icon: Users },
   { title: "Memories", url: "/memories", icon: History },
   { title: "Saved", url: "/saved", icon: Bookmark },
-  { title: "Groups", url: "/groups", icon: UserCheck },
+  { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
   { title: "Video", url: "/video", icon: Video },
   { title: "Marketplace", url: "/marketplace", icon: Store },
   { title: "Feeds", url: "/feeds", icon: Newspaper },
