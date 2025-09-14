@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Calendar, Plus, MapPin, ChevronDown, Search, Share2, Heart, Users, Music, Utensils, Palette, GraduationCap, Zap, X } from "lucide-react";
+import { Calendar, Plus, MapPin, ChevronDown, Search, Share2, Heart, Users, Music, Utensils, Palette, GraduationCap, Zap, X, Bookmark } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useSavedItems } from "@/hooks/useSavedItems";
 
 const eventCategories = [
   { id: "music", name: "Music", icon: Music },
@@ -96,17 +97,18 @@ const locations = [
 export default function Events() {
   const [selectedCategory, setSelectedCategory] = useState("music");
   const [currentLocation, setCurrentLocation] = useState("Accra, Ghana");
-  const [savedEvents, setSavedEvents] = useState(new Set<number>());
   const [locationModalOpen, setLocationModalOpen] = useState(false);
+  const { toggleSave, isSaved } = useSavedItems();
 
-  const toggleSaveEvent = (eventId: number) => {
-    const newSavedEvents = new Set(savedEvents);
-    if (newSavedEvents.has(eventId)) {
-      newSavedEvents.delete(eventId);
-    } else {
-      newSavedEvents.add(eventId);
-    }
-    setSavedEvents(newSavedEvents);
+  const handleSaveEvent = (event: typeof mockEvents[0]) => {
+    toggleSave({
+      id: event.id.toString(),
+      title: event.title,
+      type: 'event',
+      image: event.image,
+      description: `${event.date} • ${event.location}`,
+      location: event.location
+    });
   };
 
   const filteredEvents = selectedCategory === "all" 
@@ -270,12 +272,12 @@ export default function Events() {
                         className="h-8 w-8 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleSaveEvent(event.id);
+                          handleSaveEvent(event);
                         }}
                       >
-                        <Heart 
+                        <Bookmark 
                           className={`h-4 w-4 ${
-                            savedEvents.has(event.id) ? 'fill-red-500 text-red-500' : ''
+                            isSaved(event.id.toString()) ? 'fill-primary text-primary' : ''
                           }`} 
                         />
                       </Button>
