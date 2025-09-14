@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,19 +27,19 @@ export default function Friends() {
   };
 
   const friends = [
-    { name: "Kwame Asante", initials: "KA" },
-    { name: "Amina Diallo", initials: "AD" },
-    { name: "Thabo Johnson", initials: "TJ" },
-    { name: "Nia Mbeki", initials: "NM" },
-    { name: "Chijioke Okoro", initials: "CJ" },
-    { name: "Fatou Diop", initials: "FD" }
+    { id: "kwame-asante", name: "Kwame Asante", initials: "KA" },
+    { id: "amina-diallo", name: "Amina Diallo", initials: "AD" },
+    { id: "thabo-johnson", name: "Thabo Johnson", initials: "TJ" },
+    { id: "nia-mbeki", name: "Nia Mbeki", initials: "NM" },
+    { id: "chijioke-okoro", name: "Chijioke Okoro", initials: "CJ" },
+    { id: "fatou-diop", name: "Fatou Diop", initials: "FD" }
   ];
 
   const suggestions = [
-    { name: "Obinna Dike", initials: "OD", mutualFriends: 12, location: "Lagos, Nigeria" },
-    { name: "Sade Sowande", initials: "SS", mutualFriends: 8, location: "Dakar, Senegal" },
-    { name: "Elias Mbeki", initials: "EM", mutualFriends: 5, location: "Johannesburg, South Africa" },
-    { name: "Amina Keita", initials: "AK", mutualFriends: 17, location: "Nairobi, Kenya" }
+    { id: "obinna-dike", name: "Obinna Dike", initials: "OD", mutualFriends: 12, location: "Lagos, Nigeria" },
+    { id: "sade-sowande", name: "Sade Sowande", initials: "SS", mutualFriends: 8, location: "Dakar, Senegal" },
+    { id: "elias-mbeki", name: "Elias Mbeki", initials: "EM", mutualFriends: 5, location: "Johannesburg, South Africa" },
+    { id: "amina-keita", name: "Amina Keita", initials: "AK", mutualFriends: 17, location: "Nairobi, Kenya" }
   ];
 
   return (
@@ -189,14 +190,14 @@ export default function Friends() {
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 {friends.map((friend, index) => (
-                  <div key={index} className="text-center">
+                  <Link key={index} to={`/profile/${friend.id}`} className="text-center hover:bg-muted/50 rounded-lg p-2 transition-colors">
                     <Avatar className="w-16 h-16 mx-auto mb-2">
                       <AvatarFallback className="bg-gradient-to-br from-primary to-black text-accent font-bold text-lg">
                         {friend.initials}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-sm font-medium">{friend.name}</div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               
@@ -253,14 +254,18 @@ export default function Friends() {
               <div className="space-y-4">
                 {suggestions.map((suggestion, index) => (
                   <div key={index} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Avatar className="w-12 h-12">
-                      <AvatarFallback className="bg-gradient-to-br from-primary to-black text-accent font-bold">
-                        {suggestion.initials}
-                      </AvatarFallback>
-                    </Avatar>
+                    <Link to={`/profile/${suggestion.id}`}>
+                      <Avatar className="w-12 h-12 cursor-pointer hover:scale-105 transition-transform">
+                        <AvatarFallback className="bg-gradient-to-br from-primary to-black text-accent font-bold">
+                          {suggestion.initials}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
                     
                     <div className="flex-1">
-                      <h3 className="font-medium">{suggestion.name}</h3>
+                      <Link to={`/profile/${suggestion.id}`} className="hover:underline">
+                        <h3 className="font-medium">{suggestion.name}</h3>
+                      </Link>
                       <p className="text-sm text-muted-foreground">
                         {suggestion.mutualFriends} mutual friends · {suggestion.location}
                       </p>
