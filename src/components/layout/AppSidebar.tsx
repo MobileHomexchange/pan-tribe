@@ -6,7 +6,6 @@ import {
   UserCheck, 
   History, 
   Store, 
-  Newspaper, 
   Calendar,
   TrendingUp,
   Music,
@@ -35,7 +34,6 @@ const mainItems = [
   { title: "Memories", url: "/memories", icon: History },
   { title: "Marketplace", url: "/marketplace", icon: Store },
   { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
-  { title: "Feeds", url: "/feeds", icon: Newspaper },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Ads Manager", url: "/ads", icon: TrendingUp },
 ];
