@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 // import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
@@ -22,26 +24,28 @@ const queryClient = new QueryClient();
 const App = () => (
   <ErrorBoundary>
     <QueryClientProvider client={queryClient}>
-      <div>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/my-tribe" element={<MyTribe />} />
-            <Route path="/friends" element={<Friends />} />
-            <Route path="/marketplace" element={<Marketplace />} />
-            <Route path="/profile/:userId" element={<Profile />} />
-            <Route path="/memories" element={<Memories />} />
-            <Route path="/social-commerce" element={<SocialCommerce />} />
-            <Route path="/ads" element={<AdsManager />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/saved" element={<Saved />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
+      <AuthProvider>
+        <div>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/my-tribe" element={<ProtectedRoute><MyTribe /></ProtectedRoute>} />
+              <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+              <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/memories" element={<ProtectedRoute><Memories /></ProtectedRoute>} />
+              <Route path="/social-commerce" element={<ProtectedRoute><SocialCommerce /></ProtectedRoute>} />
+              <Route path="/ads" element={<ProtectedRoute><AdsManager /></ProtectedRoute>} />
+              <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+              <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   </ErrorBoundary>
 );
