@@ -5,7 +5,10 @@ export interface Post {
   userName: string;
   userAvatar?: string;
   imageUrl?: string;
+  videoUrl?: string;
   likes: string[];
+  saves: string[];
+  shares: number;
   comments: Comment[];
   createdAt: any;
   category?: string;
@@ -37,9 +40,9 @@ export interface Event {
 
 export interface Comment {
   id: string;
-  content: string;
   userId: string;
   userName: string;
   userAvatar?: string;
+  content: string;
   createdAt: any;
 }
