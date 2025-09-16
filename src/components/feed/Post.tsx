@@ -5,9 +5,10 @@ import { Post as PostType } from "@/types";
 
 interface PostProps {
   post: PostType;
+  onInteraction?: (type: 'like' | 'comment' | 'share' | 'view') => void;
 }
 
-export function Post({ post }: PostProps) {
+export function Post({ post, onInteraction }: PostProps) {
   const [liked, setLiked] = useState(false);
   const [saved, setSaved] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likes.length);
@@ -15,10 +16,19 @@ export function Post({ post }: PostProps) {
   const handleLike = () => {
     setLiked(!liked);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
+    onInteraction?.('like');
   };
 
   const handleSave = () => {
     setSaved(!saved);
+  };
+
+  const handleComment = () => {
+    onInteraction?.('comment');
+  };
+
+  const handleShare = () => {
+    onInteraction?.('share');
   };
 
   const getInitials = (name: string) => {
@@ -108,6 +118,7 @@ export function Post({ post }: PostProps) {
         <Button
           variant="ghost"
           size="sm"
+          onClick={handleShare}
           className="flex items-center gap-2 flex-1 justify-center py-2 rounded-md text-social-muted hover:bg-social-hover transition-colors"
         >
           <MessageCircle className="h-4 w-4" />
@@ -129,6 +140,7 @@ export function Post({ post }: PostProps) {
         <Button
           variant="ghost"
           size="sm"
+          onClick={handleComment}
           className="flex items-center gap-2 flex-1 justify-center py-2 rounded-md text-social-muted hover:bg-social-hover transition-colors"
         >
           <Share className="h-4 w-4" />
