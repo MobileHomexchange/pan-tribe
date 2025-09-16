@@ -1,41 +1,39 @@
 import { useState } from "react";
-import { ThumbsUp, MessageCircle, Share, Globe, Users, Landmark } from "lucide-react";
+import { ThumbsUp, MessageCircle, Share, Globe, Users, Landmark, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface PostAuthor {
-  name: string;
-  avatar: string;
-  initials: string;
-}
-
-interface PostData {
-  id: string;
-  author: PostAuthor;
-  timeAgo: string;
-  visibility: "public" | "friends";
-  content: string;
-  hasImage?: boolean;
-  imageIcon?: string;
-  likes: number;
-  comments: number;
-  shares: number;
-}
+import { Post as PostType } from "@/types";
 
 interface PostProps {
-  post: PostData;
+  post: PostType;
 }
 
 export function Post({ post }: PostProps) {
   const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(post.likes);
+  const [saved, setSaved] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likes.length);
 
   const handleLike = () => {
     setLiked(!liked);
     setLikeCount(prev => liked ? prev - 1 : prev + 1);
   };
 
-  const getVisibilityIcon = () => {
-    return post.visibility === "public" ? <Globe className="h-3 w-3" /> : <Users className="h-3 w-3" />;
+  const handleSave = () => {
+    setSaved(!saved);
+  };
+
+  const getInitials = (name: string) => {
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
+  const formatTimeAgo = (createdAt: any) => {
+    // Simple time ago formatting - you can enhance this
+    const now = new Date();
+    const postTime = createdAt?.toDate ? createdAt.toDate() : new Date(createdAt);
+    const diffInHours = Math.floor((now.getTime() - postTime.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    return `${Math.floor(diffInHours / 24)}d ago`;
   };
 
   return (
@@ -43,14 +41,14 @@ export function Post({ post }: PostProps) {
       {/* Post Header */}
       <div className="flex items-center gap-3 mb-3">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pan-green to-pan-black flex items-center justify-center text-pan-gold font-bold">
-          {post.author.initials}
+          {getInitials(post.userName)}
         </div>
         <div className="flex-1">
-          <h3 className="font-medium text-card-foreground">{post.author.name}</h3>
+          <h3 className="font-medium text-card-foreground">{post.userName}</h3>
           <div className="flex items-center gap-1 text-xs text-social-muted">
-            <span>{post.timeAgo}</span>
+            <span>{formatTimeAgo(post.createdAt)}</span>
             <span>·</span>
-            {getVisibilityIcon()}
+            <Globe className="h-3 w-3" />
           </div>
         </div>
       </div>
@@ -62,12 +60,23 @@ export function Post({ post }: PostProps) {
         </p>
       </div>
 
-      {/* Post Image */}
-      {post.hasImage && (
+      {/* Post Image/Video */}
+      {(post.imageUrl || post.videoUrl) && (
         <div className="mb-3">
-          <div className="w-full h-64 bg-gradient-to-br from-pan-green to-pan-black rounded-lg flex items-center justify-center">
-            <Landmark className="h-12 w-12 text-pan-gold" />
-          </div>
+          {post.imageUrl && (
+            <img 
+              src={post.imageUrl} 
+              alt="Post content" 
+              className="w-full h-64 object-cover rounded-lg"
+            />
+          )}
+          {post.videoUrl && (
+            <video 
+              src={post.videoUrl} 
+              controls 
+              className="w-full h-64 rounded-lg"
+            />
+          )}
         </div>
       )}
 
@@ -78,7 +87,7 @@ export function Post({ post }: PostProps) {
           <span>{likeCount}</span>
         </div>
         <div>
-          <span>{post.comments} comments · {post.shares} shares</span>
+          <span>{post.comments.length} comments · {post.shares} shares</span>
         </div>
       </div>
 
@@ -103,6 +112,18 @@ export function Post({ post }: PostProps) {
         >
           <MessageCircle className="h-4 w-4" />
           <span className="font-medium">Comment</span>
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={handleSave}
+          className={`flex items-center gap-2 flex-1 justify-center py-2 rounded-md transition-colors ${
+            saved ? "text-social-like bg-light-green" : "text-social-muted hover:bg-social-hover"
+          }`}
+        >
+          <Bookmark className="h-4 w-4" />
+          <span className="font-medium">{saved ? "Saved" : "Save"}</span>
         </Button>
         
         <Button
