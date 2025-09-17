@@ -2,9 +2,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import LiveEventButton from "@/components/LiveEventButton";
+import ScheduleEventModal from "@/components/ScheduleEventModal";
+import { useToast } from "@/hooks/use-toast";
 
 export function TribeConference() {
   const [isLive, setIsLive] = useState(false);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const { toast } = useToast();
+
+  const handleScheduleEvent = (eventData: { title: string; description: string; date: Date; location: string }) => {
+    // Here you could save to Firebase/Supabase
+    console.log('Event scheduled:', eventData);
+    
+    toast({
+      title: "Event Scheduled!",
+      description: `"${eventData.title}" has been scheduled for ${eventData.date.toLocaleDateString()}.`,
+    });
+    
+    setShowScheduleModal(false);
+  };
 
   return (
     <div className="bg-card rounded-xl p-5 shadow-card border border-border">
@@ -12,7 +28,11 @@ export function TribeConference() {
         <h2 className="text-2xl font-bold text-foreground">African Music Lovers Tribe</h2>
         <div className="flex flex-col sm:flex-row gap-3">
           <LiveEventButton eventId="african-music-tribe-main" />
-          <Button variant="secondary" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
+          <Button 
+            variant="secondary" 
+            className="bg-secondary hover:bg-secondary/90 text-secondary-foreground"
+            onClick={() => setShowScheduleModal(true)}
+          >
             <i className="fas fa-calendar mr-2"></i>
             Schedule Event
           </Button>
@@ -60,6 +80,13 @@ export function TribeConference() {
             Join us for the biggest African music festival of the year! Featuring artists from across the continent.
           </p>
         </div>
+      )}
+
+      {showScheduleModal && (
+        <ScheduleEventModal
+          onClose={() => setShowScheduleModal(false)}
+          onSubmit={handleScheduleEvent}
+        />
       )}
     </div>
   );
