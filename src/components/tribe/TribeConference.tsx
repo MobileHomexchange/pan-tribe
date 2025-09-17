@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import LiveEventButton from "@/components/LiveEventButton";
 
 export function TribeConference() {
   const [isLive, setIsLive] = useState(false);
@@ -10,10 +11,7 @@ export function TribeConference() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <h2 className="text-2xl font-bold text-foreground">African Music Lovers Tribe</h2>
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
-            <i className="fas fa-video mr-2"></i>
-            Start Live Event
-          </Button>
+          <LiveEventButton eventId="african-music-tribe-main" />
           <Button variant="secondary" className="bg-secondary hover:bg-secondary/90 text-secondary-foreground">
             <i className="fas fa-calendar mr-2"></i>
             Schedule Event
