@@ -9,7 +9,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { Button } from "@/components/ui/button";
 import { CommentsModal } from "@/components/CommentsModal";
 import { ShareModal } from "@/components/ShareModal";
-import { Heart, MessageCircle, Share, Bookmark, User, Home, Users, Video } from "lucide-react";
+import { Heart, MessageCircle, Share, Bookmark, User, Home, Users, Video, ChevronLeft, ChevronRight } from "lucide-react";
 import { Comment } from "@/types";
 import { toast } from "@/hooks/use-toast";
 
@@ -108,6 +108,7 @@ const ReelsHorizontal = () => {
   const [selectedVideoForComments, setSelectedVideoForComments] = useState<Video | null>(null);
   const [selectedVideoForShare, setSelectedVideoForShare] = useState<Video | null>(null);
   const [viewStartTimes, setViewStartTimes] = useState<Map<string, number>>(new Map());
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   // Fetch videos from Firebase with fallback to mock data
   useEffect(() => {
@@ -273,6 +274,47 @@ const ReelsHorizontal = () => {
     });
   };
 
+  // Navigation handlers
+  const goToPrevious = () => {
+    if (currentVideoIndex > 0) {
+      const newIndex = currentVideoIndex - 1;
+      setCurrentVideoIndex(newIndex);
+      containerRef.current?.children[newIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'start'
+      });
+    }
+  };
+
+  const goToNext = () => {
+    if (currentVideoIndex < videos.length - 1) {
+      const newIndex = currentVideoIndex + 1;
+      setCurrentVideoIndex(newIndex);
+      containerRef.current?.children[newIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'start'
+      });
+    }
+  };
+
+  // Track current video index based on scroll position
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const scrollLeft = container.scrollLeft;
+      const videoWidth = container.clientWidth;
+      const newIndex = Math.round(scrollLeft / videoWidth);
+      setCurrentVideoIndex(newIndex);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center w-full h-screen bg-background">
@@ -296,16 +338,38 @@ const ReelsHorizontal = () => {
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="flex overflow-x-auto w-screen h-screen snap-x snap-mandatory scroll-smooth"
-      style={{ scrollSnapType: "x mandatory" }}
-    >
-      {videos.map((video) => (
-        <div
-          key={video.id}
-          className="flex-none w-full h-full relative snap-start"
+    <div className="relative w-screen h-screen group">
+      {/* Navigation Arrows */}
+      {currentVideoIndex > 0 && (
+        <Button
+          size="lg"
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/30 hover:bg-black/50 text-white border-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          onClick={goToPrevious}
         >
+          <ChevronLeft className="w-6 h-6" />
+        </Button>
+      )}
+      
+      {currentVideoIndex < videos.length - 1 && (
+        <Button
+          size="lg"
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-black/30 hover:bg-black/50 text-white border-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          onClick={goToNext}
+        >
+          <ChevronRight className="w-6 h-6" />
+        </Button>
+      )}
+
+      <div
+        ref={containerRef}
+        className="flex overflow-x-auto w-screen h-screen snap-x snap-mandatory scroll-smooth"
+        style={{ scrollSnapType: "x mandatory" }}
+      >
+        {videos.map((video, index) => (
+          <div
+            key={video.id}
+            className="flex-none w-full h-full relative snap-start"
+          >
           <video
             src={video.url}
             data-video-id={video.id}
@@ -409,8 +473,9 @@ const ReelsHorizontal = () => {
               My Videos
             </Button>
           </div>
-        </div>
-      ))}
+          </div>
+        ))}
+      </div>
       
       {/* Comments Modal */}
       {selectedVideoForComments && (
