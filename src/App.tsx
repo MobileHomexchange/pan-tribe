@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useIsMobile } from "@/hooks/use-mobile";
 import Index from "./pages/Index";
 import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
@@ -22,6 +23,15 @@ import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient();
+
+const ReelsRoute = () => {
+  const isMobile = useIsMobile();
+  return (
+    <ProtectedRoute>
+      {isMobile ? <Reels /> : <Index />}
+    </ProtectedRoute>
+  );
+};
 
 const App = () => (
   <ErrorBoundary>
@@ -42,7 +52,7 @@ const App = () => (
               <Route path="/ads" element={<ProtectedRoute><AdsManager /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
               <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
-              <Route path="/reels" element={<ProtectedRoute><Reels /></ProtectedRoute>} />
+              <Route path="/reels" element={<ReelsRoute />} />
               <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
