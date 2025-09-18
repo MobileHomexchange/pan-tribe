@@ -12,7 +12,8 @@ import {
   Palette,
   Code,
   ChevronDown,
-  Menu
+  Menu,
+  Video
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ const mainItems = [
   { title: "Friends", url: "/friends", icon: Users },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
+  { title: "Reels", url: "/reels", icon: Video },
   { title: "Memories", url: "/memories", icon: History },
   { title: "Marketplace", url: "/marketplace", icon: Store },
   { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
