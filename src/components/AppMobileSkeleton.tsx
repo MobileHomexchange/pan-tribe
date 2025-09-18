@@ -1,32 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import ReelsHorizontalResponsive from "./ReelsHorizontalResponsive";
-
-// Mock components (replace with your Firebase data later)
-const StoriesComponent = () => (
-  <div className="flex overflow-x-auto py-2">
-    {[...Array(5)].map((_, i) => (
-      <div
-        key={i}
-        className="min-w-[80px] h-[80px] mr-2 rounded-full bg-muted flex items-center justify-center text-muted-foreground text-sm"
-      >
-        Story {i + 1}
-      </div>
-    ))}
-  </div>
-);
-
-const PostComponent = () => (
-  <div className="w-full bg-card mb-2 p-4 rounded-lg shadow-sm border">
-    <div className="font-semibold text-card-foreground">User Name</div>
-    <div className="my-3 text-card-foreground">This is a post content example.</div>
-    <div className="flex justify-between text-muted-foreground">
-      <span>❤️ 10</span>
-      <span>💬 5</span>
-      <span>🔁 2</span>
-    </div>
-  </div>
-);
+import { StoriesComponent } from "./StoriesComponent";
+import { PostComponent } from "./PostComponent";
 
 const ReelsPreviewHorizontal = ({ navigate }: { navigate: (path: string) => void }) => (
   <div className="flex overflow-x-auto py-2">
@@ -56,9 +32,7 @@ const HomeScreen = () => {
         <StoriesComponent />
 
         {/* Posts */}
-        {[...Array(3)].map((_, i) => (
-          <PostComponent key={i} />
-        ))}
+        <PostComponent />
 
         {/* Reels Preview */}
         <ReelsPreviewHorizontal navigate={navigate} />
