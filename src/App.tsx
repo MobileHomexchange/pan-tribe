@@ -16,6 +16,7 @@ import SocialCommerce from "./pages/SocialCommerce";
 import AdsManager from "./pages/AdsManager";
 import Events from "./pages/Events";
 import Saved from "./pages/Saved";
+import CreatePost from "./pages/CreatePost";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/social-commerce" element={<ProtectedRoute><SocialCommerce /></ProtectedRoute>} />
               <Route path="/ads" element={<ProtectedRoute><AdsManager /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
+              <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
               <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

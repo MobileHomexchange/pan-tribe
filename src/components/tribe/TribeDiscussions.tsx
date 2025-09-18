@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface GroupPost {
   id: string;
@@ -43,6 +44,7 @@ const mockPosts: GroupPost[] = [
 ];
 
 export function TribeDiscussions() {
+  const navigate = useNavigate();
   return (
     <div className="bg-card rounded-xl p-5 shadow-card border border-border">
       <div className="flex justify-between items-center mb-5 pb-3 border-b border-border">
@@ -50,7 +52,10 @@ export function TribeDiscussions() {
           <i className="fas fa-file-alt text-primary"></i>
           Tribe Discussions
         </h3>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button 
+          className="bg-primary hover:bg-primary/90 text-primary-foreground"
+          onClick={() => navigate('/create-post')}
+        >
           <i className="fas fa-plus mr-2"></i>
           New Post
         </Button>
