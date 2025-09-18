@@ -19,11 +19,13 @@ export interface Post {
 }
 
 export interface UserInteraction {
+  id?: string;
   postId: string;
   userId: string;
-  type: 'like' | 'comment' | 'share' | 'view' | 'hide' | 'not_interested';
+  type: 'like' | 'unlike' | 'comment' | 'share' | 'view' | 'hide' | 'not_interested';
   timestamp: any;
   duration?: number; // For view interactions
+  metadata?: { [key: string]: any }; // Additional interaction data
 }
 
 export interface TribalConnection {

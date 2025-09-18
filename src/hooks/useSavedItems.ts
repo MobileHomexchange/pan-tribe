@@ -3,8 +3,8 @@ import { useState, useCallback, useEffect } from 'react';
 export interface SavedItem {
   id: string;
   title: string;
-  type: 'event' | 'blog' | 'marketplace' | 'video';
-  image: string;
+  type: 'event' | 'blog' | 'marketplace' | 'video' | 'post';
+  image?: string;
   savedAt: Date;
   description?: string;
   author?: string;

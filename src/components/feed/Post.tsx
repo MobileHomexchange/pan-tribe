@@ -1,7 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThumbsUp, MessageCircle, Share, Globe, Users, Landmark, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Post as PostType } from "@/types";
+import { Post as PostType, Comment } from "@/types";
+import { CommentsModal } from "@/components/CommentsModal";
+import { ShareModal } from "@/components/ShareModal";
+import { FirebaseService } from "@/lib/firebaseService";
+import { useSavedItems } from "@/hooks/useSavedItems";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface PostProps {
   post: PostType;
@@ -9,26 +15,121 @@ interface PostProps {
 }
 
 export function Post({ post, onInteraction }: PostProps) {
-  const [liked, setLiked] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const { currentUser } = useAuth();
+  const { toast } = useToast();
+  const { isSaved, toggleSave } = useSavedItems();
+  
+  const [liked, setLiked] = useState(currentUser ? post.likes.includes(currentUser.uid) : false);
+  const [saved, setSaved] = useState(isSaved(post.id));
   const [likeCount, setLikeCount] = useState(post.likes.length);
+  const [shareCount, setShareCount] = useState(post.shares);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsOpen, setCommentsOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    setLikeCount(prev => liked ? prev - 1 : prev + 1);
-    onInteraction?.('like');
+  // Track post view on mount
+  useEffect(() => {
+    if (currentUser) {
+      FirebaseService.trackView(post.id, currentUser.uid);
+      onInteraction?.('view');
+    }
+  }, [post.id, currentUser, onInteraction]);
+
+  // Subscribe to comments
+  useEffect(() => {
+    const unsubscribe = FirebaseService.subscribeToComments(post.id, setComments);
+    return unsubscribe;
+  }, [post.id]);
+
+  const handleLike = async () => {
+    if (!currentUser || loading) return;
+    
+    setLoading(true);
+    try {
+      const { liked: newLiked, newCount } = await FirebaseService.toggleLike(post.id, currentUser.uid);
+      setLiked(newLiked);
+      setLikeCount(newCount);
+      onInteraction?.('like');
+      
+      toast({
+        title: newLiked ? "Post liked!" : "Like removed",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update like. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSave = () => {
+    if (!currentUser) return;
+    
+    const savedItem = {
+      id: post.id,
+      title: post.content.substring(0, 50) + (post.content.length > 50 ? '...' : ''),
+      type: 'post' as const,
+      image: post.imageUrl,
+    };
+    
+    toggleSave(savedItem);
     setSaved(!saved);
+    
+    toast({
+      title: saved ? "Post unsaved" : "Post saved!",
+      duration: 2000,
+    });
   };
 
   const handleComment = () => {
+    setCommentsOpen(true);
     onInteraction?.('comment');
   };
 
   const handleShare = () => {
+    setShareOpen(true);
     onInteraction?.('share');
+  };
+
+  const handleAddComment = async (content: string) => {
+    if (!currentUser) return;
+    
+    try {
+      await FirebaseService.addComment(post.id, currentUser.uid, currentUser.displayName || 'Anonymous', content);
+      toast({
+        title: "Comment added!",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add comment. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleShareAction = async (platform?: string) => {
+    if (!currentUser) return;
+    
+    try {
+      await FirebaseService.trackShare(post.id, currentUser.uid, platform);
+      setShareCount(prev => prev + 1);
+      
+      toast({
+        title: "Post shared!",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error('Error tracking share:', error);
+    }
   };
 
   const getInitials = (name: string) => {
@@ -97,7 +198,7 @@ export function Post({ post, onInteraction }: PostProps) {
           <span>{likeCount}</span>
         </div>
         <div>
-          <span>{post.comments.length} comments · {post.shares} shares</span>
+          <span>{comments.length} comments · {shareCount} shares</span>
         </div>
       </div>
 
@@ -118,7 +219,7 @@ export function Post({ post, onInteraction }: PostProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleShare}
+          onClick={handleComment}
           className="flex items-center gap-2 flex-1 justify-center py-2 rounded-md text-social-muted hover:bg-social-hover transition-colors"
         >
           <MessageCircle className="h-4 w-4" />
@@ -140,13 +241,47 @@ export function Post({ post, onInteraction }: PostProps) {
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleComment}
+          onClick={handleShare}
           className="flex items-center gap-2 flex-1 justify-center py-2 rounded-md text-social-muted hover:bg-social-hover transition-colors"
         >
           <Share className="h-4 w-4" />
           <span className="font-medium">Share</span>
         </Button>
       </div>
+
+      {/* Comments Modal */}
+      <CommentsModal
+        post={{
+          id: post.id,
+          author: {
+            name: post.userName,
+            avatar: post.userAvatar || '',
+            initials: getInitials(post.userName)
+          },
+          comments: comments.length
+        }}
+        open={commentsOpen}
+        onClose={() => setCommentsOpen(false)}
+        onAddComment={async (content: string) => {
+          await handleAddComment(content);
+          return true;
+        }}
+      />
+
+      {/* Share Modal */}
+      <ShareModal
+        post={{
+          ...post,
+          author: {
+            name: post.userName,
+            avatar: post.userAvatar || '',
+            initials: getInitials(post.userName)
+          }
+        }}
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        onShare={handleShareAction}
+      />
     </div>
   );
 }
