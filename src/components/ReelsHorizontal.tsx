@@ -28,6 +28,74 @@ interface Video {
   createdAt: any;
 }
 
+// Mock video data for testing
+const mockVideos: Video[] = [
+  {
+    id: "1",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+    userId: "user1",
+    userName: "Alex Rivera",
+    userAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    title: "Beautiful Sunset",
+    description: "Beautiful sunset at the beach 🌅 #nature #peaceful",
+    likes: ["user2", "user3"],
+    comments: [
+      { id: "c1", userId: "user2", userName: "Sarah", userAvatar: "", content: "Amazing view!", createdAt: new Date() },
+      { id: "c2", userId: "user3", userName: "Mike", userAvatar: "", content: "Where is this?", createdAt: new Date() }
+    ],
+    savedBy: [],
+    shares: 5,
+    createdAt: new Date()
+  },
+  {
+    id: "2",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+    userId: "user2",
+    userName: "Emma Chen",
+    userAvatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    title: "Pasta Recipe",
+    description: "Cooking my favorite pasta recipe! 🍝 Who wants the recipe?",
+    likes: ["user1", "user4", "user5"],
+    comments: [
+      { id: "c3", userId: "user1", userName: "Alex", userAvatar: "", content: "Looks delicious! Recipe please!", createdAt: new Date() },
+      { id: "c4", userId: "user4", userName: "Tom", userAvatar: "", content: "My mouth is watering 😋", createdAt: new Date() }
+    ],
+    savedBy: ["user1"],
+    shares: 12,
+    createdAt: new Date()
+  },
+  {
+    id: "3",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    userId: "user3",
+    userName: "Jake Wilson",
+    userAvatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+    title: "Morning Workout",
+    description: "Morning workout routine 💪 Stay consistent!",
+    likes: ["user1", "user2", "user6"],
+    comments: [
+      { id: "c5", userId: "user2", userName: "Emma", userAvatar: "", content: "Motivational! 🔥", createdAt: new Date() }
+    ],
+    savedBy: [],
+    shares: 8,
+    createdAt: new Date()
+  },
+  {
+    id: "4",
+    url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+    userId: "user4",
+    userName: "Sophia Taylor",
+    userAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+    title: "Art Therapy",
+    description: "Art therapy session today 🎨 Creating something beautiful",
+    likes: ["user5"],
+    comments: [],
+    savedBy: [],
+    shares: 3,
+    createdAt: new Date()
+  }
+];
+
 const ReelsHorizontal = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -41,7 +109,7 @@ const ReelsHorizontal = () => {
   const [selectedVideoForShare, setSelectedVideoForShare] = useState<Video | null>(null);
   const [viewStartTimes, setViewStartTimes] = useState<Map<string, number>>(new Map());
 
-  // Fetch videos from Firebase
+  // Fetch videos from Firebase with fallback to mock data
   useEffect(() => {
     const fetchVideos = async () => {
       try {
@@ -54,13 +122,23 @@ const ReelsHorizontal = () => {
           savedBy: doc.data().savedBy || [],
           shares: doc.data().shares || 0
         })) as Video[];
-        setVideos(videoList);
+        
+        // Use mock data if no videos from Firebase
+        setVideos(videoList.length > 0 ? videoList : mockVideos);
+        
+        if (videoList.length === 0) {
+          toast({
+            title: "Demo Content",
+            description: "Showing sample videos for testing",
+          });
+        }
       } catch (error) {
         console.error("Error fetching videos:", error);
+        // Fallback to mock data on error
+        setVideos(mockVideos);
         toast({
-          title: "Error loading videos",
-          description: "Please try again later",
-          variant: "destructive"
+          title: "Demo Content",
+          description: "Showing sample videos for testing",
         });
       } finally {
         setLoading(false);
