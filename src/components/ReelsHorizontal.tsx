@@ -1,40 +1,106 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { FirebaseService } from "@/lib/firebaseService";
+import { useAuth } from "@/contexts/AuthContext";
+import { useFeedAlgorithm } from "@/hooks/useFeedAlgorithm";
+import { useSavedItems } from "@/hooks/useSavedItems";
 import { Button } from "@/components/ui/button";
-import { Heart, MessageCircle, Repeat2, Bookmark, User, Home, Users, Video } from "lucide-react";
+import { CommentsModal } from "@/components/CommentsModal";
+import { ShareModal } from "@/components/ShareModal";
+import { Heart, MessageCircle, Share, Bookmark, User, Home, Users, Video } from "lucide-react";
+import { Comment } from "@/types";
+import { toast } from "@/hooks/use-toast";
 
 interface Video {
   id: string;
   url: string;
   userId: string;
+  userName?: string;
+  userAvatar?: string;
   title?: string;
   description?: string;
+  likes: string[];
+  comments: Comment[];
+  savedBy: string[];
+  shares: number;
+  createdAt: any;
 }
-
-// Placeholder videos - replace with Firebase data
-const videos: Video[] = [
-  { id: "1", url: "https://path-to-video1.mp4", userId: "user1", title: "Amazing Video 1" },
-  { id: "2", url: "https://path-to-video2.mp4", userId: "user2", title: "Cool Content 2" },
-  { id: "3", url: "https://path-to-video3.mp4", userId: "user3", title: "Awesome Reel 3" },
-];
 
 const ReelsHorizontal = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const { updateInterests } = useFeedAlgorithm();
+  const { isSaved, toggleSave } = useSavedItems();
+  
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedVideoForComments, setSelectedVideoForComments] = useState<Video | null>(null);
+  const [selectedVideoForShare, setSelectedVideoForShare] = useState<Video | null>(null);
+  const [viewStartTimes, setViewStartTimes] = useState<Map<string, number>>(new Map());
 
-  // Autoplay visible video
+  // Fetch videos from Firebase
   useEffect(() => {
-    if (!containerRef.current) return;
+    const fetchVideos = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "reels"));
+        const videoList = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          likes: doc.data().likes || [],
+          comments: doc.data().comments || [],
+          savedBy: doc.data().savedBy || [],
+          shares: doc.data().shares || 0
+        })) as Video[];
+        setVideos(videoList);
+      } catch (error) {
+        console.error("Error fetching videos:", error);
+        toast({
+          title: "Error loading videos",
+          description: "Please try again later",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVideos();
+  }, []);
 
-    const vids = containerRef.current.querySelectorAll("video");
+  // Autoplay visible video with analytics
+  useEffect(() => {
+    const vids = containerRef.current?.querySelectorAll("video");
+    if (!vids) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const video = entry.target as HTMLVideoElement;
+          const videoElement = entry.target as HTMLVideoElement;
+          const videoId = videoElement.getAttribute('data-video-id');
+          
           if (entry.isIntersecting) {
-            video.play().catch(console.error);
+            videoElement.play();
+            // Track view start time
+            if (videoId) {
+              setViewStartTimes(prev => new Map(prev.set(videoId, Date.now())));
+            }
           } else {
-            video.pause();
+            videoElement.pause();
+            // Track view duration when video goes out of view
+            if (videoId && currentUser) {
+              const startTime = viewStartTimes.get(videoId);
+              if (startTime) {
+                const duration = Math.round((Date.now() - startTime) / 1000);
+                FirebaseService.trackView(videoId, currentUser.uid, duration);
+                updateInterests(
+                  videos.find(v => v.id === videoId) as any,
+                  'view',
+                  duration
+                );
+              }
+            }
           }
         });
       },
@@ -43,27 +109,113 @@ const ReelsHorizontal = () => {
 
     vids.forEach((video) => observer.observe(video));
     return () => vids.forEach((video) => observer.unobserve(video));
-  }, []);
+  }, [videos, currentUser, viewStartTimes, updateInterests]);
 
-  const handleLike = (videoId: string) => {
-    // TODO: Implement like functionality with Firebase
-    console.log("Liked video:", videoId);
+  // Interaction handlers
+  const handleLike = async (video: Video) => {
+    if (!currentUser) return;
+    
+    try {
+      const result = await FirebaseService.toggleLike(video.id, currentUser.uid);
+      setVideos(prev => prev.map(v => 
+        v.id === video.id 
+          ? { ...v, likes: result.liked 
+              ? [...v.likes, currentUser.uid]
+              : v.likes.filter(id => id !== currentUser.uid)
+            }
+          : v
+      ));
+      updateInterests(video as any, 'like');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not update like",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleComment = (videoId: string) => {
-    // TODO: Implement comment functionality
-    console.log("Comment on video:", videoId);
+  const handleComment = (video: Video) => {
+    setSelectedVideoForComments(video);
   };
 
-  const handleShare = (videoId: string) => {
-    // TODO: Implement share functionality
-    console.log("Share video:", videoId);
+  const handleAddComment = async (content: string) => {
+    if (!currentUser || !selectedVideoForComments) return;
+    
+    try {
+      const newComment = await FirebaseService.addComment(
+        selectedVideoForComments.id,
+        currentUser.uid,
+        currentUser.displayName || 'Anonymous',
+        content
+      );
+      
+      setVideos(prev => prev.map(v => 
+        v.id === selectedVideoForComments.id 
+          ? { ...v, comments: [...v.comments, newComment] }
+          : v
+      ));
+      
+      updateInterests(selectedVideoForComments as any, 'comment');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Could not add comment",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleSave = (videoId: string) => {
-    // TODO: Implement save functionality
-    console.log("Save video:", videoId);
+  const handleShare = (video: Video) => {
+    setSelectedVideoForShare(video);
   };
+
+  const handleShareComplete = async (platform?: string) => {
+    if (!currentUser || !selectedVideoForShare) return;
+    
+    try {
+      await FirebaseService.trackShare(selectedVideoForShare.id, currentUser.uid, platform);
+      setVideos(prev => prev.map(v => 
+        v.id === selectedVideoForShare.id 
+          ? { ...v, shares: v.shares + 1 }
+          : v
+      ));
+      updateInterests(selectedVideoForShare as any, 'share');
+    } catch (error) {
+      console.error('Error tracking share:', error);
+    }
+  };
+
+  const handleSave = (video: Video) => {
+    toggleSave({
+      id: video.id,
+      title: video.title || 'Video',
+      type: 'video',
+      description: video.description
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen bg-background">
+        <div className="text-center">
+          <Video className="w-12 h-12 animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading videos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!videos.length) {
+    return (
+      <div className="flex items-center justify-center w-full h-screen bg-background">
+        <div className="text-center">
+          <Video className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">No videos available</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -78,6 +230,7 @@ const ReelsHorizontal = () => {
         >
           <video
             src={video.url}
+            data-video-id={video.id}
             className="w-full h-full object-cover"
             muted
             loop
@@ -88,44 +241,60 @@ const ReelsHorizontal = () => {
           {/* Right-side vertical buttons */}
           <div className="absolute bottom-20 right-3 flex flex-col gap-4 items-center">
             <Button
-              size="icon"
-              variant="ghost"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
-              onClick={() => handleLike(video.id)}
+              size="lg"
+              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none relative"
+              onClick={() => handleLike(video)}
             >
-              <Heart className="w-6 h-6" />
+              <Heart 
+                className={`w-6 h-6 ${
+                  currentUser && video.likes.includes(currentUser.uid) 
+                    ? 'fill-red-500 text-red-500' 
+                    : ''
+                }`} 
+              />
+              {video.likes.length > 0 && (
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs">
+                  {video.likes.length}
+                </span>
+              )}
             </Button>
-            
             <Button
-              size="icon"
-              variant="ghost"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
-              onClick={() => handleComment(video.id)}
+              size="lg"
+              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none relative"
+              onClick={() => handleComment(video)}
             >
               <MessageCircle className="w-6 h-6" />
+              {video.comments.length > 0 && (
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs">
+                  {video.comments.length}
+                </span>
+              )}
             </Button>
-            
             <Button
-              size="icon"
-              variant="ghost"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
-              onClick={() => handleShare(video.id)}
+              size="lg"
+              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none relative"
+              onClick={() => handleShare(video)}
             >
-              <Repeat2 className="w-6 h-6" />
+              <Share className="w-6 h-6" />
+              {video.shares > 0 && (
+                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs">
+                  {video.shares}
+                </span>
+              )}
             </Button>
-            
             <Button
-              size="icon"
-              variant="ghost"
+              size="lg"
               className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
-              onClick={() => handleSave(video.id)}
+              onClick={() => handleSave(video)}
             >
-              <Bookmark className="w-6 h-6" />
+              <Bookmark 
+                className={`w-6 h-6 ${
+                  isSaved(video.id) ? 'fill-yellow-500 text-yellow-500' : ''
+                }`} 
+              />
             </Button>
-            
             <Button
-              size="icon"
-              variant="ghost"
+              size="lg"
               className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
               onClick={() => navigate(`/profile/${video.userId}`)}
             >
@@ -164,6 +333,45 @@ const ReelsHorizontal = () => {
           </div>
         </div>
       ))}
+      
+      {/* Comments Modal */}
+      {selectedVideoForComments && (
+        <CommentsModal
+          post={{
+            id: selectedVideoForComments.id,
+            author: {
+              name: selectedVideoForComments.userName || 'Anonymous',
+              avatar: selectedVideoForComments.userAvatar || '',
+              initials: (selectedVideoForComments.userName || 'A').charAt(0).toUpperCase()
+            },
+            comments: selectedVideoForComments.comments.length
+          }}
+          onClose={() => setSelectedVideoForComments(null)}
+          onAddComment={async (content: string) => {
+            await handleAddComment(content);
+            return true;
+          }}
+          open={!!selectedVideoForComments}
+        />
+      )}
+      
+      {/* Share Modal */}
+      {selectedVideoForShare && (
+        <ShareModal
+          post={{
+            id: selectedVideoForShare.id,
+            author: {
+              name: selectedVideoForShare.userName || 'Anonymous',
+              avatar: selectedVideoForShare.userAvatar || '',
+              initials: (selectedVideoForShare.userName || 'A').charAt(0).toUpperCase()
+            },
+            content: selectedVideoForShare.title || 'Check out this video!'
+          }}
+          onClose={() => setSelectedVideoForShare(null)}
+          onShare={handleShareComplete}
+          open={!!selectedVideoForShare}
+        />
+      )}
     </div>
   );
 };
