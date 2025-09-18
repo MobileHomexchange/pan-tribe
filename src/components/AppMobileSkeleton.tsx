@@ -1,6 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
-import ReelsHorizontalResponsive from "./ReelsHorizontalResponsive";
+import { useNavigate } from "react-router-dom";
 import { StoriesComponent } from "./StoriesComponent";
 import { PostComponent } from "./PostComponent";
 
@@ -74,17 +73,12 @@ const BottomNav = () => {
   );
 };
 
-// Main App Component
+// Main App Component - now just the HomeScreen since routing is handled by main App
 const AppMobileSkeleton = () => (
-  <Router>
-    <Routes>
-      <Route path="/home" element={<HomeScreen />} />
-      <Route path="/reels" element={<ReelsHorizontalResponsive />} />
-      {/* Add Friends, Profile routes here */}
-      <Route path="*" element={<HomeScreen />} />
-    </Routes>
+  <>
+    <HomeScreen />
     <BottomNav />
-  </Router>
+  </>
 );
 
 export default AppMobileSkeleton;
