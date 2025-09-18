@@ -22,10 +22,14 @@ const LiveEventButton: React.FC<LiveEventButtonProps> = ({ eventId }) => {
         if (docSnap.exists()) {
           setRoomUrl(`https://meet.jit.si/${docSnap.data().roomName}`);
         } else {
-          console.log("No such live event!");
+          // Generate fallback room name using eventId
+          setRoomUrl(`https://meet.jit.si/${eventId}-${Date.now()}`);
+          console.log("No Firebase document found, using fallback room");
         }
       } catch (error) {
         console.error("Error fetching room:", error);
+        // Generate fallback room name on error
+        setRoomUrl(`https://meet.jit.si/${eventId}-${Date.now()}`);
       } finally {
         setLoading(false);
       }
@@ -33,8 +37,6 @@ const LiveEventButton: React.FC<LiveEventButtonProps> = ({ eventId }) => {
 
     fetchRoom();
   }, [eventId]);
-
-  if (loading || !roomUrl) return null;
 
   return (
     <>
