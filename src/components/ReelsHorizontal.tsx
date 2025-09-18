@@ -373,7 +373,11 @@ const ReelsHorizontal = () => {
           <video
             src={video.url}
             data-video-id={video.id}
-            className="w-full h-full object-cover"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover", // fills screen while keeping aspect ratio
+            }}
             muted
             loop
             playsInline
@@ -381,97 +385,257 @@ const ReelsHorizontal = () => {
           />
 
           {/* Right-side vertical buttons */}
-          <div className="absolute bottom-20 right-3 flex flex-col gap-4 items-center">
-            <Button
-              size="lg"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none relative"
+          <div
+            style={{
+              position: "absolute",
+              bottom: "12vh", // distance from bottom scales with viewport
+              right: "3vw",
+              display: "flex",
+              flexDirection: "column",
+              gap: "4vw",
+              alignItems: "center",
+            }}
+          >
+            <button
+              style={{
+                width: "12vw", // adjusts to screen width
+                height: "12vw",
+                borderRadius: "6vw",
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                fontSize: "6vw",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                minWidth: "48px",
+                minHeight: "48px"
+              }}
               onClick={() => handleLike(video)}
             >
               <Heart 
-                className={`w-6 h-6 ${
-                  currentUser && video.likes.includes(currentUser.uid) 
-                    ? 'fill-red-500 text-red-500' 
-                    : ''
-                }`} 
+                style={{
+                  width: "6vw",
+                  height: "6vw",
+                  minWidth: "24px",
+                  minHeight: "24px",
+                  fill: currentUser && video.likes.includes(currentUser.uid) ? "#ef4444" : "none",
+                  color: currentUser && video.likes.includes(currentUser.uid) ? "#ef4444" : "white"
+                }}
               />
               {video.likes.length > 0 && (
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs">
+                <span style={{
+                  position: "absolute",
+                  bottom: "-6vw",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  fontSize: "3vw",
+                  color: "white"
+                }}>
                   {video.likes.length}
                 </span>
               )}
-            </Button>
-            <Button
-              size="lg"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none relative"
+            </button>
+            <button
+              style={{
+                width: "12vw",
+                height: "12vw",
+                borderRadius: "6vw",
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                fontSize: "6vw",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                minWidth: "48px",
+                minHeight: "48px"
+              }}
               onClick={() => handleComment(video)}
             >
-              <MessageCircle className="w-6 h-6" />
+              <MessageCircle style={{
+                width: "6vw",
+                height: "6vw",
+                minWidth: "24px",
+                minHeight: "24px"
+              }} />
               {video.comments.length > 0 && (
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs">
+                <span style={{
+                  position: "absolute",
+                  bottom: "-6vw",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  fontSize: "3vw",
+                  color: "white"
+                }}>
                   {video.comments.length}
                 </span>
               )}
-            </Button>
-            <Button
-              size="lg"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none relative"
+            </button>
+            <button
+              style={{
+                width: "12vw",
+                height: "12vw",
+                borderRadius: "6vw",
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                fontSize: "6vw",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                minWidth: "48px",
+                minHeight: "48px"
+              }}
               onClick={() => handleShare(video)}
             >
-              <Share className="w-6 h-6" />
+              <Share style={{
+                width: "6vw",
+                height: "6vw",
+                minWidth: "24px",
+                minHeight: "24px"
+              }} />
               {video.shares > 0 && (
-                <span className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs">
+                <span style={{
+                  position: "absolute",
+                  bottom: "-6vw",
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  fontSize: "3vw",
+                  color: "white"
+                }}>
                   {video.shares}
                 </span>
               )}
-            </Button>
-            <Button
-              size="lg"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
+            </button>
+            <button
+              style={{
+                width: "12vw",
+                height: "12vw",
+                borderRadius: "6vw",
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                fontSize: "6vw",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "48px",
+                minHeight: "48px"
+              }}
               onClick={() => handleSave(video)}
             >
               <Bookmark 
-                className={`w-6 h-6 ${
-                  isSaved(video.id) ? 'fill-yellow-500 text-yellow-500' : ''
-                }`} 
+                style={{
+                  width: "6vw",
+                  height: "6vw",
+                  minWidth: "24px",
+                  minHeight: "24px",
+                  fill: isSaved(video.id) ? "#eab308" : "none",
+                  color: isSaved(video.id) ? "#eab308" : "white"
+                }}
               />
-            </Button>
-            <Button
-              size="lg"
-              className="w-12 h-12 rounded-full bg-black/50 hover:bg-black/70 text-white border-none"
+            </button>
+            <button
+              style={{
+                width: "12vw",
+                height: "12vw",
+                borderRadius: "6vw",
+                background: "rgba(0,0,0,0.5)",
+                color: "white",
+                border: "none",
+                fontSize: "6vw",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: "48px",
+                minHeight: "48px"
+              }}
               onClick={() => navigate(`/profile/${video.userId}`)}
             >
-              <User className="w-6 h-6" />
-            </Button>
+              <User style={{
+                width: "6vw",
+                height: "6vw",
+                minWidth: "24px",
+                minHeight: "24px"
+              }} />
+            </button>
           </div>
 
           {/* Bottom navigation bar */}
-          <div className="absolute bottom-0 w-full flex justify-around bg-black/30 py-3 text-white">
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/20 flex items-center gap-2"
+          <div
+            style={{
+              position: "absolute",
+              bottom: 0,
+              width: "100%",
+              display: "flex",
+              justifyContent: "space-around",
+              background: "rgba(0,0,0,0.3)",
+              padding: "2vh 0",
+              color: "white",
+            }}
+          >
+            <button
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "white",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                fontSize: "14px"
+              }}
               onClick={() => navigate("/")}
             >
-              <Home className="w-5 h-5" />
+              <Home style={{ width: "5vw", height: "5vw", minWidth: "20px", minHeight: "20px" }} />
               Home
-            </Button>
+            </button>
             
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/20 flex items-center gap-2"
+            <button
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "white",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                fontSize: "14px"
+              }}
               onClick={() => navigate("/friends")}
             >
-              <Users className="w-5 h-5" />
+              <Users style={{ width: "5vw", height: "5vw", minWidth: "20px", minHeight: "20px" }} />
               Friends
-            </Button>
+            </button>
             
-            <Button
-              variant="ghost"
-              className="text-white hover:bg-white/20 flex items-center gap-2"
+            <button
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "white",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "8px 16px",
+                fontSize: "14px"
+              }}
               onClick={() => navigate("/reels")}
             >
-              <Video className="w-5 h-5" />
+              <Video style={{ width: "5vw", height: "5vw", minWidth: "20px", minHeight: "20px" }} />
               My Videos
-            </Button>
+            </button>
           </div>
           </div>
         ))}
