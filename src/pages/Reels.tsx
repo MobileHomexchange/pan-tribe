@@ -6,13 +6,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const Reels = () => {
   const isMobile = useIsMobile();
   
-  // On mobile, render full-screen responsive component that breaks out of all layout constraints
+  // On mobile, render full-screen responsive component
+  // On desktop, render within layout
   if (isMobile) {
-    return (
-      <div className="fixed inset-0 z-50 bg-black">
-        <ReelsHorizontalResponsive />
-      </div>
-    );
+    return <ReelsHorizontalResponsive />;
   }
   
   return <ReelsHorizontal />;
