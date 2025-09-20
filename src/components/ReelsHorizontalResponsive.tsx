@@ -337,7 +337,7 @@ const ReelsHorizontalResponsive = () => {
                 👥 Friends
               </button>
               <button 
-                onClick={() => navigate("/video")}
+                onClick={() => navigate("/create-post")}
                 style={{ 
                   background: "none", 
                   border: "none", 
@@ -346,7 +346,7 @@ const ReelsHorizontalResponsive = () => {
                   cursor: "pointer"
                 }}
               >
-                🎬 My Videos
+                🎬 Create Reel
               </button>
             </div>
           </div>
