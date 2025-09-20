@@ -193,6 +193,9 @@ const ReelsHorizontalResponsive = () => {
       <div
         ref={containerRef}
         style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
           display: "flex",
           overflowX: "auto",
           scrollSnapType: "x mandatory",
@@ -200,6 +203,7 @@ const ReelsHorizontalResponsive = () => {
           height: "100vh",
           scrollBehavior: "smooth",
           background: "black",
+          zIndex: 50,
         }}
       >
         {videos.map((video) => (
