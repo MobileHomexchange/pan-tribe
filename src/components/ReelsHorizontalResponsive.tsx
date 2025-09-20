@@ -313,7 +313,11 @@ const ReelsHorizontalResponsive = () => {
               }}
             >
               <button 
-                onClick={() => navigate("/")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/");
+                }}
                 style={{ 
                   background: "none", 
                   border: "none", 
@@ -325,7 +329,11 @@ const ReelsHorizontalResponsive = () => {
                 🏠 Home
               </button>
               <button 
-                onClick={() => navigate("/friends")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/friends");
+                }}
                 style={{ 
                   background: "none", 
                   border: "none", 
@@ -337,7 +345,11 @@ const ReelsHorizontalResponsive = () => {
                 👥 Friends
               </button>
               <button 
-                onClick={() => navigate("/create-post")}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate("/create-post");
+                }}
                 style={{ 
                   background: "none", 
                   border: "none", 
