@@ -20,6 +20,7 @@ import CreatePost from "./pages/CreatePost";
 import Reels from "./pages/Reels";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { GroupDetail } from "./components/tribe/GroupDetail";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/my-tribe" element={<ProtectedRoute><MyTribe /></ProtectedRoute>} />
+              <Route path="/my-tribe/group/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
               <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
               <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
               <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

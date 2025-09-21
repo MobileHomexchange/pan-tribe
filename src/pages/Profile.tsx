@@ -150,38 +150,38 @@ const userPhotosData = {
 // Groups data for each user
 const userGroupsData = {
   "kwame-asante": [
-    { id: "1", name: "African Music Producers", members: 245, description: "Connecting music creators across Africa" },
-    { id: "2", name: "Diaspora Artists Network", members: 1200, description: "Global African artist community" },
-    { id: "3", name: "Ghana Music Heritage", members: 567, description: "Preserving traditional Ghanaian music" },
-    { id: "4", name: "Accra Tech & Music", members: 89, description: "Where technology meets music" },
+    { id: "1", name: "African Music Producers", members: 2847, description: "Connecting music creators across Africa", slug: "african-music-producers" },
+    { id: "2", name: "Diaspora Artists Network", members: 5234, description: "Global African artist community", slug: "diaspora-artists" },
+    { id: "3", name: "African Tech Entrepreneurs", members: 3156, description: "Building the future of African tech", slug: "tech-entrepreneurs" },
+    { id: "4", name: "Ghana Music Heritage", members: 567, description: "Preserving traditional Ghanaian music", slug: "ghana-music-heritage" },
   ],
   "amina-diallo": [
-    { id: "1", name: "Sustainable Fashion Africa", members: 890, description: "Eco-friendly fashion movement" },
-    { id: "2", name: "Senegalese Designers", members: 234, description: "Local fashion talent network" },
-    { id: "3", name: "African Print Innovation", members: 456, description: "Modern takes on traditional patterns" },
+    { id: "1", name: "African Music Producers", members: 2847, description: "Connecting music creators across Africa", slug: "african-music-producers" },
+    { id: "2", name: "Sustainable Fashion Africa", members: 890, description: "Eco-friendly fashion movement", slug: "sustainable-fashion" },
+    { id: "3", name: "Senegalese Designers", members: 234, description: "Local fashion talent network", slug: "senegalese-designers" },
   ],
   "thabo-johnson": [
-    { id: "1", name: "African Tech Entrepreneurs", members: 2100, description: "Building the future of African tech" },
-    { id: "2", name: "Johannesburg Startups", members: 678, description: "Local startup ecosystem" },
-    { id: "3", name: "Basketball SA", members: 1234, description: "South African basketball community" },
-    { id: "4", name: "Jazz Enthusiasts JHB", members: 345, description: "Local jazz music lovers" },
+    { id: "1", name: "African Tech Entrepreneurs", members: 3156, description: "Building the future of African tech", slug: "tech-entrepreneurs" },
+    { id: "2", name: "Diaspora Artists Network", members: 5234, description: "Global African artist community", slug: "diaspora-artists" },
+    { id: "3", name: "Basketball SA", members: 1234, description: "South African basketball community", slug: "basketball-sa" },
+    { id: "4", name: "Jazz Enthusiasts JHB", members: 345, description: "Local jazz music lovers", slug: "jazz-enthusiasts" },
   ],
   "nia-mbeki": [
-    { id: "1", name: "African Documentary Makers", members: 567, description: "Telling African stories through film" },
-    { id: "2", name: "Kenya Film Community", members: 789, description: "Local filmmaking network" },
-    { id: "3", name: "Coffee Culture Kenya", members: 432, description: "Celebrating Kenyan coffee heritage" },
-    { id: "4", name: "Nairobi Hikers", members: 1100, description: "Exploring Kenya's natural beauty" },
+    { id: "1", name: "Diaspora Artists Network", members: 5234, description: "Global African artist community", slug: "diaspora-artists" },
+    { id: "2", name: "African Documentary Makers", members: 567, description: "Telling African stories through film", slug: "documentary-makers" },
+    { id: "3", name: "Coffee Culture Kenya", members: 432, description: "Celebrating Kenyan coffee heritage", slug: "coffee-culture" },
+    { id: "4", name: "Nairobi Hikers", members: 1100, description: "Exploring Kenya's natural beauty", slug: "nairobi-hikers" },
   ],
   "chijioke-okoro": [
-    { id: "1", name: "Nigerian Fintech", members: 1500, description: "Financial technology in Nigeria" },
-    { id: "2", name: "Lagos Marathon Club", members: 890, description: "Running community in Lagos" },
-    { id: "3", name: "Chess Masters Nigeria", members: 234, description: "Nigerian chess players network" },
+    { id: "1", name: "African Tech Entrepreneurs", members: 3156, description: "Building the future of African tech", slug: "tech-entrepreneurs" },
+    { id: "2", name: "Nigerian Fintech", members: 1500, description: "Financial technology in Nigeria", slug: "nigerian-fintech" },
+    { id: "3", name: "Lagos Marathon Club", members: 890, description: "Running community in Lagos", slug: "lagos-marathon" },
   ],
   "fatou-diop": [
-    { id: "1", name: "West Africa Climate Action", members: 1800, description: "Fighting climate change together" },
-    { id: "2", name: "Ocean Conservation Africa", members: 945, description: "Protecting African coastlines" },
-    { id: "3", name: "Senegal Environmental Scientists", members: 156, description: "Local environmental research" },
-    { id: "4", name: "Dakar Sustainability", members: 623, description: "Sustainable living community" },
+    { id: "1", name: "West Africa Climate Action", members: 1800, description: "Fighting climate change together", slug: "climate-action" },
+    { id: "2", name: "Ocean Conservation Africa", members: 945, description: "Protecting African coastlines", slug: "ocean-conservation" },
+    { id: "3", name: "Senegal Environmental Scientists", members: 156, description: "Local environmental research", slug: "environmental-scientists" },
+    { id: "4", name: "Dakar Sustainability", members: 623, description: "Sustainable living community", slug: "dakar-sustainability" },
   ],
 };
 
@@ -320,14 +320,15 @@ export default function Profile() {
                 {userGroups.map((group) => (
                   <div
                     key={group.id}
-                    className="bg-muted/30 p-4 rounded-lg cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+                    onClick={() => navigate(`/my-tribe/group/${group.slug}`)}
+                    className="bg-muted/30 p-4 rounded-lg cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:bg-primary/5 group"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <UserCircle className="w-6 h-6 text-primary/60" />
+                      <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:from-primary/40 group-hover:to-primary/20 transition-all">
+                        <UserCircle className="w-6 h-6 text-primary/60 group-hover:text-primary transition-colors" />
                       </div>
                       <div className="flex-1">
-                        <div className="font-medium text-sm mb-1">{group.name}</div>
+                        <div className="font-medium text-sm mb-1 group-hover:text-primary transition-colors">{group.name}</div>
                         <div className="text-xs text-muted-foreground mb-2">
                           {group.members.toLocaleString()} members
                         </div>
