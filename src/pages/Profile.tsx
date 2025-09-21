@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
@@ -100,6 +100,7 @@ const friendsList = [
 
 export default function Profile() {
   const { userId } = useParams();
+  const navigate = useNavigate();
   const [selectedProfile, setSelectedProfile] = useState<string>(userId || "kwame-asante");
   
   // Get the current profile data
@@ -128,7 +129,12 @@ export default function Profile() {
               <div className="flex justify-between items-center mb-6 p-4 bg-card rounded-lg shadow-sm">
                 <h1 className="text-2xl font-bold text-primary">DiasporaConnect</h1>
                 <div className="flex gap-4">
-                  <button className="text-muted-foreground hover:text-foreground transition-colors">Home</button>
+                  <button 
+                    onClick={() => navigate("/")}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Home
+                  </button>
                   <button className="text-muted-foreground hover:text-foreground transition-colors">Friends</button>
                   <button className="text-muted-foreground hover:text-foreground transition-colors">Photos</button>
                   <button className="text-muted-foreground hover:text-foreground transition-colors">Groups</button>
