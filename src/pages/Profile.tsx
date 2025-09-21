@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Users, Image, UserCircle } from "lucide-react";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { PhotoGalleryModal, Photo } from "@/components/PhotoGalleryModal";
 
 // Profile data for different users
 const profilesData = {
@@ -109,41 +110,41 @@ const userFriendsData = {
   "fatou-diop": ["amina-diallo", "kwame-asante", "nia-mbeki", "thabo-johnson"],
 };
 
-// Mock photos data for each user
+// Mock photos data for each user with actual image URLs
 const userPhotosData = {
   "kwame-asante": [
-    { id: "1", title: "Music Festival in Accra", type: "event", description: "Amazing night of African rhythms" },
-    { id: "2", title: "Traditional Drumming", type: "cultural", description: "Learning ancestral beats" },
-    { id: "3", title: "Studio Session", type: "music", description: "Working on new fusion tracks" },
-    { id: "4", title: "Community Concert", type: "event", description: "Bringing diaspora together through music" },
+    { id: "1", title: "Music Festival in Accra", type: "event", description: "Amazing night of African rhythms", imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop", uploadDate: "March 15, 2024" },
+    { id: "2", title: "Traditional Drumming", type: "cultural", description: "Learning ancestral beats", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop", uploadDate: "March 10, 2024" },
+    { id: "3", title: "Studio Session", type: "music", description: "Working on new fusion tracks", imageUrl: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&h=600&fit=crop", uploadDate: "March 5, 2024" },
+    { id: "4", title: "Community Concert", type: "event", description: "Bringing diaspora together through music", imageUrl: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=800&h=600&fit=crop", uploadDate: "February 28, 2024" },
   ],
   "amina-diallo": [
-    { id: "1", title: "Fashion Week Dakar", type: "fashion", description: "Showcasing sustainable African prints" },
-    { id: "2", title: "Design Studio", type: "work", description: "Creating contemporary African wear" },
-    { id: "3", title: "Traditional Textiles", type: "cultural", description: "Sourcing authentic fabrics" },
+    { id: "1", title: "Fashion Week Dakar", type: "fashion", description: "Showcasing sustainable African prints", imageUrl: "https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=800&h=600&fit=crop", uploadDate: "March 12, 2024" },
+    { id: "2", title: "Design Studio", type: "work", description: "Creating contemporary African wear", imageUrl: "https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=800&h=600&fit=crop", uploadDate: "March 8, 2024" },
+    { id: "3", title: "Traditional Textiles", type: "cultural", description: "Sourcing authentic fabrics", imageUrl: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop", uploadDate: "March 1, 2024" },
   ],
   "thabo-johnson": [
-    { id: "1", title: "Tech Conference JHB", type: "work", description: "Presenting African tech solutions" },
-    { id: "2", title: "Basketball Game", type: "sports", description: "Weekend game with friends" },
-    { id: "3", title: "Jazz Club", type: "music", description: "Enjoying local jazz scene" },
-    { id: "4", title: "Startup Pitch", type: "work", description: "Funding round presentation" },
+    { id: "1", title: "Tech Conference JHB", type: "work", description: "Presenting African tech solutions", imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop", uploadDate: "March 15, 2024" },
+    { id: "2", title: "Basketball Game", type: "sports", description: "Weekend game with friends", imageUrl: "https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=600&fit=crop", uploadDate: "March 10, 2024" },
+    { id: "3", title: "Jazz Club", type: "music", description: "Enjoying local jazz scene", imageUrl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=600&fit=crop", uploadDate: "March 5, 2024" },
+    { id: "4", title: "Startup Pitch", type: "work", description: "Funding round presentation", imageUrl: "https://images.unsplash.com/photo-1577948000111-9c970dfe3743?w=800&h=600&fit=crop", uploadDate: "February 28, 2024" },
   ],
   "nia-mbeki": [
-    { id: "1", title: "Documentary Shoot", type: "work", description: "Filming innovation stories" },
-    { id: "2", title: "Mount Kenya Hike", type: "adventure", description: "Weekend hiking adventure" },
-    { id: "3", title: "Coffee Farm Visit", type: "cultural", description: "Exploring local coffee culture" },
-    { id: "4", title: "Film Festival", type: "event", description: "Premiering latest documentary" },
+    { id: "1", title: "Documentary Shoot", type: "work", description: "Filming innovation stories", imageUrl: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&h=600&fit=crop", uploadDate: "March 18, 2024" },
+    { id: "2", title: "Mount Kenya Hike", type: "adventure", description: "Weekend hiking adventure", imageUrl: "https://images.unsplash.com/photo-1580477667995-2b94f01c9516?w=800&h=600&fit=crop", uploadDate: "March 14, 2024" },
+    { id: "3", title: "Coffee Farm Visit", type: "cultural", description: "Exploring local coffee culture", imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&h=600&fit=crop", uploadDate: "March 8, 2024" },
+    { id: "4", title: "Film Festival", type: "event", description: "Premiering latest documentary", imageUrl: "https://images.unsplash.com/photo-1489537235181-fc05c2c4d700?w=800&h=600&fit=crop", uploadDate: "March 2, 2024" },
   ],
   "chijioke-okoro": [
-    { id: "1", title: "Fintech Demo", type: "work", description: "Presenting payment solutions" },
-    { id: "2", title: "Marathon Training", type: "sports", description: "Preparing for Lagos Marathon" },
-    { id: "3", title: "Chess Tournament", type: "games", description: "Local chess competition" },
+    { id: "1", title: "Fintech Demo", type: "work", description: "Presenting payment solutions", imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop", uploadDate: "March 16, 2024" },
+    { id: "2", title: "Marathon Training", type: "sports", description: "Preparing for Lagos Marathon", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop", uploadDate: "March 11, 2024" },
+    { id: "3", title: "Chess Tournament", type: "games", description: "Local chess competition", imageUrl: "https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=800&h=600&fit=crop", uploadDate: "March 6, 2024" },
   ],
   "fatou-diop": [
-    { id: "1", title: "Ocean Research", type: "work", description: "Marine conservation project" },
-    { id: "2", title: "Climate Summit", type: "environment", description: "West Africa climate solutions" },
-    { id: "3", title: "Beach Cleanup", type: "volunteer", description: "Community conservation effort" },
-    { id: "4", title: "Research Station", type: "work", description: "Environmental data collection" },
+    { id: "1", title: "Ocean Research", type: "work", description: "Marine conservation project", imageUrl: "https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&h=600&fit=crop", uploadDate: "March 17, 2024" },
+    { id: "2", title: "Climate Summit", type: "environment", description: "West Africa climate solutions", imageUrl: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&h=600&fit=crop", uploadDate: "March 13, 2024" },
+    { id: "3", title: "Beach Cleanup", type: "volunteer", description: "Community conservation effort", imageUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=600&fit=crop", uploadDate: "March 9, 2024" },
+    { id: "4", title: "Research Station", type: "work", description: "Environmental data collection", imageUrl: "https://images.unsplash.com/photo-1573160813959-df05c1b2e5d5?w=800&h=600&fit=crop", uploadDate: "March 3, 2024" },
   ],
 };
 
@@ -191,6 +192,8 @@ export default function Profile() {
   const { getSavedItemsByType } = useSavedItems();
   const [selectedProfile, setSelectedProfile] = useState<string>(userId || "kwame-asante");
   const [activeSection, setActiveSection] = useState<'friends' | 'photos' | 'groups'>('friends');
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
   
   // Get the current profile data
   const currentProfile = profilesData[selectedProfile as keyof typeof profilesData] || profilesData["kwame-asante"];
@@ -205,6 +208,15 @@ export default function Profile() {
     setSelectedProfile(friendId);
     // Update URL without page reload
     window.history.pushState({}, '', `/profile/${friendId}`);
+  };
+
+  const handlePhotoClick = (photoIndex: number) => {
+    setSelectedPhotoIndex(photoIndex);
+    setGalleryOpen(true);
+  };
+
+  const handleCloseGallery = () => {
+    setGalleryOpen(false);
   };
 
   const renderSectionContent = () => {
@@ -256,20 +268,13 @@ export default function Profile() {
         );
 
       case 'photos':
-        const allPhotos = [...userPhotos, ...savedPhotos.map(item => ({
-          id: item.id,
-          title: item.title, 
-          type: 'saved',
-          description: item.description || 'Saved photo'
-        }))];
-
         return (
           <Card className="shadow-lg">
             <CardHeader className="border-b">
               <div className="flex justify-between items-center">
                 <CardTitle className="flex items-center gap-2">
                   <Image className="w-5 h-5" />
-                  Photos ({allPhotos.length})
+                  Photos ({userPhotos.length})
                 </CardTitle>
                 <button className="text-primary hover:underline font-medium">
                   View All Photos
@@ -278,20 +283,35 @@ export default function Profile() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {allPhotos.map((photo) => (
+                {userPhotos.map((photo, index) => (
                   <div
                     key={photo.id}
-                    className="bg-muted/30 p-4 rounded-lg cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+                    onClick={() => handlePhotoClick(index)}
+                    className="bg-card rounded-lg overflow-hidden cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-elegant group"
                   >
-                    <div className="w-full h-24 bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg flex items-center justify-center mb-3">
-                      <Image className="w-8 h-8 text-primary/40" />
+                    <div className="aspect-square relative">
+                      <img 
+                        src={photo.imageUrl} 
+                        alt={photo.title}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+                        <div className="text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-center">
+                          <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <Image className="w-5 h-5" />
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <div className="font-medium text-sm mb-1">{photo.title}</div>
-                    <div className="text-xs text-muted-foreground line-clamp-2">{photo.description}</div>
+                    <div className="p-3">
+                      <div className="font-medium text-sm mb-1 line-clamp-1">{photo.title}</div>
+                      <div className="text-xs text-muted-foreground line-clamp-2">{photo.description}</div>
+                      <div className="text-xs text-social-muted mt-1">{photo.uploadDate}</div>
+                    </div>
                   </div>
                 ))}
               </div>
-              {allPhotos.length === 0 && (
+              {userPhotos.length === 0 && (
                 <div className="text-center text-muted-foreground py-8">
                   <Image className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>No photos to display</p>
@@ -466,6 +486,14 @@ export default function Profile() {
           </main>
         </div>
       </div>
+
+      {/* Photo Gallery Modal */}
+      <PhotoGalleryModal
+        photos={userPhotos}
+        initialIndex={selectedPhotoIndex}
+        isOpen={galleryOpen}
+        onClose={handleCloseGallery}
+      />
     </SidebarProvider>
   );
 }
