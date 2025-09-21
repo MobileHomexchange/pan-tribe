@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
 
 interface Comment {
   id: string;
@@ -94,9 +95,13 @@ export function CommentsModal({ post, onClose, onAddComment, open }: CommentsMod
           {comments.length > 0 ? (
             comments.map((comment) => (
               <div key={comment.id} className="flex gap-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pan-green to-pan-black flex items-center justify-center text-pan-gold font-bold text-sm">
-                  {comment.userName.split(" ").map(n => n[0]).join("")}
-                </div>
+                <ClickableAvatar 
+                  userId={comment.userId}
+                  userName={comment.userName}
+                  userAvatar={comment.userAvatar}
+                  size="sm"
+                  showTooltip
+                />
                 <div className="flex-1">
                   <div className="bg-social-hover rounded-lg p-3">
                     <h4 className="font-medium text-sm text-card-foreground">

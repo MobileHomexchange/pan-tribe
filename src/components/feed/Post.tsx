@@ -8,6 +8,7 @@ import { FirebaseService } from "@/lib/firebaseService";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
 
 interface PostProps {
   post: PostType;
@@ -151,9 +152,12 @@ export function Post({ post, onInteraction }: PostProps) {
     <div className="bg-card rounded-lg shadow-sm p-4 border border-social-border">
       {/* Post Header */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-pan-green to-pan-black flex items-center justify-center text-pan-gold font-bold">
-          {getInitials(post.userName)}
-        </div>
+        <ClickableAvatar 
+          userId={post.userId}
+          userName={post.userName}
+          userAvatar={post.userAvatar}
+          showTooltip
+        />
         <div className="flex-1">
           <h3 className="font-medium text-card-foreground">{post.userName}</h3>
           <div className="flex items-center gap-1 text-xs text-social-muted">

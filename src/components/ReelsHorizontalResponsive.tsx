@@ -237,7 +237,16 @@ const ReelsHorizontalResponsive = () => {
                 textShadow: "0 0 10px rgba(0,0,0,0.8)",
               }}
             >
-              <div style={{ fontSize: "4vw", fontWeight: "bold", marginBottom: "1vw" }}>
+              <div 
+                style={{ 
+                  fontSize: "4vw", 
+                  fontWeight: "bold", 
+                  marginBottom: "1vw",
+                  cursor: "pointer",
+                  textDecoration: "underline"
+                }}
+                onClick={() => navigate(`/profile/${video.userId}`)}
+              >
                 @{video.userName}
               </div>
             </div>

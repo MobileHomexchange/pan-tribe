@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
 
 interface GroupPost {
   id: string;
   author: {
+    id: string;
     name: string;
     avatar: string;
     initials: string;
@@ -19,6 +21,7 @@ const mockPosts: GroupPost[] = [
   {
     id: "1",
     author: {
+      id: "kwame-asante",
       name: "Kwame Asante",
       avatar: "KA",
       initials: "KA"
@@ -31,6 +34,7 @@ const mockPosts: GroupPost[] = [
   {
     id: "2",
     author: {
+      id: "amina-diallo",
       name: "Amina Diallo",
       avatar: "AD",
       initials: "AD"
@@ -65,8 +69,12 @@ export function TribeDiscussions() {
         {mockPosts.map((post) => (
           <div key={post.id} className="bg-background rounded-lg p-4 shadow-sm border border-border">
             <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-black flex items-center justify-center font-bold text-accent mr-3">
-                {post.author.initials}
+              <div className="mr-3">
+                <ClickableAvatar 
+                  userId={post.author.id}
+                  userName={post.author.name}
+                  showTooltip
+                />
               </div>
               <div>
                 <h4 className="font-medium text-foreground">{post.author.name}</h4>
