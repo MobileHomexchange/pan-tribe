@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 interface GroupPost {
   id: string;
@@ -49,6 +51,53 @@ const mockPosts: GroupPost[] = [
 
 export function TribeDiscussions() {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [posts, setPosts] = useState(mockPosts);
+  const [likedPosts, setLikedPosts] = useState<Set<string>>(new Set());
+
+  const handleLike = (postId: string) => {
+    const isLiked = likedPosts.has(postId);
+    
+    if (isLiked) {
+      setLikedPosts(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(postId);
+        return newSet;
+      });
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? { ...post, likes: post.likes - 1 } : post
+      ));
+      toast({
+        title: "Post unliked",
+        description: "You removed your like from this post",
+      });
+    } else {
+      setLikedPosts(prev => new Set(prev.add(postId)));
+      setPosts(prev => prev.map(post => 
+        post.id === postId ? { ...post, likes: post.likes + 1 } : post
+      ));
+      toast({
+        title: "Post liked",
+        description: "You liked this post!",
+      });
+    }
+  };
+
+  const handleComment = (postId: string, authorName: string) => {
+    toast({
+      title: "Opening comments",
+      description: `Viewing comments for ${authorName}'s post`,
+    });
+    // In a real app, this would navigate to comments or open a comments modal
+  };
+
+  const handleShare = (postId: string, content: string) => {
+    toast({
+      title: "Post shared",
+      description: "Post has been shared to your network",
+    });
+    // In a real app, this would open share options or copy link
+  };
   return (
     <div className="bg-card rounded-xl p-5 shadow-card border border-border">
       <div className="flex justify-between items-center mb-5 pb-3 border-b border-border">
@@ -66,7 +115,7 @@ export function TribeDiscussions() {
       </div>
       
       <div className="space-y-5">
-        {mockPosts.map((post) => (
+        {posts.map((post) => (
           <div key={post.id} className="bg-background rounded-lg p-4 shadow-sm border border-border">
             <div className="flex items-center mb-3">
               <div className="mr-3">
@@ -93,15 +142,28 @@ export function TribeDiscussions() {
             )}
             
             <div className="flex justify-around border-t border-border pt-3">
-              <button className="flex items-center gap-2 px-3 py-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
-                <i className="fas fa-thumbs-up"></i>
+              <button 
+                onClick={() => handleLike(post.id)}
+                className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-muted transition-colors ${
+                  likedPosts.has(post.id) 
+                    ? 'text-primary bg-primary/10' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <i className={`fas fa-thumbs-up ${likedPosts.has(post.id) ? 'text-primary' : ''}`}></i>
                 <span>Like ({post.likes})</span>
               </button>
-              <button className="flex items-center gap-2 px-3 py-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button 
+                onClick={() => handleComment(post.id, post.author.name)}
+                className="flex items-center gap-2 px-3 py-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              >
                 <i className="fas fa-comment"></i>
                 <span>Comment ({post.comments})</span>
               </button>
-              <button className="flex items-center gap-2 px-3 py-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground">
+              <button 
+                onClick={() => handleShare(post.id, post.content)}
+                className="flex items-center gap-2 px-3 py-2 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+              >
                 <i className="fas fa-share"></i>
                 <span>Share</span>
               </button>
