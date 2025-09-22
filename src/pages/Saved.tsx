@@ -6,10 +6,36 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Saved() {
   const { savedItems, unsaveItem, getSavedItemsByType } = useSavedItems();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    const tabLabel = tabItems.find(tab => tab.value === value)?.label || value;
+    toast({
+      title: "Filter applied",
+      description: `Showing ${tabLabel.toLowerCase()}`,
+    });
+  };
+
+  const handleCreateNewList = () => {
+    toast({
+      title: "Create New List",
+      description: "New list creation feature coming soon!",
+    });
+  };
+
+  const handleShareItem = (item: any) => {
+    toast({
+      title: "Item shared",
+      description: `"${item.title}" has been shared`,
+    });
+    // In a real app, this would open share dialog or copy link
+  };
 
   const tabItems = [
     { value: "all", label: "All Saves", count: savedItems.length },
@@ -68,13 +94,13 @@ export default function Saved() {
                 <Bookmark className="h-6 w-6 text-primary" />
                 <h2 className="text-2xl font-bold text-foreground">My Saves Hub</h2>
               </div>
-              <Button variant="outline">
+              <Button variant="outline" onClick={handleCreateNewList}>
                 <Plus className="h-4 w-4 mr-2" />
                 Create New List
               </Button>
             </div>
 
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
               <TabsList className="grid w-full grid-cols-5">
                 {tabItems.map((tab) => (
                   <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-2">
@@ -136,9 +162,7 @@ export default function Saved() {
                                   size="sm"
                                   variant="ghost"
                                   className="h-8 w-8 p-0"
-                                  onClick={() => {
-                                    // Share functionality
-                                  }}
+                                  onClick={() => handleShareItem(item)}
                                 >
                                   <Share2 className="h-3 w-3" />
                                 </Button>
