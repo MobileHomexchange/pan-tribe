@@ -5,6 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useSavedItems } from "@/hooks/useSavedItems";
 import { useToast } from "@/hooks/use-toast";
 
@@ -12,10 +15,13 @@ export default function Saved() {
   const { savedItems, unsaveItem, getSavedItemsByType } = useSavedItems();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("all");
+  const [customLists, setCustomLists] = useState<Array<{ id: string; name: string; items: string[] }>>([]);
+  const [newListName, setNewListName] = useState("");
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    const tabLabel = tabItems.find(tab => tab.value === value)?.label || value;
+    const tabLabel = allTabItems.find(tab => tab.value === value)?.label || value;
     toast({
       title: "Filter applied",
       description: `Showing ${tabLabel.toLowerCase()}`,
@@ -23,10 +29,20 @@ export default function Saved() {
   };
 
   const handleCreateNewList = () => {
-    toast({
-      title: "Create New List",
-      description: "New list creation feature coming soon!",
-    });
+    if (newListName.trim()) {
+      const newList = {
+        id: `custom-${Date.now()}`,
+        name: newListName.trim(),
+        items: []
+      };
+      setCustomLists(prev => [...prev, newList]);
+      setNewListName("");
+      setIsDialogOpen(false);
+      toast({
+        title: "List created",
+        description: `"${newListName}" list has been created successfully`,
+      });
+    }
   };
 
   const handleShareItem = (item: any) => {
@@ -37,16 +53,26 @@ export default function Saved() {
     // In a real app, this would open share dialog or copy link
   };
 
-  const tabItems = [
+  const allTabItems = [
     { value: "all", label: "All Saves", count: savedItems.length },
     { value: "blog", label: "Blogs", count: getSavedItemsByType("blog").length },
     { value: "marketplace", label: "Marketplace", count: getSavedItemsByType("marketplace").length },
     { value: "video", label: "Videos", count: getSavedItemsByType("video").length },
     { value: "event", label: "Events", count: getSavedItemsByType("event").length },
+    ...customLists.map(list => ({ 
+      value: list.id, 
+      label: list.name, 
+      count: list.items.length 
+    }))
   ];
 
   const getDisplayItems = () => {
-    return activeTab === "all" ? savedItems : getSavedItemsByType(activeTab as any);
+    if (activeTab === "all") return savedItems;
+    if (customLists.find(list => list.id === activeTab)) {
+      const customList = customLists.find(list => list.id === activeTab);
+      return savedItems.filter(item => customList?.items.includes(item.id));
+    }
+    return getSavedItemsByType(activeTab as any);
   };
 
   const formatDate = (date: Date) => {
@@ -94,15 +120,47 @@ export default function Saved() {
                 <Bookmark className="h-6 w-6 text-primary" />
                 <h2 className="text-2xl font-bold text-foreground">My Saves Hub</h2>
               </div>
-              <Button variant="outline" onClick={handleCreateNewList}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create New List
-              </Button>
+              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create New List
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Create New Saved List</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="listName">List Name</Label>
+                      <Input
+                        id="listName"
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        placeholder="Enter list name..."
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button 
+                        onClick={handleCreateNewList}
+                        disabled={!newListName.trim()}
+                      >
+                        Create List
+                      </Button>
+                    </div>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
 
             <Tabs value={activeTab} onValueChange={handleTabChange}>
-              <TabsList className="grid w-full grid-cols-5">
-                {tabItems.map((tab) => (
+              <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${allTabItems.length}, 1fr)` }}>
+                {allTabItems.map((tab) => (
                   <TabsTrigger key={tab.value} value={tab.value} className="flex items-center gap-2">
                     {tab.label}
                     {tab.count > 0 && (
