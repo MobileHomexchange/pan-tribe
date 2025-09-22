@@ -13,7 +13,8 @@ import {
   Code,
   ChevronDown,
   Menu,
-  Video
+  Video,
+  Briefcase
 } from "lucide-react";
 import {
   Sidebar,
@@ -37,6 +38,7 @@ const mainItems = [
   { title: "Marketplace", url: "/marketplace", icon: Store },
   { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
   { title: "Events", url: "/events", icon: Calendar },
+  { title: "Careers", url: "/careers", icon: Briefcase },
   { title: "Ads Manager", url: "/ads", icon: TrendingUp },
 ];
 
