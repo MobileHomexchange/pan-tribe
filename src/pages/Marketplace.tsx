@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, Share2, MapPin, Plus, Crown, ChevronDown, Store, Filter } from "lucide-react";
+import { ProductDetailModal } from "@/components/marketplace/ProductDetailModal";
+import { useToast } from "@/hooks/use-toast";
 
 interface Product {
   id: string;
@@ -26,6 +28,9 @@ interface Product {
 const Marketplace = () => {
   const [savedProducts, setSavedProducts] = useState<Set<string>>(new Set());
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const products: Product[] = [
     {
@@ -86,15 +91,44 @@ const Marketplace = () => {
       const newSet = new Set(prev);
       if (newSet.has(productId)) {
         newSet.delete(productId);
+        toast({
+          title: "Removed from saved",
+          description: "Item removed from your saved listings"
+        });
       } else {
         newSet.add(productId);
+        toast({
+          title: "Saved!",
+          description: "Item saved to your collection"
+        });
       }
       return newSet;
     });
   };
 
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsDetailModalOpen(true);
+  };
+
+  const handleShareProduct = (product: Product) => {
+    toast({
+      title: "Link copied!",
+      description: `Product link for "${product.title}" copied to clipboard`
+    });
+  };
+
   return (
-    <SidebarProvider>
+    <>
+      <ProductDetailModal
+        product={selectedProduct}
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        onSave={toggleSave}
+        isSaved={selectedProduct ? savedProducts.has(selectedProduct.id) : false}
+      />
+      
+      <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         
@@ -215,7 +249,10 @@ const Marketplace = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {products.map((product, index) => (
             <div key={product.id}>
-              <Card className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer">
+              <Card 
+                className="overflow-hidden transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer"
+                onClick={() => handleProductClick(product)}
+              >
                 <div className="relative">
                   <img 
                     src={product.image} 
@@ -261,7 +298,7 @@ const Marketplace = () => {
                         className="w-8 h-8 p-0"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Share functionality
+                          handleShareProduct(product);
                         }}
                       >
                         <Share2 className="w-4 h-4" />
@@ -318,7 +355,8 @@ const Marketplace = () => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </>
   );
 };
 
