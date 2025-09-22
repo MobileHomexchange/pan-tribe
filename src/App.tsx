@@ -20,6 +20,7 @@ import CreatePost from "./pages/CreatePost";
 import Reels from "./pages/Reels";
 import Careers from "./pages/Careers";
 import BlogSubmissions from "./pages/BlogSubmissions";
+import Photos from "./pages/Photos";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { GroupDetail } from "./components/tribe/GroupDetail";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
               <Route path="/careers" element={<ProtectedRoute><Careers /></ProtectedRoute>} />
               <Route path="/blog-submissions" element={<ProtectedRoute><BlogSubmissions /></ProtectedRoute>} />
+              <Route path="/photos" element={<ProtectedRoute><Photos /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
