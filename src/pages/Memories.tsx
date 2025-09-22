@@ -3,58 +3,100 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useSavedItems } from "@/hooks/useSavedItems";
+import { useToast } from "@/hooks/use-toast";
 import { Heart, MessageCircle, Share2, Calendar, Camera, Trophy, MapPin } from "lucide-react";
+import { useState } from "react";
 
 export default function Memories() {
   const { savedItems, toggleSave, isSaved } = useSavedItems();
+  const { toast } = useToast();
+  const [memoriesState, setMemoriesState] = useState(() => {
+    // Initialize memories with state for likes and interactions
+    return [
+      {
+        id: "1",
+        title: "Afrobeat Concert Night",
+        date: "2023-12-15",
+        type: "event",
+        image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        description: "Amazing night at the Afrobeat concert with friends. The energy was incredible!",
+        location: "Club Zenith, Accra",
+        likes: 24,
+        comments: 8,
+        isLiked: false
+      },
+      {
+        id: "2",
+        title: "Food Festival Weekend",
+        date: "2023-12-10",
+        type: "photo",
+        image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        description: "Trying all the amazing local dishes at the Accra Food Festival.",
+        location: "Independence Square",
+        likes: 18,
+        comments: 5,
+        isLiked: false
+      },
+      {
+        id: "3",
+        title: "Marathon Achievement",
+        date: "2023-12-05",
+        type: "milestone",
+        image: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        description: "Completed my first marathon! Personal best time of 4:15:32.",
+        location: "Osu Sports Complex",
+        likes: 45,
+        comments: 12,
+        isLiked: false
+      },
+      {
+        id: "4",
+        title: "Art Gallery Opening",
+        date: "2023-11-28",
+        type: "event",
+        image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+        description: "Contemporary art exhibition showcasing local African artists.",
+        location: "National Museum of Ghana",
+        likes: 31,
+        comments: 9,
+        isLiked: false
+      }
+    ];
+  });
 
-  // Sample memories data
-  const memories = [
-    {
-      id: "1",
-      title: "Afrobeat Concert Night",
-      date: "2023-12-15",
-      type: "event",
-      image: "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Amazing night at the Afrobeat concert with friends. The energy was incredible!",
-      location: "Club Zenith, Accra",
-      likes: 24,
-      comments: 8
-    },
-    {
-      id: "2",
-      title: "Food Festival Weekend",
-      date: "2023-12-10",
-      type: "photo",
-      image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Trying all the amazing local dishes at the Accra Food Festival.",
-      location: "Independence Square",
-      likes: 18,
-      comments: 5
-    },
-    {
-      id: "3",
-      title: "Marathon Achievement",
-      date: "2023-12-05",
-      type: "milestone",
-      image: "https://images.unsplash.com/photo-1552674605-db6ffd4facb5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Completed my first marathon! Personal best time of 4:15:32.",
-      location: "Osu Sports Complex",
-      likes: 45,
-      comments: 12
-    },
-    {
-      id: "4",
-      title: "Art Gallery Opening",
-      date: "2023-11-28",
-      type: "event",
-      image: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      description: "Contemporary art exhibition showcasing local African artists.",
-      location: "National Museum of Ghana",
-      likes: 31,
-      comments: 9
-    }
-  ];
+  const handleLike = (memoryId: string) => {
+    setMemoriesState(prev => prev.map(memory => {
+      if (memory.id === memoryId) {
+        const newIsLiked = !memory.isLiked;
+        const newLikes = newIsLiked ? memory.likes + 1 : memory.likes - 1;
+        
+        toast({
+          title: newIsLiked ? "Memory liked!" : "Memory unliked",
+          description: newIsLiked ? "You liked this memory" : "You removed your like from this memory"
+        });
+        
+        return { ...memory, isLiked: newIsLiked, likes: newLikes };
+      }
+      return memory;
+    }));
+  };
+
+  const handleComment = (memoryTitle: string) => {
+    toast({
+      title: "Opening comments",
+      description: `Viewing comments for "${memoryTitle}"`
+    });
+  };
+
+  const handleShare = (memoryTitle: string) => {
+    toast({
+      title: "Memory shared!",
+      description: `"${memoryTitle}" has been shared to your network`
+    });
+  };
+
+  // Get current memories data
+  const memories = memoriesState;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -127,19 +169,47 @@ export default function Memories() {
           </TabsList>
 
           <TabsContent value="all" className="space-y-4">
-            <MemoryGrid memories={filteredMemories("all")} toggleSave={toggleSave} isSaved={isSaved} />
+            <MemoryGrid 
+              memories={filteredMemories("all")} 
+              toggleSave={toggleSave} 
+              isSaved={isSaved}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+            />
           </TabsContent>
           
           <TabsContent value="photo" className="space-y-4">
-            <MemoryGrid memories={filteredMemories("photo")} toggleSave={toggleSave} isSaved={isSaved} />
+            <MemoryGrid 
+              memories={filteredMemories("photo")} 
+              toggleSave={toggleSave} 
+              isSaved={isSaved}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+            />
           </TabsContent>
           
           <TabsContent value="event" className="space-y-4">
-            <MemoryGrid memories={filteredMemories("event")} toggleSave={toggleSave} isSaved={isSaved} />
+            <MemoryGrid 
+              memories={filteredMemories("event")} 
+              toggleSave={toggleSave} 
+              isSaved={isSaved}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+            />
           </TabsContent>
           
           <TabsContent value="milestone" className="space-y-4">
-            <MemoryGrid memories={filteredMemories("milestone")} toggleSave={toggleSave} isSaved={isSaved} />
+            <MemoryGrid 
+              memories={filteredMemories("milestone")} 
+              toggleSave={toggleSave} 
+              isSaved={isSaved}
+              onLike={handleLike}
+              onComment={handleComment}
+              onShare={handleShare}
+            />
           </TabsContent>
         </Tabs>
       </div>
@@ -147,10 +217,20 @@ export default function Memories() {
   );
 }
 
-function MemoryGrid({ memories, toggleSave, isSaved }: { 
+function MemoryGrid({ 
+  memories, 
+  toggleSave, 
+  isSaved, 
+  onLike, 
+  onComment, 
+  onShare 
+}: { 
   memories: any[], 
   toggleSave: (item: any) => void, 
-  isSaved: (id: string) => boolean 
+  isSaved: (id: string) => boolean,
+  onLike: (memoryId: string) => void,
+  onComment: (memoryTitle: string) => void,
+  onShare: (memoryTitle: string) => void
 }) {
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -210,21 +290,41 @@ function MemoryGrid({ memories, toggleSave, isSaved }: {
             )}
             
             <div className="flex items-center justify-between pt-2 border-t">
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Heart className="w-4 h-4" />
-                  {memory.likes}
-                </span>
-                <span className="flex items-center gap-1">
+              <div className="flex items-center gap-4">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onLike(memory.id)}
+                  className={`flex items-center gap-2 ${
+                    memory.isLiked ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${memory.isLiked ? 'fill-current' : ''}`} />
+                  <span>{memory.likes}</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onComment(memory.title)}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-primary"
+                >
                   <MessageCircle className="w-4 h-4" />
-                  {memory.comments}
-                </span>
+                  <span>{memory.comments}</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onShare(memory.title)}
+                  className="flex items-center gap-2 text-muted-foreground hover:text-primary"
+                >
+                  <Share2 className="w-4 h-4" />
+                  <span>Share</span>
+                </Button>
               </div>
               
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
-                  <Share2 className="w-4 h-4" />
-                </Button>
+              <div className="flex items-center">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -234,6 +334,7 @@ function MemoryGrid({ memories, toggleSave, isSaved }: {
                     type: "memory",
                     image: memory.image
                   })}
+                  className="text-muted-foreground hover:text-primary"
                 >
                   <Heart 
                     className={`w-4 h-4 ${
