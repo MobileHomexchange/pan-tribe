@@ -111,6 +111,22 @@ export default function Friends() {
     // navigate('/friends/all');
   };
 
+  const handleAddFriend = (personName: string) => {
+    toast({
+      title: "Friend request sent",
+      description: `Friend request sent to ${personName}`,
+    });
+    // In a real app, this would send a friend request via the backend
+  };
+
+  const handleRemoveSuggestion = (personName: string) => {
+    toast({
+      title: "Suggestion removed",
+      description: `${personName} removed from suggestions`,
+    });
+    // In a real app, this would update the suggestions list
+  };
+
   const renderFriendCard = (person: any, type: "friend" | "suggestion" | "request") => (
     <Card key={person.id} className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardContent className="space-y-4">
@@ -156,11 +172,20 @@ export default function Friends() {
           
           {type === "suggestion" && (
             <>
-              <Button size="sm" className="flex items-center gap-1">
+              <Button 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => handleAddFriend(person.name)}
+              >
                 <i className="fas fa-user-plus text-sm"></i>
                 Add Friend
               </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => handleRemoveSuggestion(person.name)}
+              >
                 <i className="fas fa-times text-sm"></i>
                 Remove
               </Button>
