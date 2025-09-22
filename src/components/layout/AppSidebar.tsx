@@ -14,7 +14,8 @@ import {
   ChevronDown,
   Menu,
   Video,
-  Briefcase
+  Briefcase,
+  FileText
 } from "lucide-react";
 import {
   Sidebar,
@@ -39,6 +40,7 @@ const mainItems = [
   { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Careers", url: "/careers", icon: Briefcase },
+  { title: "Blog & Backlinks", url: "/blog-submissions", icon: FileText },
   { title: "Ads Manager", url: "/ads", icon: TrendingUp },
 ];
 
