@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Friends() {
   const navigate = useNavigate();
   const { userId } = useParams();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<"friends" | "suggestions" | "requests">("friends");
   const [searchQuery, setSearchQuery] = useState("");
   const [isOwnProfile, setIsOwnProfile] = useState(true);
@@ -66,6 +68,23 @@ export default function Friends() {
     request.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleMessageClick = (personName: string) => {
+    toast({
+      title: "Message sent",
+      description: `Opening chat with ${personName}`,
+    });
+    // In a real app, this would navigate to a chat interface
+    // navigate(`/messages/${personId}`);
+  };
+
+  const handleProfileClick = (personId: string, personName: string) => {
+    toast({
+      title: "Viewing profile",
+      description: `Opening ${personName}'s profile`,
+    });
+    navigate(`/profile/${personId}`);
+  };
+
   const renderFriendCard = (person: any, type: "friend" | "suggestion" | "request") => (
     <Card key={person.id} className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardContent className="space-y-4">
@@ -89,11 +108,20 @@ export default function Friends() {
         <div className="flex justify-center gap-2">
           {type === "friend" && (
             <>
-              <Button size="sm" className="flex items-center gap-1">
+              <Button 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => handleMessageClick(person.name)}
+              >
                 <i className="fas fa-comment text-sm"></i>
                 Message
               </Button>
-              <Button variant="outline" size="sm" className="flex items-center gap-1">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center gap-1"
+                onClick={() => handleProfileClick(person.id, person.name)}
+              >
                 <i className="fas fa-user text-sm"></i>
                 Profile
               </Button>
