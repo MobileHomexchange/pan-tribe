@@ -7,8 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin, Briefcase, Plus, Search, ChevronDown, ChevronUp } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MapPin, Briefcase, Plus, Search, ChevronDown, ChevronUp, Shield, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { EmployerVerificationForm } from "@/components/jobs/EmployerVerificationForm";
+import { EnhancedJobPostForm } from "@/components/jobs/EnhancedJobPostForm";
+import { JobModerationDashboard } from "@/components/jobs/JobModerationDashboard";
+import { ApplicantSafetyFeatures } from "@/components/jobs/ApplicantSafetyFeatures";
+import { EmployerProfile, JobPost } from "@/lib/jobVettingSystem";
 
 interface Job {
   id: string;
@@ -80,6 +86,9 @@ export default function Careers() {
     experience: "",
     salary: ""
   });
+  const [currentEmployer, setCurrentEmployer] = useState<EmployerProfile | null>(null);
+  const [verificationStep, setVerificationStep] = useState<'verify' | 'post'>('verify');
+  const [isAdmin, setIsAdmin] = useState(false); // For demo purposes
   const { toast } = useToast();
 
   const handleSearch = () => {
@@ -89,13 +98,29 @@ export default function Careers() {
     });
   };
 
-  const handleJobSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerificationComplete = (employer: EmployerProfile) => {
+    setCurrentEmployer(employer);
+    setVerificationStep('post');
     toast({
-      title: "Job posted successfully!",
-      description: "Your job posting is now live and visible to candidates."
+      title: "Verification Complete!",
+      description: "You can now post jobs on our platform."
     });
+  };
+
+  const handleJobSubmit = (jobPost: JobPost) => {
+    // In a real app, this would save to database
+    console.log('Job submitted:', jobPost);
     setIsPostJobOpen(false);
+    setVerificationStep('verify');
+    setCurrentEmployer(null);
+  };
+
+  const handleJobReport = (report: any) => {
+    console.log('Job reported:', report);
+  };
+
+  const handleJobRating = (rating: any) => {
+    console.log('Job rated:', rating);
   };
 
   const handleApply = (jobTitle: string, company: string) => {
@@ -107,6 +132,23 @@ export default function Careers() {
 
   return (
     <div className="space-y-6">
+      {/* Admin Toggle (Demo) */}
+      <div className="flex justify-end">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsAdmin(!isAdmin)}
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          {isAdmin ? 'User View' : 'Admin View'}
+        </Button>
+      </div>
+
+      {isAdmin ? (
+        <JobModerationDashboard />
+      ) : (
+        <>
+      
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary to-primary/80 text-white p-8 rounded-xl text-center">
         <h1 className="text-3xl font-bold mb-4">Find Your Dream Career</h1>
@@ -245,69 +287,40 @@ export default function Careers() {
                 Post a Job
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Post a New Job</DialogTitle>
+                <DialogTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-primary" />
+                  Secure Job Posting System
+                </DialogTitle>
               </DialogHeader>
-              <form onSubmit={handleJobSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="job-title">Job Title</Label>
-                  <Input id="job-title" placeholder="e.g. Senior Software Engineer" required />
-                </div>
+              
+              <Tabs value={verificationStep} onValueChange={setVerificationStep as any}>
+                <TabsList>
+                  <TabsTrigger value="verify" disabled={!!currentEmployer}>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Employer Verification
+                  </TabsTrigger>
+                  <TabsTrigger value="post" disabled={!currentEmployer}>
+                    <Briefcase className="w-4 h-4 mr-2" />
+                    Post Job
+                  </TabsTrigger>
+                </TabsList>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="company">Company</Label>
-                  <Input id="company" placeholder="Company name" required />
-                </div>
+                <TabsContent value="verify">
+                  <EmployerVerificationForm onVerificationComplete={handleVerificationComplete} />
+                </TabsContent>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="job-location">Location</Label>
-                  <Input id="job-location" placeholder="e.g. Lagos, Nigeria or Remote" required />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="job-type-modal">Job Type</Label>
-                  <Select required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select job type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="full-time">Full-time</SelectItem>
-                      <SelectItem value="part-time">Part-time</SelectItem>
-                      <SelectItem value="contract">Contract</SelectItem>
-                      <SelectItem value="internship">Internship</SelectItem>
-                      <SelectItem value="remote">Remote</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="job-salary">Salary Range</Label>
-                  <Input id="job-salary" placeholder="e.g. ₦250,000 - ₦400,000 per month" />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="job-description">Job Description</Label>
-                  <Textarea 
-                    id="job-description" 
-                    rows={5} 
-                    placeholder="Describe the responsibilities, requirements, and benefits of the position" 
-                    required 
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="job-tags">Skills Required (comma separated)</Label>
-                  <Input id="job-tags" placeholder="e.g. React, JavaScript, CSS" />
-                </div>
-                
-                <div className="flex justify-end gap-3">
-                  <Button type="button" variant="outline" onClick={() => setIsPostJobOpen(false)}>
-                    Cancel
-                  </Button>
-                  <Button type="submit">Post Job</Button>
-                </div>
-              </form>
+                <TabsContent value="post">
+                  {currentEmployer && (
+                    <EnhancedJobPostForm
+                      employer={currentEmployer}
+                      onJobSubmit={handleJobSubmit}
+                      onCancel={() => setIsPostJobOpen(false)}
+                    />
+                  )}
+                </TabsContent>
+              </Tabs>
             </DialogContent>
           </Dialog>
         </CardHeader>
@@ -339,9 +352,39 @@ export default function Careers() {
                   ))}
                 </div>
                 
-                <p className="text-xs text-muted-foreground">
-                  Posted {job.postedDays} {job.postedDays === 1 ? 'day' : 'days'} ago
-                </p>
+                <div className="flex justify-between items-center">
+                  <p className="text-xs text-muted-foreground">
+                    Posted {job.postedDays} {job.postedDays === 1 ? 'day' : 'days'} ago
+                  </p>
+                  
+                  {/* Safety Features for each job */}
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <Shield className="w-4 h-4 mr-2" />
+                        Safety Info
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl">
+                      <DialogHeader>
+                        <DialogTitle>Job Safety Information</DialogTitle>
+                      </DialogHeader>
+                      <ApplicantSafetyFeatures
+                        job={{
+                          id: job.id,
+                          title: job.title,
+                          company: job.company,
+                          contactEmail: "contact@company.com", // Mock data
+                          trustScore: 85, // Mock trust score
+                          reports: [],
+                          flagReasons: []
+                        } as JobPost}
+                        onReport={handleJobReport}
+                        onRating={handleJobRating}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -361,6 +404,8 @@ export default function Careers() {
           </div>
         </CardContent>
       </Card>
+        </>
+      )}
     </div>
   );
 }
