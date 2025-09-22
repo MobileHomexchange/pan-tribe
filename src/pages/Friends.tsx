@@ -101,6 +101,16 @@ export default function Friends() {
     // In a real app, this would update the backend
   };
 
+  const handleViewAll = () => {
+    toast({
+      title: "Showing all friends",
+      description: "Displaying complete friends list",
+    });
+    // In a real app, this could navigate to a dedicated all friends page
+    // or expand the current view to show more friends
+    // navigate('/friends/all');
+  };
+
   const renderFriendCard = (person: any, type: "friend" | "suggestion" | "request") => (
     <Card key={person.id} className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <CardContent className="space-y-4">
@@ -272,9 +282,12 @@ export default function Friends() {
                 {isOwnProfile ? "Your Friends" : "Friends"}
               </h2>
               {isOwnProfile && (
-                <Link to="#" className="text-primary hover:underline font-medium flex items-center gap-2">
+                <button 
+                  onClick={handleViewAll}
+                  className="text-primary hover:underline font-medium flex items-center gap-2 cursor-pointer"
+                >
                   View All <i className="fas fa-chevron-right"></i>
-                </Link>
+                </button>
               )}
             </div>
 
