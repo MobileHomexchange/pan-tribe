@@ -30,6 +30,7 @@ import UserManagement from "./admin/users/UserManagement";
 import TribeManagement from "./admin/tribes/TribeManagement";
 import ContentModeration from "./admin/content/ContentModeration";
 import FeatureToggles from "./admin/features/FeatureToggles";
+import MonetizationManagement from "./admin/monetization/MonetizationManagement";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,7 @@ const App = () => (
                 <Route path="tribes" element={<TribeManagement />} />
                 <Route path="content" element={<ContentModeration />} />
                 <Route path="features" element={<FeatureToggles />} />
+                <Route path="monetization" element={<MonetizationManagement />} />
               </Route>
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
