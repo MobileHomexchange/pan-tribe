@@ -2,7 +2,7 @@ import { useState, ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
-import { MainFeed } from "@/components/feed/MainFeed";
+import MainFeed from "@/components/feed/MainFeed";
 import { RightSidebar } from "@/components/layout/RightSidebar";
 
 interface LayoutProps {

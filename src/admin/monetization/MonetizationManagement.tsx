@@ -308,24 +308,33 @@ const MonetizationManagement = () => {
               {adBannerData.content && (
                 <div className="mt-6">
                   <Label className="text-sm font-medium">Preview</Label>
-                  <Card className="mt-2 cursor-pointer hover:shadow-lg transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-                          Sponsored
-                        </Badge>
-                        <div className="text-xs text-muted-foreground">
-                          Advertisement
+                  <div className="mt-2 border rounded-lg overflow-hidden">
+                    <div className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-8 px-6">
+                      <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between">
+                        <div className="text-center md:text-left mb-4 md:mb-0">
+                          <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                              <span className="text-sm font-bold">📢</span>
+                            </div>
+                            <span className="text-xs font-bold uppercase tracking-wider bg-white/20 px-2 py-1 rounded">
+                              Sponsored Listing
+                            </span>
+                          </div>
+                          <h3 className="text-xl md:text-2xl font-bold mb-2">
+                            {adBannerData.content}
+                          </h3>
+                          <p className="text-emerald-100 text-sm md:text-base">
+                            Reach more buyers with promoted listings
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          <button className="bg-white text-emerald-600 font-semibold px-6 py-3 rounded-lg shadow-lg">
+                            Promote Your Item
+                          </button>
                         </div>
                       </div>
-                      <div className="text-foreground font-medium mb-2">
-                        {adBannerData.content}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Click to learn more →
-                      </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
