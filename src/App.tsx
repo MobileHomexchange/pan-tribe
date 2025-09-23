@@ -31,6 +31,7 @@ import TribeManagement from "./admin/tribes/TribeManagement";
 import ContentModeration from "./admin/content/ContentModeration";
 import FeatureToggles from "./admin/features/FeatureToggles";
 import MonetizationManagement from "./admin/monetization/MonetizationManagement";
+import UnifiedAdsDashboard from "./admin/monetization/UnifiedAdsDashboard";
 
 const queryClient = new QueryClient();
 
@@ -69,6 +70,7 @@ const App = () => (
                 <Route path="content" element={<ContentModeration />} />
                 <Route path="features" element={<FeatureToggles />} />
                 <Route path="monetization" element={<MonetizationManagement />} />
+                <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
               </Route>
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
