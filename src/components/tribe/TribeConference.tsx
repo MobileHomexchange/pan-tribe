@@ -4,11 +4,19 @@ import { Switch } from "@/components/ui/switch";
 import LiveEventButton from "@/components/LiveEventButton";
 import ScheduleEventModal from "@/components/ScheduleEventModal";
 import { useToast } from "@/hooks/use-toast";
+import { SpeakRequestButtons } from "./SpeakRequestButtons";
+import { HostSpeakQueue } from "./HostSpeakQueue";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function TribeConference() {
   const [isLive, setIsLive] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+  
+  // Mock tribe ID and host status - in real app, these would come from props or context
+  const tribeId = "african-music-lovers-tribe";
+  const isHost = currentUser?.email === "host@example.com"; // Simple host check for demo
 
   const handleScheduleEvent = (eventData: { title: string; description: string; date: Date; location: string }) => {
     // Here you could save to Firebase/Supabase
@@ -81,6 +89,12 @@ export function TribeConference() {
           </p>
         </div>
       )}
+
+      {/* Speak Request Feature */}
+      <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <SpeakRequestButtons tribeId={tribeId} />
+        {isHost && <HostSpeakQueue tribeId={tribeId} isHost={isHost} />}
+      </div>
 
       {showScheduleModal && (
         <ScheduleEventModal

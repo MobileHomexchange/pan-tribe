@@ -6,9 +6,14 @@ import {
   arrayRemove, 
   addDoc, 
   getDoc, 
+  getDocs,
   onSnapshot,
   serverTimestamp,
-  increment
+  increment,
+  query,
+  orderBy,
+  where,
+  limit
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -167,6 +172,80 @@ export class FirebaseService {
       if (doc.exists()) {
         callback(doc.data() as Partial<Post>);
       }
+    });
+  }
+
+  // === SPEAK REQUEST METHODS ===
+  
+  // Create a speak request
+  static async createSpeakRequest(
+    tribeId: string, 
+    userId: string, 
+    userName: string, 
+    method: 'hand' | 'drum'
+  ): Promise<string> {
+    // Check if user already has a pending request
+    const existingRequest = await this.getUserActiveSpeakRequest(tribeId, userId);
+    if (existingRequest) {
+      throw new Error('You already have a pending request');
+    }
+
+    const speakRequestRef = await addDoc(collection(db, 'tribes', tribeId, 'speakRequests'), {
+      userId,
+      userName,
+      method,
+      status: 'pending',
+      createdAt: serverTimestamp()
+    });
+
+    return speakRequestRef.id;
+  }
+
+  // Update speak request status
+  static async updateSpeakRequestStatus(
+    tribeId: string, 
+    requestId: string, 
+    status: 'approved' | 'denied'
+  ): Promise<void> {
+    const requestRef = doc(db, 'tribes', tribeId, 'speakRequests', requestId);
+    await updateDoc(requestRef, {
+      status,
+      updatedAt: serverTimestamp()
+    });
+  }
+
+  // Get user's active speak request
+  static async getUserActiveSpeakRequest(tribeId: string, userId: string): Promise<any | null> {
+    const q = query(
+      collection(db, 'tribes', tribeId, 'speakRequests'),
+      where('userId', '==', userId),
+      where('status', '==', 'pending'),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+    if (snapshot.empty) return null;
+
+    const doc = snapshot.docs[0];
+    return { id: doc.id, ...doc.data() };
+  }
+
+  // Subscribe to speak requests for real-time updates
+  static subscribeToSpeakRequests(
+    tribeId: string,
+    callback: (requests: any[]) => void
+  ): () => void {
+    const q = query(
+      collection(db, 'tribes', tribeId, 'speakRequests'),
+      orderBy('createdAt', 'asc')
+    );
+
+    return onSnapshot(q, (snapshot) => {
+      const requests = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      callback(requests);
     });
   }
 }
