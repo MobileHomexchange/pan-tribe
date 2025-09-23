@@ -4,8 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import LiveEventButton from "@/components/LiveEventButton";
 import ScheduleEventModal from "@/components/ScheduleEventModal";
 import { useToast } from "@/hooks/use-toast";
-import { SpeakRequestButtons } from "./SpeakRequestButtons";
-import { HostSpeakQueue } from "./HostSpeakQueue";
+import { DrumHitFeature } from "./DrumHitFeature";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function TribeConference() {
@@ -90,10 +89,9 @@ export function TribeConference() {
         </div>
       )}
 
-      {/* Speak Request Feature */}
-      <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <SpeakRequestButtons tribeId={tribeId} />
-        {isHost && <HostSpeakQueue tribeId={tribeId} isHost={isHost} />}
+      {/* Drum Hit Feature for Live Events */}
+      <div className="mt-5">
+        <DrumHitFeature eventId={tribeId} />
       </div>
 
       {showScheduleModal && (
