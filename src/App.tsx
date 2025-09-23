@@ -24,6 +24,12 @@ import Photos from "./pages/Photos";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { GroupDetail } from "./components/tribe/GroupDetail";
+import AdminLayout from "./admin/AdminLayout";
+import AdminDashboard from "./admin/dashboard/AdminDashboard";
+import UserManagement from "./admin/users/UserManagement";
+import TribeManagement from "./admin/tribes/TribeManagement";
+import ContentModeration from "./admin/content/ContentModeration";
+import FeatureToggles from "./admin/features/FeatureToggles";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +59,16 @@ const App = () => (
               <Route path="/careers" element={<ProtectedRoute><Careers /></ProtectedRoute>} />
               <Route path="/blog-submissions" element={<ProtectedRoute><BlogSubmissions /></ProtectedRoute>} />
               <Route path="/photos" element={<ProtectedRoute><Photos /></ProtectedRoute>} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<UserManagement />} />
+                <Route path="tribes" element={<TribeManagement />} />
+                <Route path="content" element={<ContentModeration />} />
+                <Route path="features" element={<FeatureToggles />} />
+              </Route>
+              
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
