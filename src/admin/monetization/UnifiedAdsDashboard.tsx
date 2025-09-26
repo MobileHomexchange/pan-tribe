@@ -77,7 +77,13 @@ export default function UnifiedAdsDashboard() {
       segments: {},
       dailyClicks: {},
       dailyImpressions: {},
-      isPremium: newAdPriority >= 4
+      isPremium: newAdPriority >= 4,
+      userId: "admin",
+      title: "Admin Created Ad",
+      description: "Created from admin dashboard",
+      plan: "admin",
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year
     });
     
     setNewAdContent("");
@@ -149,11 +155,18 @@ export default function UnifiedAdsDashboard() {
     );
   };
 
-  const renderAdCard = (ad: AdData, adType: "feedAds" | "reelsAds") => (
+  const renderAdCard = (ad: AdData & { userId?: string; title?: string; plan?: string }, adType: "feedAds" | "reelsAds") => (
     <Card key={ad.id} className="w-full">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span className="truncate">{ad.content}</span>
+          <div>
+            <span className="truncate">{ad.title || ad.content}</span>
+            {ad.userId && (
+              <p className="text-xs text-muted-foreground">
+                User: {ad.userId} • Plan: {ad.plan || 'Unknown'}
+              </p>
+            )}
+          </div>
           <div className="flex items-center space-x-2">
             <Switch 
               checked={ad.isActive}
