@@ -15,7 +15,8 @@ import {
   Bell, 
   Menu,
   LogOut,
-  Search
+  Search,
+  BookOpen
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -33,6 +34,7 @@ const AdminLayout = () => {
     { icon: Users, label: 'Users', path: '/admin/users' },
     { icon: Crown, label: 'Tribes', path: '/admin/tribes' },
     { icon: FileText, label: 'Content', path: '/admin/content' },
+    { icon: BookOpen, label: 'Blog Management', path: '/admin/blog-management' },
     { icon: DollarSign, label: 'Monetization', path: '/admin/monetization' },
     { icon: Settings, label: 'Features', path: '/admin/features' },
     { icon: Shield, label: 'Safety', path: '/admin/safety' },

@@ -40,7 +40,7 @@ const mainItems = [
   { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
   { title: "Events", url: "/events", icon: Calendar },
   { title: "Careers", url: "/careers", icon: Briefcase },
-  { title: "Blog & Backlinks", url: "/blog-submissions", icon: FileText },
+  { title: "Blogs", url: "/blogs", icon: FileText },
   { title: "Ads Manager", url: "/ads", icon: TrendingUp },
 ];
 

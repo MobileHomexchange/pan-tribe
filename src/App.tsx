@@ -24,6 +24,7 @@ import Photos from "./pages/Photos";
 import Music from "./pages/Music";
 import Art from "./pages/Art";
 import Tech from "./pages/Tech";
+import Blogs from "./pages/Blogs";
 import CreateEvent from "./pages/CreateEvent";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -36,6 +37,7 @@ import ContentModeration from "./admin/content/ContentModeration";
 import FeatureToggles from "./admin/features/FeatureToggles";
 import MonetizationManagement from "./admin/monetization/MonetizationManagement";
 import UnifiedAdsDashboard from "./admin/monetization/UnifiedAdsDashboard";
+import BlogManagement from "./admin/blog/BlogManagement";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +66,7 @@ const App = () => (
               <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
               <Route path="/careers" element={<ProtectedRoute><Careers /></ProtectedRoute>} />
               <Route path="/blog-submissions" element={<ProtectedRoute><BlogSubmissions /></ProtectedRoute>} />
+              <Route path="/blogs" element={<ProtectedRoute><Blogs /></ProtectedRoute>} />
               <Route path="/photos" element={<ProtectedRoute><Photos /></ProtectedRoute>} />
               <Route path="/music" element={<ProtectedRoute><Music /></ProtectedRoute>} />
               <Route path="/art" element={<ProtectedRoute><Art /></ProtectedRoute>} />
@@ -79,6 +82,7 @@ const App = () => (
                 <Route path="features" element={<FeatureToggles />} />
                 <Route path="monetization" element={<MonetizationManagement />} />
                 <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
+                <Route path="blog-management" element={<BlogManagement />} />
               </Route>
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
