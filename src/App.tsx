@@ -41,6 +41,7 @@ import FeatureToggles from "./admin/features/FeatureToggles";
 import MonetizationManagement from "./admin/monetization/MonetizationManagement";
 import UnifiedAdsDashboard from "./admin/monetization/UnifiedAdsDashboard";
 import BlogManagement from "./admin/blog/BlogManagement";
+import EventAnalytics from "./admin/events/EventAnalytics";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,7 @@ const App = () => (
                 <Route path="monetization" element={<MonetizationManagement />} />
                 <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
                 <Route path="blog-management" element={<BlogManagement />} />
+                <Route path="event-analytics" element={<EventAnalytics />} />
               </Route>
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
