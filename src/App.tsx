@@ -21,6 +21,10 @@ import Reels from "./pages/Reels";
 import Careers from "./pages/Careers";
 import BlogSubmissions from "./pages/BlogSubmissions";
 import Photos from "./pages/Photos";
+import Music from "./pages/Music";
+import Art from "./pages/Art";
+import Tech from "./pages/Tech";
+import CreateEvent from "./pages/CreateEvent";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { GroupDetail } from "./components/tribe/GroupDetail";
@@ -61,6 +65,10 @@ const App = () => (
               <Route path="/careers" element={<ProtectedRoute><Careers /></ProtectedRoute>} />
               <Route path="/blog-submissions" element={<ProtectedRoute><BlogSubmissions /></ProtectedRoute>} />
               <Route path="/photos" element={<ProtectedRoute><Photos /></ProtectedRoute>} />
+              <Route path="/music" element={<ProtectedRoute><Music /></ProtectedRoute>} />
+              <Route path="/art" element={<ProtectedRoute><Art /></ProtectedRoute>} />
+              <Route path="/tech" element={<ProtectedRoute><Tech /></ProtectedRoute>} />
+              <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
