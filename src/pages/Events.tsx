@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Calendar, Plus, MapPin, ChevronDown, Search, Share2, Heart, Users, Music, Utensils, Palette, GraduationCap, Zap, X, Bookmark } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,7 @@ export default function Events() {
   const [currentLocation, setCurrentLocation] = useState("Accra, Ghana");
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const { toggleSave, isSaved } = useSavedItems();
+  const navigate = useNavigate();
 
   const handleSaveEvent = (event: typeof mockEvents[0]) => {
     toggleSave({
@@ -124,7 +126,10 @@ export default function Events() {
             <Calendar className="h-8 w-8 text-primary" />
             <h1 className="text-3xl font-bold text-foreground">Local Events</h1>
           </div>
-          <Button className="bg-primary hover:bg-primary/90">
+          <Button 
+            className="bg-primary hover:bg-primary/90"
+            onClick={() => navigate('/create-event')}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Create Event
           </Button>
