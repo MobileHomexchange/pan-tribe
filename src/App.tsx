@@ -25,6 +25,9 @@ import Music from "./pages/Music";
 import Art from "./pages/Art";
 import Tech from "./pages/Tech";
 import Blogs from "./pages/Blogs";
+import MyEvents from "./pages/MyEvents";
+import EventHistory from "./pages/EventHistory";
+import EventSettings from "./pages/EventSettings";
 import CreateEvent from "./pages/CreateEvent";
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -72,6 +75,9 @@ const App = () => (
               <Route path="/art" element={<ProtectedRoute><Art /></ProtectedRoute>} />
               <Route path="/tech" element={<ProtectedRoute><Tech /></ProtectedRoute>} />
               <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
+              <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
+              <Route path="/event-history" element={<ProtectedRoute><EventHistory /></ProtectedRoute>} />
+              <Route path="/event-settings" element={<ProtectedRoute><EventSettings /></ProtectedRoute>} />
               
               {/* Admin Routes */}
               <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>

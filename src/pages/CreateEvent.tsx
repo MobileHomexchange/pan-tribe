@@ -177,18 +177,27 @@ const CreateEvent: React.FC = () => {
                   <CalendarPlus className="h-4 w-4" />
                   <span className="font-medium">Create Event</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 text-muted-foreground hover:bg-muted rounded-lg cursor-pointer">
+                <button 
+                  onClick={() => navigate('/my-events')}
+                  className="w-full flex items-center gap-3 p-3 text-muted-foreground hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                >
                   <Calendar className="h-4 w-4" />
                   <span>My Events</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 text-muted-foreground hover:bg-muted rounded-lg cursor-pointer">
+                </button>
+                <button 
+                  onClick={() => navigate('/event-history')}
+                  className="w-full flex items-center gap-3 p-3 text-muted-foreground hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                >
                   <History className="h-4 w-4" />
                   <span>Event History</span>
-                </div>
-                <div className="flex items-center gap-3 p-3 text-muted-foreground hover:bg-muted rounded-lg cursor-pointer">
+                </button>
+                <button 
+                  onClick={() => navigate('/event-settings')}
+                  className="w-full flex items-center gap-3 p-3 text-muted-foreground hover:bg-muted rounded-lg cursor-pointer transition-colors"
+                >
                   <Settings className="h-4 w-4" />
                   <span>Settings</span>
-                </div>
+                </button>
               </CardContent>
             </Card>
           </div>
