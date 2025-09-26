@@ -6,13 +6,24 @@ import { Badge } from "@/components/ui/badge";
 import { PlusCircle, Calendar, User, ExternalLink, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { BlogDetailModal } from "@/components/blog/BlogDetailModal";
+import { BlogSubmissionModal } from "@/components/blog/BlogSubmissionModal";
 
-// Mock data for approved blogs
+// Mock data for approved blogs with full content
 const mockBlogs = [
   {
     id: "1",
     title: "The Future of African Tech Innovation",
     excerpt: "Exploring the growing tech ecosystem across African countries and its impact on global innovation...",
+    content: `The African tech ecosystem is experiencing unprecedented growth, with innovation hubs emerging across the continent from Lagos to Nairobi, Cape Town to Cairo. This technological renaissance is not just changing how Africans interact with technology, but is also positioning the continent as a significant player in the global digital economy.
+
+In recent years, we've witnessed the rise of fintech solutions like M-Pesa in Kenya, which revolutionized mobile banking not just in Africa but globally. Similarly, companies like Flutterwave and Paystack have simplified online payments, enabling millions of businesses to participate in the digital economy.
+
+The diaspora plays a crucial role in this transformation. African tech professionals working in Silicon Valley, London, and other global tech hubs are increasingly investing their expertise and capital back into African startups. This reverse brain drain is creating a powerful network of knowledge exchange and investment.
+
+Looking ahead, artificial intelligence, blockchain technology, and renewable energy solutions developed by African innovators are set to address some of the continent's most pressing challenges. From precision agriculture apps that help smallholder farmers maximize yields to blockchain-based identity solutions for the unbanked, African tech is solving African problems with global implications.
+
+The future is bright for African tech innovation, and the diaspora community will continue to be instrumental in this transformation.`,
     author: "Amara Okafor",
     category: "Technology",
     publishDate: "2024-03-10",
@@ -24,6 +35,15 @@ const mockBlogs = [
     id: "2", 
     title: "African Art in the Digital Age",
     excerpt: "How contemporary African artists are embracing digital platforms to showcase their work globally...",
+    content: `The digital revolution has opened unprecedented opportunities for African artists to showcase their work to global audiences. From digital galleries to NFT marketplaces, technology is democratizing access to the global art market and enabling African creators to tell their stories on their own terms.
+
+Social media platforms like Instagram and TikTok have become virtual galleries where artists can build followings, engage with collectors, and sell their work directly. This disintermediation of traditional gallery systems has been particularly beneficial for emerging artists who might not have had access to conventional art world networks.
+
+Virtual reality and augmented reality technologies are also creating new mediums for artistic expression. African artists are pioneering innovative uses of these technologies to create immersive experiences that transport viewers into African narratives and landscapes.
+
+The rise of digital art and NFTs has sparked both excitement and debate within the African art community. While some see it as a new frontier for monetizing digital creativity, others question the environmental impact and accessibility of these technologies.
+
+Despite these challenges, the digital age represents a golden opportunity for African art to reach its rightful place on the global stage. As technology continues to evolve, we can expect to see even more innovative ways for African artists to share their vision with the world.`,
     author: "Kwame Asante",
     category: "Arts & Culture",
     publishDate: "2024-03-08",
@@ -35,6 +55,15 @@ const mockBlogs = [
     id: "3",
     title: "Building Sustainable Communities",
     excerpt: "Lessons from successful community-driven initiatives across the African diaspora...",
+    content: `Sustainable community building is at the heart of the African diaspora experience. Across the globe, African communities have developed innovative models for supporting one another, preserving culture, and creating economic opportunities that benefit both diaspora communities and the continent.
+
+One of the most successful models has been the development of cultural centers and community hubs. These spaces serve multiple functions: they're venues for cultural events, educational programs, business networking, and social support. Cities like London, Toronto, and Atlanta have seen remarkable success with these community-driven initiatives.
+
+Economic empowerment through community-led investment funds has also gained traction. Groups like the African Diaspora Investment Initiative are pooling resources to fund businesses both in diaspora communities and across Africa. This model creates a virtuous cycle of wealth creation and cultural connection.
+
+Digital platforms are increasingly playing a role in community building. Online networks allow diaspora communities to maintain connections across geographical boundaries, share opportunities, and organize support for members facing challenges.
+
+The key lessons from successful initiatives include the importance of inclusive leadership, clear communication, and programs that address both immediate needs and long-term sustainability. Most importantly, successful communities remember that building for today while planning for tomorrow ensures that future generations can benefit from the foundations we lay today.`,
     author: "Fatima Hassan",
     category: "Community",
     publishDate: "2024-03-05",
@@ -47,6 +76,9 @@ const mockBlogs = [
 export default function Blogs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedBlog, setSelectedBlog] = useState<typeof mockBlogs[0] | null>(null);
+  const [blogDetailOpen, setBlogDetailOpen] = useState(false);
+  const [submissionModalOpen, setSubmissionModalOpen] = useState(false);
 
   const filteredBlogs = mockBlogs.filter(blog => {
     const matchesSearch = blog.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -56,6 +88,15 @@ export default function Blogs() {
   });
 
   const categories = ["all", "Technology", "Arts & Culture", "Community", "Business", "Health"];
+
+  const handleReadMore = (blog: typeof mockBlogs[0]) => {
+    setSelectedBlog(blog);
+    setBlogDetailOpen(true);
+  };
+
+  const handleSubmitBlog = () => {
+    setSubmissionModalOpen(true);
+  };
 
   return (
     <Layout>
@@ -69,10 +110,7 @@ export default function Blogs() {
                 Discover insights and stories from the African diaspora community
               </p>
             </div>
-            <Button className="bg-primary hover:bg-primary/90" onClick={() => {
-              // This would open a submission modal or navigate to submission page
-              alert("Blog submission feature coming soon! Contact admin for now.");
-            }}>
+            <Button className="bg-primary hover:bg-primary/90" onClick={handleSubmitBlog}>
               <PlusCircle className="h-4 w-4 mr-2" />
               Submit Blog
             </Button>
@@ -135,7 +173,7 @@ export default function Blogs() {
                     </div>
                     <span>{filteredBlogs[0].readTime}</span>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => handleReadMore(filteredBlogs[0])}>
                     <ExternalLink className="h-4 w-4 mr-1" />
                     Read More
                   </Button>
@@ -174,7 +212,7 @@ export default function Blogs() {
                       <Calendar className="h-3 w-3" />
                       {new Date(blog.publishDate).toLocaleDateString()}
                     </div>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => handleReadMore(blog)}>
                       <ExternalLink className="h-4 w-4 mr-1" />
                       Read
                     </Button>
@@ -216,6 +254,18 @@ export default function Blogs() {
             </div>
           </div>
         </div>
+
+        {/* Modals */}
+        <BlogDetailModal 
+          blog={selectedBlog}
+          open={blogDetailOpen}
+          onOpenChange={setBlogDetailOpen}
+        />
+        
+        <BlogSubmissionModal 
+          open={submissionModalOpen}
+          onOpenChange={setSubmissionModalOpen}
+        />
       </div>
     </Layout>
   );
