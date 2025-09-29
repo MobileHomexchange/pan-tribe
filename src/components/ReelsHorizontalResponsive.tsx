@@ -203,7 +203,7 @@ const ReelsHorizontalResponsive = () => {
           height: "100vh",
           scrollBehavior: "smooth",
           background: "black",
-          zIndex: 50,
+          zIndex: 9999,
         }}
       >
         {videos.map((video) => (
