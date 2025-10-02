@@ -4,7 +4,7 @@ import { db } from "@/lib/firebase";
 import { useNavigate } from "react-router-dom";
 import { CommentsModal } from "./CommentsModal";
 import { ShareModal } from "./ShareModal";
-import { Heart, MessageCircle, Share, Bookmark, User } from "lucide-react";
+import { Heart, MessageCircle, Share, Bookmark, User, Maximize, Minimize } from "lucide-react";
 
 interface Video {
   id: string;
@@ -74,6 +74,37 @@ const ReelsHorizontalResponsive = () => {
   const [commentsModalOpen, setCommentsModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string>("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Lock orientation to portrait on mount
+  useEffect(() => {
+    const lockOrientation = async () => {
+      try {
+        if (screen.orientation && (screen.orientation as any).lock) {
+          await (screen.orientation as any).lock('portrait');
+        }
+      } catch (error) {
+        console.log('Orientation lock not supported:', error);
+      }
+    };
+    lockOrientation();
+
+    return () => {
+      if (screen.orientation && (screen.orientation as any).unlock) {
+        (screen.orientation as any).unlock();
+      }
+    };
+  }, []);
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
 
   // Fetch videos from Firestore with fallback to mock data
   useEffect(() => {
@@ -154,6 +185,18 @@ const ReelsHorizontalResponsive = () => {
     ));
   };
 
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  };
+
   if (loading) {
     return (
       <div style={{
@@ -197,8 +240,9 @@ const ReelsHorizontalResponsive = () => {
           top: 0,
           left: 0,
           display: "flex",
-          overflowX: "auto",
-          scrollSnapType: "x mandatory",
+          flexDirection: "column",
+          overflowY: "auto",
+          scrollSnapType: "y mandatory",
           width: "100vw",
           height: "100vh",
           scrollBehavior: "smooth",
@@ -206,11 +250,33 @@ const ReelsHorizontalResponsive = () => {
           zIndex: 9999,
         }}
       >
+        {/* Fullscreen Toggle Button */}
+        <button
+          onClick={toggleFullscreen}
+          style={{
+            position: "fixed",
+            top: "2vh",
+            right: "3vw",
+            zIndex: 10000,
+            background: "rgba(0,0,0,0.6)",
+            border: "none",
+            borderRadius: "50%",
+            width: "10vw",
+            height: "10vw",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+        </button>
         {videos.map((video) => (
           <div
             key={video.id}
             style={{
-              flex: "0 0 100%",
+              minHeight: "100vh",
               scrollSnapAlign: "start",
               position: "relative",
             }}
@@ -220,7 +286,7 @@ const ReelsHorizontalResponsive = () => {
               style={{
                 width: "100vw",
                 height: "100vh",
-                objectFit: "contain",
+                objectFit: "cover",
               }}
               muted
               loop
