@@ -149,7 +149,7 @@ export function Post({ post, onInteraction }: PostProps) {
   };
 
   return (
-    <div className="bg-card rounded-lg shadow-sm p-4 border border-social-border">
+    <div className="w-full bg-card rounded-lg shadow-sm p-4 border border-social-border">
       {/* Post Header */}
       <div className="flex items-center gap-3 mb-3">
         <ClickableAvatar 
@@ -182,14 +182,14 @@ export function Post({ post, onInteraction }: PostProps) {
             <img 
               src={post.imageUrl} 
               alt="Post content" 
-              className="w-full h-64 object-cover rounded-lg"
+              className="w-full h-auto max-h-96 object-cover rounded-lg"
             />
           )}
           {post.videoUrl && (
             <video 
               src={post.videoUrl} 
               controls 
-              className="w-full h-64 rounded-lg"
+              className="w-full h-auto max-h-96 rounded-lg"
             />
           )}
         </div>

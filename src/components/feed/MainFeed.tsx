@@ -167,11 +167,11 @@ const MainFeed = () => {
   });
 
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="w-full px-4 space-y-6">
       {feedWithAds.map((item, idx) => {
         if ("isActive" in item) {
           return (
-            <div key={`ad-${idx}`} className="relative -mx-6 lg:-mx-20 xl:-mx-32">
+            <div key={`ad-${idx}`} className="w-full -mx-4">
               <div 
                 onClick={handleAdClick}
                 className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white cursor-pointer hover:from-emerald-600 hover:to-teal-700 transition-all duration-300 py-8 px-6 lg:px-8"

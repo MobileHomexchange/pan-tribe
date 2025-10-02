@@ -90,7 +90,7 @@ export const PostComponent = () => {
   }
 
   return (
-    <div>
+    <div className="w-full">
       {posts.map(post => (
         <div
           key={post.id}
