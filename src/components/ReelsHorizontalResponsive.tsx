@@ -4,7 +4,7 @@ import { db } from "@/lib/firebase";
 import { useNavigate } from "react-router-dom";
 import { CommentsModal } from "./CommentsModal";
 import { ShareModal } from "./ShareModal";
-import { Heart, MessageCircle, Share, Bookmark, User, Maximize, Minimize } from "lucide-react";
+import { Heart, MessageCircle, Share, Bookmark, User, Maximize, Minimize, ChevronUp, ChevronDown } from "lucide-react";
 
 interface Video {
   id: string;
@@ -75,6 +75,7 @@ const ReelsHorizontalResponsive = () => {
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedVideoId, setSelectedVideoId] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
 
   // Lock orientation to portrait on mount
   useEffect(() => {
@@ -143,6 +144,11 @@ const ReelsHorizontalResponsive = () => {
           const video = entry.target as HTMLVideoElement;
           if (entry.isIntersecting) {
             video.play().catch(console.error);
+            // Update current video index
+            const index = video.getAttribute('data-index');
+            if (index !== null) {
+              setCurrentVideoIndex(parseInt(index, 10));
+            }
           } else {
             video.pause();
           }
@@ -194,6 +200,20 @@ const ReelsHorizontalResponsive = () => {
       }
     } catch (error) {
       console.error('Fullscreen error:', error);
+    }
+  };
+
+  const scrollToPreviousReel = () => {
+    if (currentVideoIndex > 0) {
+      const prevVideo = containerRef.current?.querySelectorAll('video')[currentVideoIndex - 1];
+      prevVideo?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
+  const scrollToNextReel = () => {
+    if (currentVideoIndex < videos.length - 1) {
+      const nextVideo = containerRef.current?.querySelectorAll('video')[currentVideoIndex + 1];
+      nextVideo?.parentElement?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
@@ -272,7 +292,58 @@ const ReelsHorizontalResponsive = () => {
         >
           {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
         </button>
-        {videos.map((video) => (
+
+        {/* Navigation Arrow - Previous (Top Center) */}
+        <button
+          onClick={scrollToPreviousReel}
+          style={{
+            position: "fixed",
+            top: "45%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 10001,
+            background: "rgba(0,0,0,0.6)",
+            border: "2px solid rgba(255,255,255,0.3)",
+            borderRadius: "50%",
+            width: "14vw",
+            height: "14vw",
+            display: currentVideoIndex === 0 ? "none" : "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          <ChevronUp size={24} />
+        </button>
+
+        {/* Navigation Arrow - Next (Bottom Center) */}
+        <button
+          onClick={scrollToNextReel}
+          style={{
+            position: "fixed",
+            bottom: "30%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 10001,
+            background: "rgba(0,0,0,0.6)",
+            border: "2px solid rgba(255,255,255,0.3)",
+            borderRadius: "50%",
+            width: "14vw",
+            height: "14vw",
+            display: currentVideoIndex === videos.length - 1 ? "none" : "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            cursor: "pointer",
+            transition: "all 0.3s ease",
+          }}
+        >
+          <ChevronDown size={24} />
+        </button>
+
+        {videos.map((video, index) => (
           <div
             key={video.id}
             style={{
@@ -283,6 +354,7 @@ const ReelsHorizontalResponsive = () => {
           >
             <video
               src={video.url}
+              data-index={index}
               style={{
                 width: "100vw",
                 height: "100vh",
