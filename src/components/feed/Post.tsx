@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ThumbsUp, MessageCircle, Share, Globe, Users, Landmark, Bookmark } from "lucide-react";
+import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Post as PostType, Comment } from "@/types";
 import { CommentsModal } from "@/components/CommentsModal";
@@ -170,9 +171,15 @@ export function Post({ post, onInteraction }: PostProps) {
 
       {/* Post Content */}
       <div className="mb-3">
-        <p className="text-card-foreground whitespace-pre-wrap leading-relaxed">
-          {post.content}
-        </p>
+        <div 
+          className="text-card-foreground whitespace-pre-wrap leading-relaxed"
+          dangerouslySetInnerHTML={{ 
+            __html: DOMPurify.sanitize(post.content, {
+              ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em'],
+              ALLOWED_ATTR: ['href', 'target', 'rel']
+            })
+          }}
+        />
       </div>
 
       {/* Post Image/Video */}

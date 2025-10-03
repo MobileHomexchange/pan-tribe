@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
+import { useToast } from "@/hooks/use-toast";
+import DOMPurify from "dompurify";
 
 interface Comment {
   id: string;
@@ -30,6 +32,7 @@ interface CommentsModalProps {
 }
 
 export function CommentsModal({ post, onClose, onAddComment, open }: CommentsModalProps) {
+  const { toast } = useToast();
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -57,8 +60,30 @@ export function CommentsModal({ post, onClose, onAddComment, open }: CommentsMod
     e.preventDefault();
     if (!newComment.trim()) return;
     
+    // Validate comment length
+    if (newComment.length > 1000) {
+      toast({
+        title: "Comment too long",
+        description: "Comments must be less than 1000 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Strip HTML tags for plain text comments
+    const cleanComment = newComment.replace(/<[^>]*>/g, '').trim();
+    
+    if (!cleanComment) {
+      toast({
+        title: "Invalid comment",
+        description: "Comment cannot be empty",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
-    const success = await onAddComment(newComment);
+    const success = await onAddComment(cleanComment);
     
     if (success) {
       setNewComment("");
@@ -107,9 +132,15 @@ export function CommentsModal({ post, onClose, onAddComment, open }: CommentsMod
                     <h4 className="font-medium text-sm text-card-foreground">
                       {comment.userName}
                     </h4>
-                    <p className="text-card-foreground text-sm mt-1">
-                      {comment.content}
-                    </p>
+                    <p 
+                      className="text-card-foreground text-sm mt-1"
+                      dangerouslySetInnerHTML={{ 
+                        __html: DOMPurify.sanitize(comment.content, { 
+                          ALLOWED_TAGS: [],
+                          ALLOWED_ATTR: []
+                        })
+                      }}
+                    />
                   </div>
                   <p className="text-xs text-social-muted mt-1">
                     {formatTimeAgo(comment.createdAt)}

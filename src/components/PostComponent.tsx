@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import DOMPurify from "dompurify";
 
 interface Post {
   id: string;
@@ -97,7 +98,15 @@ export const PostComponent = () => {
           className="w-full bg-card mb-2 p-4 rounded-lg shadow-sm border"
         >
           <div className="font-semibold text-card-foreground mb-2">{post.userId}</div>
-          <div className="mb-3 text-card-foreground">{post.content}</div>
+          <div 
+            className="mb-3 text-card-foreground"
+            dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(post.content, {
+                ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em'],
+                ALLOWED_ATTR: ['href', 'target', 'rel']
+              })
+            }}
+          />
           {post.imageUrl && (
             <img 
               src={post.imageUrl} 

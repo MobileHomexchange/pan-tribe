@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,12 +116,62 @@ export const BlogSubmissionForm = ({ onSubmit, isLoading = false }: BlogSubmissi
     setChecklist(prev => ({ ...prev, [key]: checked }));
   };
 
+  // Zod schema for URL validation
+  const backlinkSchema = z.object({
+    url: z.string()
+      .url('Invalid URL format')
+      .regex(/^https?:\/\//, 'Only HTTP(S) URLs allowed')
+      .max(2048, 'URL too long')
+      .refine(
+        (url) => {
+          try {
+            const parsed = new URL(url);
+            // Block dangerous protocols
+            const dangerousProtocols = ['javascript', 'data', 'file', 'vbscript'];
+            if (dangerousProtocols.includes(parsed.protocol.replace(':', ''))) {
+              return false;
+            }
+            // Block localhost/private IPs
+            const hostname = parsed.hostname;
+            if (hostname === 'localhost' || 
+                hostname.startsWith('127.') ||
+                hostname.startsWith('10.') ||
+                hostname.startsWith('192.168.')) {
+              return false;
+            }
+            return true;
+          } catch {
+            return false;
+          }
+        },
+        'Unsafe or invalid URL'
+      )
+  });
+
   const addBacklink = () => {
-    if (currentBacklink.trim() && !backlinks.includes(currentBacklink.trim())) {
-      const newBacklinks = [...backlinks, currentBacklink.trim()];
-      setBacklinks(newBacklinks);
-      setValue('backlinks', newBacklinks);
-      setCurrentBacklink("");
+    try {
+      // Validate URL
+      backlinkSchema.parse({ url: currentBacklink.trim() });
+      
+      if (!backlinks.includes(currentBacklink.trim())) {
+        const newBacklinks = [...backlinks, currentBacklink.trim()];
+        setBacklinks(newBacklinks);
+        setValue('backlinks', newBacklinks);
+        setCurrentBacklink("");
+        
+        toast({
+          title: 'Backlink added',
+          description: 'URL will be verified during moderation'
+        });
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Invalid URL',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        });
+      }
     }
   };
 
