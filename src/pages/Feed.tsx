@@ -4,6 +4,7 @@ import { db } from "@/lib/firebaseConfig";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import DOMPurify from 'dompurify';
 
 interface Post {
   id: string;
@@ -76,7 +77,9 @@ const Feed = () => {
                   </Avatar>
                   <div className="font-semibold text-foreground">{post.author}</div>
                 </div>
-                <div className="text-foreground whitespace-pre-wrap">{post.text}</div>
+                <div className="text-foreground whitespace-pre-wrap">
+                  {DOMPurify.sanitize(post.text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })}
+                </div>
               </CardContent>
             </Card>
           ))

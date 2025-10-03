@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -86,8 +87,8 @@ const App = () => (
               <Route path="/event-history" element={<ProtectedRoute><EventHistory /></ProtectedRoute>} />
               <Route path="/event-settings" element={<ProtectedRoute><EventSettings /></ProtectedRoute>} />
               
-              {/* Admin Routes */}
-              <Route path="/admin" element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+              {/* Admin Routes - Protected by admin role */}
+              <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="tribes" element={<TribeManagement />} />

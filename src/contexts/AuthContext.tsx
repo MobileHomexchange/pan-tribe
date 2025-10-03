@@ -10,6 +10,7 @@ import {
 } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '@/lib/firebase';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AuthContextType {
   currentUser: User | null;
@@ -18,6 +19,10 @@ interface AuthContextType {
   logout: () => Promise<void>;
   loginWithGoogle: () => Promise<void>;
   loading: boolean;
+  userRole: string | null;
+  isAdmin: boolean;
+  roleLoading: boolean;
+  refreshUserRole: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -37,6 +42,54 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [roleLoading, setRoleLoading] = useState(true);
+
+  async function refreshUserRole() {
+    if (!currentUser) {
+      setUserRole(null);
+      setIsAdmin(false);
+      setRoleLoading(false);
+      return;
+    }
+
+    try {
+      setRoleLoading(true);
+      // Fetch user role from Supabase
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', currentUser.uid)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user role:', error);
+        setUserRole('user'); // Default to user role
+        setIsAdmin(false);
+      } else if (data) {
+        setUserRole(data.role);
+        setIsAdmin(data.role === 'admin');
+      } else {
+        // No role found, assign default user role
+        const { error: insertError } = await supabase
+          .from('user_roles')
+          .insert([{ user_id: currentUser.uid, role: 'user' }]);
+        
+        if (insertError) {
+          console.error('Error creating user role:', insertError);
+        }
+        setUserRole('user');
+        setIsAdmin(false);
+      }
+    } catch (error) {
+      console.error('Error in refreshUserRole:', error);
+      setUserRole('user');
+      setIsAdmin(false);
+    } finally {
+      setRoleLoading(false);
+    }
+  }
 
   async function register(email: string, password: string, displayName: string) {
     const { user } = await createUserWithEmailAndPassword(auth, email, password);
@@ -49,6 +102,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       createdAt: new Date(),
       updatedAt: new Date()
     });
+
+    // Create default user role in Supabase
+    await supabase
+      .from('user_roles')
+      .insert([{ user_id: user.uid, role: 'user' }]);
   }
 
   async function login(email: string, password: string) {
@@ -69,6 +127,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         createdAt: new Date(),
         updatedAt: new Date()
       });
+
+      // Create default user role in Supabase
+      await supabase
+        .from('user_roles')
+        .insert([{ user_id: user.uid, role: 'user' }]);
     }
   }
 
@@ -77,9 +140,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       setLoading(false);
+      
+      // Fetch user role after auth state changes
+      if (user) {
+        await refreshUserRole();
+      } else {
+        setUserRole(null);
+        setIsAdmin(false);
+        setRoleLoading(false);
+      }
     });
 
     return unsubscribe;
@@ -91,7 +163,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     register,
     logout,
     loginWithGoogle,
-    loading
+    loading,
+    userRole,
+    isAdmin,
+    roleLoading,
+    refreshUserRole
   };
 
   return (
