@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const CreatePost: React.FC = () => {
   const [content, setContent] = useState('');
   const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,6 +32,19 @@ const CreatePost: React.FC = () => {
       navigate('/login');
     }
   }, [currentUser, navigate, toast]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImage(file);
+    
+    // Create preview URL
+    if (file) {
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    } else {
+      setImagePreview(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,13 +135,17 @@ const CreatePost: React.FC = () => {
               type="file"
               id="image"
               accept="image/*"
-              onChange={(e) => setImage(e.target.files?.[0] || null)}
+              onChange={handleImageChange}
               className="file:border-0 file:bg-transparent file:text-sm file:font-medium"
             />
-            {image && (
-              <p className="text-sm text-muted-foreground">
-                Selected: {image.name}
-              </p>
+            {imagePreview && (
+              <div className="mt-3">
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                  className="w-32 h-32 object-cover rounded-lg border border-border"
+                />
+              </div>
             )}
           </div>
           
