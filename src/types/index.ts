@@ -6,6 +6,7 @@ export interface Post {
   userAvatar?: string;
   imageUrl?: string;
   videoUrl?: string;
+  pollId?: string;
   likes: string[];
   saves: string[];
   shares: number;

@@ -13,6 +13,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/contexts/AuthContext';
 import imageCompression from 'browser-image-compression';
+import { PlusCircle, X } from 'lucide-react';
 
 const CreatePost: React.FC = () => {
   const [content, setContent] = useState('');
@@ -20,6 +21,12 @@ const CreatePost: React.FC = () => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  
+  // Poll states
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [pollQuestion, setPollQuestion] = useState('');
+  const [pollOptions, setPollOptions] = useState(['', '']);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentUser } = useAuth();
@@ -110,12 +117,26 @@ const CreatePost: React.FC = () => {
         });
       }
 
+      // Create poll if poll creator was used
+      let pollId = null;
+      if (showPollCreator && pollQuestion.trim() && pollOptions.filter(o => o.trim()).length >= 2) {
+        const pollData = {
+          question: pollQuestion,
+          options: pollOptions.filter(o => o.trim()).map(text => ({ text, votes: 0 })),
+          voters: [],
+          createdAt: serverTimestamp(),
+        };
+        const pollDoc = await addDoc(collection(db, 'polls'), pollData);
+        pollId = pollDoc.id;
+      }
+
       // Save post to Firestore
       const postData = {
         userId: user.uid,
         author: user.email || 'Anonymous',
         text: content,
         imageUrl,
+        pollId,
         likes: 0,
         shares: 0,
         comments: [],
@@ -135,6 +156,9 @@ const CreatePost: React.FC = () => {
       setImage(null);
       setImagePreview(null);
       setUploadProgress(0);
+      setShowPollCreator(false);
+      setPollQuestion('');
+      setPollOptions(['', '']);
       
       navigate('/feed');
     } catch (error: any) {
@@ -185,6 +209,74 @@ const CreatePost: React.FC = () => {
                   alt="Preview" 
                   className="w-32 h-32 object-cover rounded-lg border border-border"
                 />
+              </div>
+            )}
+          </div>
+
+          {/* Poll Creator Toggle */}
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowPollCreator(!showPollCreator)}
+              className="w-full"
+            >
+              {showPollCreator ? 'Remove Poll' : 'Add Poll'}
+            </Button>
+
+            {showPollCreator && (
+              <div className="space-y-3 p-4 border border-border rounded-lg bg-muted/30">
+                <div className="space-y-2">
+                  <Label htmlFor="pollQuestion">Poll Question</Label>
+                  <Input
+                    id="pollQuestion"
+                    value={pollQuestion}
+                    onChange={(e) => setPollQuestion(e.target.value)}
+                    placeholder="Ask a question..."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Poll Options</Label>
+                  {pollOptions.map((option, index) => (
+                    <div key={index} className="flex gap-2 items-center">
+                      <Input
+                        value={option}
+                        onChange={(e) => {
+                          const newOptions = [...pollOptions];
+                          newOptions[index] = e.target.value;
+                          setPollOptions(newOptions);
+                        }}
+                        placeholder={`Option ${index + 1}`}
+                      />
+                      {pollOptions.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            const newOptions = pollOptions.filter((_, i) => i !== index);
+                            setPollOptions(newOptions);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  {pollOptions.length < 6 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPollOptions([...pollOptions, ''])}
+                      className="w-full"
+                    >
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Add Option
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>

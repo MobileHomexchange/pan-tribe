@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
 import { detectAndEmbedMedia } from "@/lib/mediaEmbedder";
+import { Poll } from "@/components/Poll";
 
 interface PostProps {
   post: PostType;
@@ -200,6 +201,13 @@ export function Post({ post, onInteraction }: PostProps) {
               className="w-full h-auto max-h-96 rounded-lg"
             />
           )}
+        </div>
+      )}
+
+      {/* Poll */}
+      {post.pollId && (
+        <div className="mb-3">
+          <Poll pollId={post.pollId} />
         </div>
       )}
 
