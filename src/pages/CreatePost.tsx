@@ -1,3 +1,4 @@
+// src/pages/CreatePost.tsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -18,12 +19,12 @@ const CreatePost: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedPostType, setSelectedPostType] = useState<PostType | null>(null);
-  
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentUser } = useAuth();
 
-  // Redirect to login if not authenticated
+  // Redirect if not logged in
   useEffect(() => {
     if (!currentUser) {
       toast({
@@ -52,9 +53,9 @@ const CreatePost: React.FC = () => {
 
     try {
       await user.getIdToken(true);
-      let imageUrl = null;
+      let imageUrl: string | null = null;
 
-      // Handle image upload from smart form
+      // Handle image upload
       if (formData.image && formData.image instanceof File) {
         const compressedImage = await imageCompression(formData.image, {
           maxSizeMB: 1,
@@ -81,13 +82,13 @@ const CreatePost: React.FC = () => {
         });
       }
 
-      // Build structured content from form data
+      // Convert form data to structured text
       const structuredContent = Object.entries(formData)
         .filter(([key]) => key !== 'image' && key !== 'postType')
         .map(([key, value]) => `**${key}**: ${value}`)
         .join('\n\n');
 
-      // Save post to Firestore
+      // Save to Firestore
       const postData = {
         userId: user.uid,
         author: user.email || 'Anonymous',
@@ -139,7 +140,7 @@ const CreatePost: React.FC = () => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Post Types
             </Button>
-            
+
             <SmartPostCreator
               type={selectedPostType}
               onSubmit={handleSmartPostSubmit}
@@ -150,7 +151,7 @@ const CreatePost: React.FC = () => {
               <div className="mt-4">
                 <Progress value={uploadProgress} className="w-full" />
                 <p className="text-sm text-muted-foreground text-center mt-2">
-                  {uploadProgress < 100 
+                  {uploadProgress < 100
                     ? `Uploading... ${Math.round(uploadProgress)}%`
                     : 'Processing...'}
                 </p>
@@ -164,3 +165,4 @@ const CreatePost: React.FC = () => {
 };
 
 export default CreatePost;
+
