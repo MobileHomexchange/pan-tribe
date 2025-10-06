@@ -50,6 +50,8 @@ const CreatePost: React.FC = () => {
     
     setLoading(true);
     try {
+      // Force token refresh to ensure we have valid credentials
+      await user.getIdToken(true);
       console.log("Creating post with user:", user.uid);
       let imageUrl = null;
 
