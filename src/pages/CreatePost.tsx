@@ -1,168 +1,185 @@
-// src/pages/CreatePost.tsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { useToast } from '@/hooks/use-toast';
-import { Layout } from '@/components/layout/Layout';
-import { ArrowLeft } from 'lucide-react';
-import { auth, db, storage } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { useAuth } from '@/contexts/AuthContext';
-import imageCompression from 'browser-image-compression';
-import { PostTypeSelector } from '@/components/PostTypeSelector';
-import { SmartPostCreator, PostType } from '@/components/SmartPostCreator';
-import { Card } from '@/components/ui/card';
+import React, { useState, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card } from "@/components/ui/card";
+import { Camera, ImageIcon, X } from "lucide-react";
 
-const CreatePost: React.FC = () => {
-  const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [selectedPostType, setSelectedPostType] = useState<PostType | null>(null);
+export type PostType = "announcement" | "event" | "offer" | "general";
 
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const { currentUser } = useAuth();
+interface SmartPostCreatorProps {
+  type: PostType;
+  onSubmit: (formData: Record<string, any>) => void;
+  onCancel: () => void;
+}
 
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!currentUser) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to create a post",
-        variant: "destructive",
-      });
-      navigate('/login');
-    }
-  }, [currentUser, navigate, toast]);
+export const SmartPostCreator: React.FC<SmartPostCreatorProps> = ({
+  type,
+  onSubmit,
+  onCancel,
+}) => {
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [recording, setRecording] = useState(false);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const handleSmartPostSubmit = async (formData: Record<string, any>) => {
-    const user = auth.currentUser;
-    if (!user) {
-      toast({
-        title: "Not authenticated",
-        description: "Please log in to create a post",
-        variant: "destructive",
-      });
-      navigate('/login');
-      return;
-    }
-
-    setLoading(true);
-    setUploadProgress(0);
-
-    try {
-      await user.getIdToken(true);
-      let imageUrl: string | null = null;
-
-      // Handle image upload
-      if (formData.image && formData.image instanceof File) {
-        const compressedImage = await imageCompression(formData.image, {
-          maxSizeMB: 1,
-          maxWidthOrHeight: 1920,
-          useWebWorker: true,
-        });
-
-        const imageRef = ref(storage, `posts/${user.uid}/${Date.now()}_${formData.image.name}`);
-        const uploadTask = uploadBytesResumable(imageRef, compressedImage);
-
-        imageUrl = await new Promise<string>((resolve, reject) => {
-          uploadTask.on(
-            'state_changed',
-            (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-              setUploadProgress(progress);
-            },
-            (error) => reject(error),
-            async () => {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            }
-          );
-        });
-      }
-
-      // Convert form data to structured text
-      const structuredContent = Object.entries(formData)
-        .filter(([key]) => key !== 'image' && key !== 'postType')
-        .map(([key, value]) => `**${key}**: ${value}`)
-        .join('\n\n');
-
-      // Save to Firestore
-      const postData = {
-        userId: user.uid,
-        author: user.email || 'Anonymous',
-        text: structuredContent,
-        imageUrl,
-        postType: formData.postType,
-        metadata: formData,
-        likes: 0,
-        shares: 0,
-        comments: [],
-        createdAt: serverTimestamp(),
-      };
-
-      await addDoc(collection(db, 'posts'), postData);
-
-      toast({
-        title: "Post created!",
-        description: "Your post has been shared with your tribe",
-      });
-
-      setSelectedPostType(null);
-      navigate('/feed');
-    } catch (error: any) {
-      console.error("Error creating post:", error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create post",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-      setUploadProgress(0);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
     }
   };
 
+  const startCamera = async () => {
+    try {
+      setRecording(true);
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error("Camera access error:", err);
+      alert("Unable to access your camera. Please allow permission.");
+      setRecording(false);
+    }
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const context = canvasRef.current.getContext("2d");
+      if (context) {
+        context.drawImage(videoRef.current, 0, 0, 640, 480);
+        canvasRef.current.toBlob((blob) => {
+          if (blob) {
+            const file = new File([blob], "photo.jpg", { type: "image/jpeg" });
+            setImage(file);
+            setPreview(URL.createObjectURL(blob));
+          }
+        }, "image/jpeg");
+      }
+      stopCamera();
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
+      videoRef.current.srcObject = null;
+    }
+    setRecording(false);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit({
+      title,
+      content,
+      image,
+      postType: type,
+    });
+  };
+
   return (
-    <Layout>
-      <div className="max-w-2xl mx-auto p-6">
-        {!selectedPostType ? (
-          <PostTypeSelector onSelect={setSelectedPostType} />
-        ) : (
-          <Card className="p-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedPostType(null)}
-              className="mb-4"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Post Types
-            </Button>
+    <Card className="p-6 space-y-4">
+      <form onSubmit={handleSubmit}>
+        <h2 className="text-xl font-bold capitalize mb-4">{type} Post</h2>
 
-            <SmartPostCreator
-              type={selectedPostType}
-              onSubmit={handleSmartPostSubmit}
-              onCancel={() => setSelectedPostType(null)}
-            />
+        <Input
+          placeholder="Enter a title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="mb-3"
+          required
+        />
 
-            {loading && uploadProgress > 0 && (
-              <div className="mt-4">
-                <Progress value={uploadProgress} className="w-full" />
-                <p className="text-sm text-muted-foreground text-center mt-2">
-                  {uploadProgress < 100
-                    ? `Uploading... ${Math.round(uploadProgress)}%`
-                    : 'Processing...'}
-                </p>
-              </div>
-            )}
-          </Card>
+        <Textarea
+          placeholder="Write something..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="mb-3 min-h-[100px]"
+          required
+        />
+
+        {/* --- Image Upload + Camera Section --- */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => document.getElementById("fileInput")?.click()}
+            className="flex items-center gap-2"
+          >
+            <ImageIcon className="w-4 h-4" /> Upload Image
+          </Button>
+
+          <Button
+            type="button"
+            variant="outline"
+            onClick={startCamera}
+            className="flex items-center gap-2"
+          >
+            <Camera className="w-4 h-4" /> Use Camera
+          </Button>
+
+          <input
+            id="fileInput"
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleImageChange}
+          />
+        </div>
+
+        {/* --- Camera View --- */}
+        {recording && (
+          <div className="mt-4 space-y-2">
+            <video ref={videoRef} autoPlay playsInline className="w-full rounded-lg" />
+            <div className="flex gap-2">
+              <Button type="button" onClick={capturePhoto} className="flex-1">
+                Capture
+              </Button>
+              <Button type="button" onClick={stopCamera} variant="destructive" className="flex-1">
+                Cancel
+              </Button>
+            </div>
+            <canvas ref={canvasRef} width="640" height="480" hidden />
+          </div>
         )}
-      </div>
-    </Layout>
+
+        {/* --- Image Preview --- */}
+        {preview && (
+          <div className="relative mt-4">
+            <img
+              src={preview}
+              alt="preview"
+              className="w-full rounded-lg object-cover shadow-md"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              className="absolute top-2 right-2 rounded-full"
+              onClick={() => {
+                setImage(null);
+                setPreview(null);
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
+        <div className="flex justify-end gap-3 mt-6">
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button type="submit">Post</Button>
+        </div>
+      </form>
+    </Card>
   );
 };
-
-export default CreatePost;
-
