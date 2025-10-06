@@ -35,30 +35,45 @@ const CreatePost: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim() && !image) return;
-    if (!currentUser) return;
+    
+    // Check if user is authenticated
+    const user = auth.currentUser;
+    if (!user) {
+      toast({
+        title: "Not authenticated",
+        description: "Please log in to create a post",
+        variant: "destructive",
+      });
+      navigate('/login');
+      return;
+    }
     
     setLoading(true);
     try {
+      console.log("Creating post with user:", user.uid);
       let imageUrl = null;
 
       // Upload image to Firebase Storage if provided
       if (image) {
-        const imageRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${image.name}`);
+        const imageRef = ref(storage, `posts/${user.uid}/${Date.now()}_${image.name}`);
         await uploadBytes(imageRef, image);
         imageUrl = await getDownloadURL(imageRef);
       }
 
       // Save post to Firestore
-      await addDoc(collection(db, 'posts'), {
-        userId: currentUser.uid,
-        author: currentUser.email || 'Anonymous',
+      const postData = {
+        userId: user.uid,
+        author: user.email || 'Anonymous',
         text: content,
         imageUrl,
         likes: 0,
         shares: 0,
         comments: [],
         createdAt: serverTimestamp(),
-      });
+      };
+      
+      console.log("Saving post data:", postData);
+      await addDoc(collection(db, 'posts'), postData);
       
       toast({
         title: "Post created!",
