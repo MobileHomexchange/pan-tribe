@@ -10,6 +10,7 @@ import { useSavedItems } from "@/hooks/useSavedItems";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
+import { detectAndEmbedMedia } from "@/lib/mediaEmbedder";
 
 interface PostProps {
   post: PostType;
@@ -174,9 +175,9 @@ export function Post({ post, onInteraction }: PostProps) {
         <div 
           className="text-card-foreground whitespace-pre-wrap leading-relaxed"
           dangerouslySetInnerHTML={{ 
-            __html: DOMPurify.sanitize(post.content, {
-              ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em'],
-              ALLOWED_ATTR: ['href', 'target', 'rel']
+            __html: DOMPurify.sanitize(detectAndEmbedMedia(post.content), {
+              ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em', 'div', 'iframe'],
+              ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style', 'src', 'frameborder', 'allow', 'allowfullscreen']
             })
           }}
         />

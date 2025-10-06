@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import DOMPurify from "dompurify";
+import { detectAndEmbedMedia } from "@/lib/mediaEmbedder";
 
 interface Post {
   id: string;
@@ -101,9 +102,9 @@ export const PostComponent = () => {
           <div 
             className="mb-3 text-card-foreground"
             dangerouslySetInnerHTML={{ 
-              __html: DOMPurify.sanitize(post.content, {
-                ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em'],
-                ALLOWED_ATTR: ['href', 'target', 'rel']
+              __html: DOMPurify.sanitize(detectAndEmbedMedia(post.content), {
+                ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em', 'div', 'iframe'],
+                ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style', 'src', 'frameborder', 'allow', 'allowfullscreen']
               })
             }}
           />
