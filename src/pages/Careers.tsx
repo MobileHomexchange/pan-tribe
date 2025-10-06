@@ -2,19 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, Briefcase, Plus, Search, ChevronDown, ChevronUp, Shield, Settings } from "lucide-react";
+import { MapPin, Briefcase, Search, ChevronDown, ChevronUp } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { EmployerVerificationForm } from "@/components/jobs/EmployerVerificationForm";
-import { EnhancedJobPostForm } from "@/components/jobs/EnhancedJobPostForm";
-import { JobModerationDashboard } from "@/components/jobs/JobModerationDashboard";
-import { ApplicantSafetyFeatures } from "@/components/jobs/ApplicantSafetyFeatures";
-import { EmployerProfile, JobPost } from "@/lib/jobVettingSystem";
 import { Layout } from "@/components/layout/Layout";
 
 interface Job {
@@ -78,7 +70,6 @@ const mockJobs: Job[] = [
 
 export default function Careers() {
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const [isPostJobOpen, setIsPostJobOpen] = useState(false);
   const [searchFilters, setSearchFilters] = useState({
     keywords: "",
     location: "",
@@ -87,9 +78,6 @@ export default function Careers() {
     experience: "",
     salary: ""
   });
-  const [currentEmployer, setCurrentEmployer] = useState<EmployerProfile | null>(null);
-  const [verificationStep, setVerificationStep] = useState<'verify' | 'post'>('verify');
-  const [isAdmin, setIsAdmin] = useState(false); // For demo purposes
   const { toast } = useToast();
 
   const handleSearch = () => {
@@ -99,30 +87,6 @@ export default function Careers() {
     });
   };
 
-  const handleVerificationComplete = (employer: EmployerProfile) => {
-    setCurrentEmployer(employer);
-    setVerificationStep('post');
-    toast({
-      title: "Verification Complete!",
-      description: "You can now post jobs on our platform."
-    });
-  };
-
-  const handleJobSubmit = (jobPost: JobPost) => {
-    // In a real app, this would save to database
-    console.log('Job submitted:', jobPost);
-    setIsPostJobOpen(false);
-    setVerificationStep('verify');
-    setCurrentEmployer(null);
-  };
-
-  const handleJobReport = (report: any) => {
-    console.log('Job reported:', report);
-  };
-
-  const handleJobRating = (rating: any) => {
-    console.log('Job rated:', rating);
-  };
 
   const handleApply = (jobTitle: string, company: string) => {
     toast({
@@ -134,23 +98,6 @@ export default function Careers() {
   return (
     <Layout>
       <div className="space-y-6">
-        {/* Admin Toggle (Demo) */}
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsAdmin(!isAdmin)}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            {isAdmin ? 'User View' : 'Admin View'}
-          </Button>
-        </div>
-
-        {isAdmin ? (
-          <JobModerationDashboard />
-        ) : (
-          <>
-        
         {/* Hero Section */}
         <div className="bg-gradient-to-br from-primary to-primary/80 text-white p-8 rounded-xl text-center">
           <h1 className="text-3xl font-bold mb-4">Find Your Dream Career</h1>
@@ -274,57 +221,12 @@ export default function Careers() {
 
         {/* Job Listings */}
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Briefcase className="w-5 h-5" />
-                Latest Job Postings
-              </CardTitle>
-              <CardDescription>125 jobs found</CardDescription>
-            </div>
-            <Dialog open={isPostJobOpen} onOpenChange={setIsPostJobOpen}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Post a Job
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <Shield className="w-5 h-5 text-primary" />
-                    Secure Job Posting System
-                  </DialogTitle>
-                </DialogHeader>
-                
-                <Tabs value={verificationStep} onValueChange={setVerificationStep as any}>
-                  <TabsList>
-                    <TabsTrigger value="verify" disabled={!!currentEmployer}>
-                      <Shield className="w-4 h-4 mr-2" />
-                      Employer Verification
-                    </TabsTrigger>
-                    <TabsTrigger value="post" disabled={!currentEmployer}>
-                      <Briefcase className="w-4 h-4 mr-2" />
-                      Post Job
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value="verify">
-                    <EmployerVerificationForm onVerificationComplete={handleVerificationComplete} />
-                  </TabsContent>
-                  
-                  <TabsContent value="post">
-                    {currentEmployer && (
-                      <EnhancedJobPostForm
-                        employer={currentEmployer}
-                        onJobSubmit={handleJobSubmit}
-                        onCancel={() => setIsPostJobOpen(false)}
-                      />
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </DialogContent>
-            </Dialog>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Briefcase className="w-5 h-5" />
+              Latest Job Postings
+            </CardTitle>
+            <CardDescription>125 jobs found</CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-4">
@@ -354,39 +256,9 @@ export default function Careers() {
                     ))}
                   </div>
                   
-                  <div className="flex justify-between items-center">
-                    <p className="text-xs text-muted-foreground">
-                      Posted {job.postedDays} {job.postedDays === 1 ? 'day' : 'days'} ago
-                    </p>
-                    
-                    {/* Safety Features for each job */}
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Shield className="w-4 h-4 mr-2" />
-                          Safety Info
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl">
-                        <DialogHeader>
-                          <DialogTitle>Job Safety Information</DialogTitle>
-                        </DialogHeader>
-                        <ApplicantSafetyFeatures
-                          job={{
-                            id: job.id,
-                            title: job.title,
-                            company: job.company,
-                            contactEmail: "contact@company.com", // Mock data
-                            trustScore: 85, // Mock trust score
-                            reports: [],
-                            flagReasons: []
-                          } as JobPost}
-                          onReport={handleJobReport}
-                          onRating={handleJobRating}
-                        />
-                      </DialogContent>
-                    </Dialog>
-                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Posted {job.postedDays} {job.postedDays === 1 ? 'day' : 'days'} ago
+                  </p>
                 </CardContent>
               </Card>
             ))}
@@ -406,8 +278,6 @@ export default function Careers() {
             </div>
           </CardContent>
         </Card>
-          </>
-        )}
       </div>
     </Layout>
   );
