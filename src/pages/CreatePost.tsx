@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,10 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Layout } from '@/components/layout/Layout';
 import { ImageIcon } from 'lucide-react';
+import { auth, db, storage } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useAuth } from '@/contexts/AuthContext';
 
 const CreatePost: React.FC = () => {
   const [content, setContent] = useState('');
@@ -14,26 +18,59 @@ const CreatePost: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentUser } = useAuth();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to create a post",
+        variant: "destructive",
+      });
+      navigate('/login');
+    }
+  }, [currentUser, navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!content.trim() && !image) return;
+    if (!currentUser) return;
     
     setLoading(true);
     try {
-      // Simulate post creation (replace with actual implementation)
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      let imageUrl = null;
+
+      // Upload image to Firebase Storage if provided
+      if (image) {
+        const imageRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${image.name}`);
+        await uploadBytes(imageRef, image);
+        imageUrl = await getDownloadURL(imageRef);
+      }
+
+      // Save post to Firestore
+      await addDoc(collection(db, 'posts'), {
+        userId: currentUser.uid,
+        author: currentUser.email || 'Anonymous',
+        text: content,
+        imageUrl,
+        likes: 0,
+        shares: 0,
+        comments: [],
+        createdAt: serverTimestamp(),
+      });
       
       toast({
         title: "Post created!",
         description: "Your post has been shared with your tribe",
       });
       
-      navigate('/');
-    } catch (error) {
+      navigate('/feed');
+    } catch (error: any) {
+      console.error("Error creating post:", error);
       toast({
         title: "Error",
-        description: "Failed to create post. Please try again.",
+        description: error.message || "Failed to create post. Please try again.",
         variant: "destructive",
       });
     } finally {

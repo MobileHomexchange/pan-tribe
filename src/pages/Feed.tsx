@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,6 +10,8 @@ interface Post {
   id: string;
   text: string;
   author: string;
+  imageUrl?: string;
+  createdAt?: any;
 }
 
 const Feed = () => {
@@ -17,23 +19,29 @@ const Feed = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const postsCollection = collection(db, "posts");
-        const postsSnapshot = await getDocs(postsCollection);
-        const postsList = postsSnapshot.docs.map(doc => ({
+    // Real-time listener for posts
+    const postsQuery = query(
+      collection(db, "posts"),
+      orderBy("createdAt", "desc")
+    );
+    
+    const unsubscribe = onSnapshot(
+      postsQuery,
+      (snapshot) => {
+        const postsList = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         })) as Post[];
         setPosts(postsList);
-      } catch (error) {
+        setLoading(false);
+      },
+      (error) => {
         console.error("Error fetching posts:", error);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchPosts();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
@@ -77,9 +85,16 @@ const Feed = () => {
                   </Avatar>
                   <div className="font-semibold text-foreground">{post.author}</div>
                 </div>
-                <div className="text-foreground whitespace-pre-wrap">
+                <div className="text-foreground whitespace-pre-wrap mb-3">
                   {DOMPurify.sanitize(post.text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })}
                 </div>
+                {post.imageUrl && (
+                  <img 
+                    src={post.imageUrl} 
+                    alt="Post image" 
+                    className="w-full rounded-lg max-h-96 object-cover"
+                  />
+                )}
               </CardContent>
             </Card>
           ))
