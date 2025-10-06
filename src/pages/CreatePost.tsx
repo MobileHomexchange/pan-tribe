@@ -4,19 +4,22 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Layout } from '@/components/layout/Layout';
 import { ImageIcon } from 'lucide-react';
 import { auth, db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useAuth } from '@/contexts/AuthContext';
+import imageCompression from 'browser-image-compression';
 
 const CreatePost: React.FC = () => {
   const [content, setContent] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentUser } = useAuth();
@@ -63,6 +66,8 @@ const CreatePost: React.FC = () => {
     }
     
     setLoading(true);
+    setUploadProgress(0);
+    
     try {
       // Force token refresh to ensure we have valid credentials
       await user.getIdToken(true);
@@ -71,9 +76,38 @@ const CreatePost: React.FC = () => {
 
       // Upload image to Firebase Storage if provided
       if (image) {
+        // Compress image before upload
+        console.log("Compressing image...");
+        const compressedImage = await imageCompression(image, {
+          maxSizeMB: 1,
+          maxWidthOrHeight: 1920,
+          useWebWorker: true,
+        });
+        console.log("Image compressed from", image.size, "to", compressedImage.size);
+
+        // Upload with progress tracking
         const imageRef = ref(storage, `posts/${user.uid}/${Date.now()}_${image.name}`);
-        await uploadBytes(imageRef, image);
-        imageUrl = await getDownloadURL(imageRef);
+        const uploadTask = uploadBytesResumable(imageRef, compressedImage);
+
+        // Wait for upload to complete with progress updates
+        imageUrl = await new Promise<string>((resolve, reject) => {
+          uploadTask.on(
+            'state_changed',
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+              console.log(`Upload progress: ${progress.toFixed(0)}%`);
+            },
+            (error) => {
+              console.error("Upload error:", error);
+              reject(error);
+            },
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(downloadURL);
+            }
+          );
+        });
       }
 
       // Save post to Firestore
@@ -95,6 +129,12 @@ const CreatePost: React.FC = () => {
         title: "Post created!",
         description: "Your post has been shared with your tribe",
       });
+      
+      // Reset form
+      setContent('');
+      setImage(null);
+      setImagePreview(null);
+      setUploadProgress(0);
       
       navigate('/feed');
     } catch (error: any) {
@@ -155,8 +195,18 @@ const CreatePost: React.FC = () => {
             className="w-full"
             size="lg"
           >
-            {loading ? 'Posting...' : 'Post'}
+            {loading ? (
+              uploadProgress > 0 && uploadProgress < 100 
+                ? `Uploading... ${Math.round(uploadProgress)}%`
+                : uploadProgress === 100
+                ? 'Processing...'
+                : 'Posting...'
+            ) : 'Post'}
           </Button>
+          
+          {loading && uploadProgress > 0 && (
+            <Progress value={uploadProgress} className="w-full" />
+          )}
         </form>
       </div>
     </Layout>
