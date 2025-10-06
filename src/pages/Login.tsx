@@ -42,7 +42,7 @@ const Login = () => {
 
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentUser, loading: authLoading, setUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
 
   // ✅ Step 1: Set Firebase auth persistence
   useEffect(() => {
@@ -72,10 +72,9 @@ const Login = () => {
 
     setLoading(true);
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      setUser(result.user); // store user in context
+      await signInWithEmailAndPassword(auth, email, password);
       toast({ title: "Success!", description: "Logged in successfully" });
-      navigate("/feed"); // Adjust to your dashboard route
+      navigate("/feed");
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to log in", variant: "destructive" });
     } finally {

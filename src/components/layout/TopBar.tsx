@@ -1,4 +1,4 @@
-import { Menu, Home } from "lucide-react";
+import { Menu, Home, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,16 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
         <h1 className="text-xl font-bold text-pan-green">Tribe Pulse</h1>
       </div>
       
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => navigate("/create-post")}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          <span className="hidden sm:inline">Create Post</span>
+        </Button>
         <Button
           variant="ghost"
           size="sm"
