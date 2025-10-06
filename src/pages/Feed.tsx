@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { PostImage } from "@/components/feed/PostImage";
 import DOMPurify from 'dompurify';
 
 interface Post {
@@ -14,15 +16,18 @@ interface Post {
   createdAt?: any;
 }
 
+const POSTS_PER_PAGE = 20;
+
 const Feed = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Real-time listener for posts
+    // Real-time listener for posts with pagination limit
     const postsQuery = query(
       collection(db, "posts"),
-      orderBy("createdAt", "desc")
+      orderBy("createdAt", "desc"),
+      limit(POSTS_PER_PAGE)
     );
     
     const unsubscribe = onSnapshot(
@@ -89,11 +94,7 @@ const Feed = () => {
                   {DOMPurify.sanitize(post.text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })}
                 </div>
                 {post.imageUrl && (
-                  <img 
-                    src={post.imageUrl} 
-                    alt="Post image" 
-                    className="w-full rounded-lg max-h-96 object-cover"
-                  />
+                  <PostImage src={post.imageUrl} alt="Post image" />
                 )}
               </CardContent>
             </Card>
