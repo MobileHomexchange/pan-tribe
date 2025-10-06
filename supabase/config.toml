@@ -1,1 +1,4 @@
 project_id = "zphxzowevukflyykokvp"
+
+[functions.set-firebase-custom-claims]
+verify_jwt = false

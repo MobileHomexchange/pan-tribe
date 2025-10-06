@@ -56,31 +56,53 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       setRoleLoading(true);
-      // Fetch user role from Supabase
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', currentUser.uid)
-        .single();
+      
+      // Force token refresh to get latest custom claims
+      await currentUser.getIdToken(true);
+      const tokenResult = await currentUser.getIdTokenResult();
+      const firebaseRole = tokenResult.claims.role as string | undefined;
 
-      if (error) {
-        console.error('Error fetching user role:', error);
-        setUserRole('user'); // Default to user role
-        setIsAdmin(false);
-      } else if (data) {
-        setUserRole(data.role);
-        setIsAdmin(data.role === 'admin');
+      if (firebaseRole) {
+        setUserRole(firebaseRole);
+        setIsAdmin(firebaseRole === 'admin');
       } else {
-        // No role found, assign default user role
-        const { error: insertError } = await supabase
+        // Fallback to Supabase if no custom claims yet
+        const { data, error } = await supabase
           .from('user_roles')
-          .insert([{ user_id: currentUser.uid, role: 'user' }]);
-        
-        if (insertError) {
-          console.error('Error creating user role:', insertError);
+          .select('role')
+          .eq('user_id', currentUser.uid)
+          .single();
+
+        if (error) {
+          console.error('Error fetching user role:', error);
+          setUserRole('user');
+          setIsAdmin(false);
+        } else if (data) {
+          setUserRole(data.role);
+          setIsAdmin(data.role === 'admin');
+          
+          // Sync role to Firebase custom claims
+          await supabase.functions.invoke('set-firebase-custom-claims', {
+            body: { firebaseUid: currentUser.uid, role: data.role }
+          });
+        } else {
+          // No role found, assign default user role
+          const { error: insertError } = await supabase
+            .from('user_roles')
+            .insert([{ user_id: currentUser.uid, role: 'user' }]);
+          
+          if (insertError) {
+            console.error('Error creating user role:', insertError);
+          }
+          
+          // Set custom claims for new user
+          await supabase.functions.invoke('set-firebase-custom-claims', {
+            body: { firebaseUid: currentUser.uid, role: 'user' }
+          });
+          
+          setUserRole('user');
+          setIsAdmin(false);
         }
-        setUserRole('user');
-        setIsAdmin(false);
       }
     } catch (error) {
       console.error('Error in refreshUserRole:', error);
@@ -107,6 +129,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     await supabase
       .from('user_roles')
       .insert([{ user_id: user.uid, role: 'user' }]);
+
+    // Set Firebase custom claims
+    await supabase.functions.invoke('set-firebase-custom-claims', {
+      body: { firebaseUid: user.uid, role: 'user' }
+    });
   }
 
   async function login(email: string, password: string) {
@@ -132,6 +159,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await supabase
         .from('user_roles')
         .insert([{ user_id: user.uid, role: 'user' }]);
+
+      // Set Firebase custom claims
+      await supabase.functions.invoke('set-firebase-custom-claims', {
+        body: { firebaseUid: user.uid, role: 'user' }
+      });
     }
   }
 
