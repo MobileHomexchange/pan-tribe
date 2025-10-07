@@ -23,7 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Heart, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-// -------- Post Type --------
+// -------- Types --------
 interface Post {
   id: string;
   userName: string;
@@ -45,7 +45,7 @@ interface CommentItem {
   timestamp?: { seconds: number; nanoseconds: number };
 }
 
-// 🕒 Time Ago Formatter
+// 🕒 Time Ago
 const getTimeAgo = (timestamp?: { seconds: number; nanoseconds: number }) => {
   if (!timestamp) return "";
   const date = new Date(timestamp.seconds * 1000);
@@ -65,7 +65,7 @@ const getTimeAgo = (timestamp?: { seconds: number; nanoseconds: number }) => {
   return `${years}y ago`;
 };
 
-// -------- Cached Dual-API GIF Picker --------
+// -------- GIF Picker (Cached Dual API) --------
 const CACHE_EXPIRY_HOURS = 24;
 
 const GifPicker: React.FC<{ onPick: (url: string) => void }> = ({ onPick }) => {
@@ -308,12 +308,38 @@ const CommentModal: React.FC<{
   );
 };
 
+// -------- Viral CTA Modal --------
+const ViralJoinModal: React.FC<{ open: boolean; onClose: () => void }> = ({ open, onClose }) => {
+  const joinUrl = import.meta.env.VITE_TRIBEPULSE_JOIN_URL || "https://tribelpulse.com";
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-md text-center space-y-4 py-8">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-bold text-primary">🚀 This post is going viral!</DialogTitle>
+        </DialogHeader>
+        <p className="text-muted-foreground">
+          Join <strong>Tribe L Pulse</strong> to connect with others who are fueling this momentum.
+        </p>
+        <DialogFooter className="flex justify-center gap-4 pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Maybe Later
+          </Button>
+          <Button onClick={() => window.open(joinUrl, "_blank")} className="bg-primary text-white font-semibold">
+            Join Now
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 // -------- Main Feed --------
 const MainFeed: React.FC = () => {
   const { currentUser } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [activePostId, setActivePostId] = useState<string | null>(null);
+  const [showViralModal, setShowViralModal] = useState(false);
 
   useEffect(() => {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
@@ -324,6 +350,15 @@ const MainFeed: React.FC = () => {
     });
     return () => unsub();
   }, []);
+
+  // 🧠 Viral trigger
+  useEffect(() => {
+    const viral = posts.some((p) => (p.likes || 0) >= 25 || (p.comments?.length || 0) >= 10);
+    if (viral && !sessionStorage.getItem("viralPromptShown")) {
+      setShowViralModal(true);
+      sessionStorage.setItem("viralPromptShown", "true");
+    }
+  }, [posts]);
 
   const likePost = async (postId: string) => {
     if (!currentUser) return;
@@ -400,6 +435,9 @@ const MainFeed: React.FC = () => {
       {activePostId && (
         <CommentModal postId={activePostId} open={Boolean(activePostId)} onClose={() => setActivePostId(null)} />
       )}
+
+      {/* Viral Modal */}
+      {showViralModal && <ViralJoinModal open={showViralModal} onClose={() => setShowViralModal(false)} />}
     </div>
   );
 };
