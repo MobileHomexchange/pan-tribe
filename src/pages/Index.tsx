@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { db } from "../lib/firebase";
 import { collection, addDoc } from "firebase/firestore";
+import { Layout } from "@/components/layout/Layout";
+import MainFeed from "@/components/feed/MainFeed";
 
-export default function IndexPage() {
+const Index = () => {
   useEffect(() => {
     const testWrite = async () => {
       try {
@@ -18,5 +20,19 @@ export default function IndexPage() {
     testWrite();
   }, []);
 
-  return <h1>Firebase Connection Test Page</h1>;
-}
+  return (
+    <Layout>
+      <MainFeed />
+    </Layout>
+  );
+};
+
+export default Index;
+import { Layout } from "@/components/layout/Layout";
+import MainFeed from "@/components/feed/MainFeed";
+
+const Index = () => {
+  return <Layout />;
+};
+
+export default Index;
