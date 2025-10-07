@@ -19,31 +19,31 @@ interface PostTemplate {
 // Post type templates
 const postTemplates: Record<PostType, PostTemplate> = {
   general: {
-    fields: ["content", "media"],
+    fields: ["content"],
     layout: "basic",
     label: "General Post",
     icon: "📝",
   },
   announcement: {
-    fields: ["title", "summary", "priority", "media"],
+    fields: ["title", "image", "summary", "priority"],
     layout: "featured",
     label: "Community Announcement",
     icon: "📢",
   },
   question: {
-    fields: ["question", "details", "category", "media"],
+    fields: ["question", "details", "category"],
     layout: "qna",
     label: "Ask the Community",
     icon: "❓",
   },
   idea: {
-    fields: ["title", "problem", "solution", "benefits", "media"],
+    fields: ["title", "problem", "solution", "benefits"],
     layout: "structured",
     label: "Share Your Idea",
     icon: "💡",
   },
   praise: {
-    fields: ["recipient", "message", "category", "media"],
+    fields: ["recipient", "message", "category"],
     layout: "highlight",
     label: "Give Praise",
     icon: "⭐",
@@ -76,15 +76,29 @@ interface SmartPostCreatorProps {
 // Dynamic field renderer
 const renderField = (field: string, value: any, setValue: (value: any) => void) => {
   switch (field) {
-    case "image":
+    case "media":
       return (
-        <Input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setValue(e.target.files?.[0] || null)}
-          className="cursor-pointer"
-        />
+        <div className="space-y-3">
+          <Input
+            id="media"
+            type="file"
+            accept="image/*,video/*"
+            onChange={(e) => setValue(e.target.files?.[0] || null)}
+            className="cursor-pointer"
+          />
+
+          {value && (
+            <div className="mt-2 rounded-lg overflow-hidden border border-border p-2">
+              {value.type.startsWith("image/") ? (
+                <img src={URL.createObjectURL(value)} alt="Preview" className="max-h-60 w-auto rounded-md mx-auto" />
+              ) : (
+                <video controls className="max-h-60 w-auto rounded-md mx-auto" src={URL.createObjectURL(value)} />
+              )}
+            </div>
+          )}
+        </div>
       );
+
     case "summary":
     case "details":
     case "message":
