@@ -8,10 +8,10 @@ const firebaseConfig = {
   apiKey: "AIzaSyDP5e8qVmZfGOTECfAZWHUY9LOiv4qgqCg",
   authDomain: "tribe-l-pulse.firebaseapp.com",
   projectId: "tribe-l-pulse",
-  storageBucket: "tribe-l-pulse.firebasestorage.app",
+  storageBucket: "tribe-l-pulse.appspot.com", // ✅ FIXED LINE
   messagingSenderId: "63825600323",
   appId: "1:63825600323:web:dcbf34a6f24921c20519f6",
-  measurementId: "G-P01T48K595"
+  measurementId: "G-P01T48K595",
 };
 
 // Initialize Firebase
