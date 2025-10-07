@@ -34,6 +34,7 @@ import EventHistory from "./pages/EventHistory";
 import EventSettings from "./pages/EventSettings";
 import CreateEvent from "./pages/CreateEvent";
 import NotFound from "./pages/NotFound";
+import FirebaseTest from "./pages/FirebaseTest";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { GroupDetail } from "./components/tribe/GroupDetail";
 import AdminLayout from "./admin/AdminLayout";
@@ -86,6 +87,7 @@ const App = () => (
               <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
               <Route path="/event-history" element={<ProtectedRoute><EventHistory /></ProtectedRoute>} />
               <Route path="/event-settings" element={<ProtectedRoute><EventSettings /></ProtectedRoute>} />
+              <Route path="/firebase-test" element={<FirebaseTest />} />
               
               {/* Admin Routes - Protected by admin role */}
               <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
