@@ -1,43 +1,30 @@
-import { Menu, Home, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useNavigate } from "react-router-dom";
+import { Menu } from "lucide-react";
 
 interface TopBarProps {
   onMenuToggle: () => void;
 }
 
 export function TopBar({ onMenuToggle }: TopBarProps) {
-  const navigate = useNavigate();
-
   return (
-    <header className="fixed top-0 right-0 left-0 lg:left-72 h-16 bg-card border-b border-sidebar-border flex items-center justify-between px-5 z-50">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger className="lg:hidden">
-          <Menu className="h-5 w-5" />
-        </SidebarTrigger>
-        <h1 className="text-xl font-bold text-pan-green">Tribe Pulse</h1>
+    <header className="fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-white border-b shadow-sm md:px-6">
+      {/* Left Section - Logo + Menu Icon */}
+      <div className="flex items-center gap-3">
+        {/* Mobile Menu Button */}
+        <button
+          onClick={onMenuToggle}
+          className="md:hidden p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
+        >
+          <Menu className="h-5 w-5 text-gray-700" />
+        </button>
+
+        {/* App Name / Logo */}
+        <h1 className="text-lg font-semibold text-pan-green">Tribe Pulse</h1>
       </div>
-      
-      <div className="flex items-center gap-2">
-        <Button
-          variant="default"
-          size="sm"
-          onClick={() => navigate("/create-post")}
-          className="flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          <span className="hidden sm:inline">Create Post</span>
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2"
-        >
-          <Home className="h-4 w-4" />
-          <span className="hidden sm:inline">Home</span>
-        </Button>
+
+      {/* Right Section - Actions */}
+      <div className="flex items-center gap-3">
+        {/* Example placeholder for future icons or profile */}
+        {/* <UserIcon className="h-5 w-5 text-gray-700" /> */}
       </div>
     </header>
   );
