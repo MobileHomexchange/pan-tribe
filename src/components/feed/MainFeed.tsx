@@ -10,18 +10,20 @@ import {
   arrayUnion,
   serverTimestamp,
   getDoc,
+  setDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
 import { Loader2, Heart, MessageCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
+// -------- Post Type --------
 interface Post {
   id: string;
   userName: string;
@@ -32,7 +34,6 @@ interface Post {
   timestamp?: { seconds: number; nanoseconds: number };
   likes?: number;
   comments?: CommentItem[];
-  [key: string]: any;
 }
 
 interface CommentItem {
@@ -44,7 +45,7 @@ interface CommentItem {
   timestamp?: { seconds: number; nanoseconds: number };
 }
 
-// 🕒 Helper: “time ago”
+// 🕒 Time Ago Formatter
 const getTimeAgo = (timestamp?: { seconds: number; nanoseconds: number }) => {
   if (!timestamp) return "";
   const date = new Date(timestamp.seconds * 1000);
@@ -64,31 +65,90 @@ const getTimeAgo = (timestamp?: { seconds: number; nanoseconds: number }) => {
   return `${years}y ago`;
 };
 
-// 🔎 Simple GIF picker (GIPHY). If key missing, falls back to manual URL input.
-const GifPicker: React.FC<{
-  onPick: (url: string) => void;
-}> = ({ onPick }) => {
-  const key = import.meta.env.VITE_GIPHY_API_KEY as string | undefined;
+// -------- Cached Dual-API GIF Picker --------
+const CACHE_EXPIRY_HOURS = 24;
+
+const GifPicker: React.FC<{ onPick: (url: string) => void }> = ({ onPick }) => {
+  const giphyKey = import.meta.env.VITE_GIPHY_API_KEY as string | undefined;
+  const tenorKey = import.meta.env.VITE_TENOR_API_KEY as string | undefined;
+
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<string[]>([]);
-  const canSearch = Boolean(key);
+
+  const fetchFromGiphy = async (query: string): Promise<string[]> => {
+    if (!giphyKey) return [];
+    const res = await fetch(
+      `https://api.giphy.com/v1/gifs/search?api_key=${giphyKey}&q=${encodeURIComponent(query)}&limit=24&rating=pg`,
+    );
+    const json = await res.json();
+    return (json?.data || [])
+      .map((g: any) => g?.images?.downsized_medium?.url || g?.images?.original?.url)
+      .filter(Boolean);
+  };
+
+  const fetchFromTenor = async (query: string): Promise<string[]> => {
+    if (!tenorKey) return [];
+    const res = await fetch(
+      `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(
+        query,
+      )}&key=${tenorKey}&limit=24&media_filter=minimal`,
+    );
+    const json = await res.json();
+    return (json?.results || [])
+      .map((r: any) => r?.media_formats?.gif?.url || r?.media_formats?.tinygif?.url)
+      .filter(Boolean);
+  };
 
   const search = async () => {
-    if (!canSearch) return;
     if (!q.trim()) return;
+    setLoading(true);
+    setResults([]);
+
+    const searchTerm = q.trim().toLowerCase();
+    const cacheRef = doc(db, "gifCache", searchTerm);
+
     try {
-      setLoading(true);
-      const res = await fetch(
-        `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(q)}&limit=24&rating=pg`,
-      );
-      const json = await res.json();
-      const urls: string[] = (json?.data || []).map(
-        (g: any) => g?.images?.downsized_medium?.url || g?.images?.original?.url,
-      );
-      setResults(urls.filter(Boolean));
-    } catch (e) {
-      console.error("GIF search failed:", e);
+      const snap = await getDoc(cacheRef);
+      const now = Date.now();
+
+      if (snap.exists()) {
+        const data = snap.data();
+        const updatedAt = data.updatedAt?.toDate?.() || new Date(0);
+        const ageHours = (now - updatedAt.getTime()) / 1000 / 3600;
+
+        if (ageHours < CACHE_EXPIRY_HOURS && Array.isArray(data.gifs)) {
+          setResults(data.gifs);
+          setLoading(false);
+          return;
+        }
+      }
+
+      let gifs: string[] = [];
+      try {
+        gifs = await fetchFromGiphy(searchTerm);
+      } catch {
+        gifs = [];
+      }
+
+      if (gifs.length === 0) {
+        try {
+          gifs = await fetchFromTenor(searchTerm);
+        } catch {
+          gifs = [];
+        }
+      }
+
+      setResults(gifs);
+
+      if (gifs.length > 0) {
+        await setDoc(cacheRef, {
+          gifs,
+          updatedAt: serverTimestamp(),
+        });
+      }
+    } catch (err) {
+      console.error("GIF search error:", err);
     } finally {
       setLoading(false);
     }
@@ -96,57 +156,54 @@ const GifPicker: React.FC<{
 
   return (
     <div className="space-y-2">
-      {canSearch ? (
-        <>
-          <div className="flex gap-2">
-            <Input
-              placeholder="Search GIFs (e.g., celebration)"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && search()}
-            />
-            <Button onClick={search} disabled={loading}>
-              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
-            </Button>
+      <div className="flex gap-2">
+        <Input
+          placeholder="Search GIFs (e.g., celebration)"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && search()}
+        />
+        <Button onClick={search} disabled={loading}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Search"}
+        </Button>
+      </div>
+
+      <ScrollArea className="h-48 border rounded-md p-2">
+        {results.length === 0 && !loading ? (
+          <div className="text-sm text-muted-foreground">Try searching for a GIF or paste one below.</div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2">
+            {results.map((url) => (
+              <button
+                key={url}
+                className="rounded overflow-hidden border hover:ring-2 hover:ring-primary"
+                onClick={() => onPick(url)}
+                type="button"
+              >
+                <img src={url} alt="gif" className="w-full h-24 object-cover" />
+              </button>
+            ))}
           </div>
-          <ScrollArea className="h-48 border rounded-md p-2">
-            {results.length === 0 && !loading ? (
-              <div className="text-sm text-muted-foreground">Try searching for a GIF above.</div>
-            ) : (
-              <div className="grid grid-cols-3 gap-2">
-                {results.map((url) => (
-                  <button
-                    key={url}
-                    className="rounded overflow-hidden border hover:ring-2 hover:ring-primary"
-                    onClick={() => onPick(url)}
-                    type="button"
-                  >
-                    <img src={url} alt="gif" className="w-full h-24 object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-        </>
-      ) : (
-        <div className="space-y-2">
-          <div className="text-xs text-muted-foreground">GIPHY key not set. Paste a GIF URL instead.</div>
-          <Input
-            placeholder="Paste a GIF URL (https://...)"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const val = (e.target as HTMLInputElement).value.trim();
-                if (val) onPick(val);
-              }
-            }}
-          />
-        </div>
-      )}
+        )}
+      </ScrollArea>
+
+      <div className="pt-2 space-y-1">
+        <p className="text-xs text-muted-foreground">Or paste a GIF URL manually:</p>
+        <Input
+          placeholder="https://media.giphy.com/media/yourgif.gif"
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              const val = (e.target as HTMLInputElement).value.trim();
+              if (val) onPick(val);
+            }
+          }}
+        />
+      </div>
     </div>
   );
 };
 
-// 💬 Comment Modal
+// -------- Comment Modal --------
 const CommentModal: React.FC<{
   postId: string;
   open: boolean;
@@ -155,11 +212,8 @@ const CommentModal: React.FC<{
   const { currentUser } = useAuth();
   const [text, setText] = useState("");
   const [gifUrl, setGifUrl] = useState<string | undefined>(undefined);
-  const [posting, setPosting] = useState(false);
   const [comments, setComments] = useState<CommentItem[]>([]);
-  const [postAuthor, setPostAuthor] = useState<string>("");
 
-  // Subscribe to post for live comments
   useEffect(() => {
     if (!open || !postId) return;
     const ref = doc(db, "posts", postId);
@@ -167,48 +221,30 @@ const CommentModal: React.FC<{
       if (snap.exists()) {
         const data = snap.data() as Post;
         setComments((data.comments as CommentItem[]) || []);
-        setPostAuthor(data.userName || "");
       }
     });
     return () => unsub();
   }, [open, postId]);
 
   const addComment = async () => {
-    if (!currentUser) return;
-    if (!text.trim() && !gifUrl) return;
-
-    setPosting(true);
-    try {
-      const ref = doc(db, "posts", postId);
-      const userName = currentUser.displayName || "Anonymous";
-      const userAvatar = currentUser.photoURL || "";
-      await updateDoc(ref, {
-        comments: arrayUnion({
-          userId: currentUser.uid,
-          userName,
-          userAvatar,
-          text: text.trim() || "",
-          gifUrl: gifUrl || "",
-          timestamp: serverTimestamp(),
-        }),
-      });
-      setText("");
-      setGifUrl(undefined);
-    } catch (e) {
-      console.error("Failed to add comment:", e);
-    } finally {
-      setPosting(false);
-    }
+    if (!currentUser || (!text.trim() && !gifUrl)) return;
+    const ref = doc(db, "posts", postId);
+    await updateDoc(ref, {
+      comments: arrayUnion({
+        userId: currentUser.uid,
+        userName: currentUser.displayName || "Anonymous",
+        userAvatar: currentUser.photoURL || "",
+        text: text.trim() || "",
+        gifUrl: gifUrl || "",
+        timestamp: serverTimestamp(),
+      }),
+    });
+    setText("");
+    setGifUrl(undefined);
   };
 
-  // latest first (optional)
   const ordered = useMemo(
-    () =>
-      [...comments].sort((a, b) => {
-        const ta = a.timestamp?.seconds || 0;
-        const tb = b.timestamp?.seconds || 0;
-        return tb - ta;
-      }),
+    () => [...comments].sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)),
     [comments],
   );
 
@@ -216,10 +252,9 @@ const CommentModal: React.FC<{
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Comments {postAuthor ? `on ${postAuthor}'s post` : ""}</DialogTitle>
+          <DialogTitle>Comments</DialogTitle>
         </DialogHeader>
 
-        {/* Existing comments */}
         <ScrollArea className="h-64 border rounded-md p-3 space-y-3">
           {ordered.length === 0 ? (
             <div className="text-sm text-muted-foreground">No comments yet. Start the conversation!</div>
@@ -244,10 +279,8 @@ const CommentModal: React.FC<{
           )}
         </ScrollArea>
 
-        {/* Composer */}
         <div className="space-y-3">
           <Input placeholder="Write a comment…" value={text} onChange={(e) => setText(e.target.value)} />
-          {/* GIF picker */}
           <GifPicker onPick={(url) => setGifUrl(url)} />
           {gifUrl && (
             <div className="border rounded-md p-2">
@@ -263,11 +296,11 @@ const CommentModal: React.FC<{
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose} disabled={posting}>
+          <Button variant="outline" onClick={onClose}>
             Close
           </Button>
-          <Button onClick={addComment} disabled={posting || (!text.trim() && !gifUrl)}>
-            {posting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Post Comment"}
+          <Button onClick={addComment} disabled={!text.trim() && !gifUrl}>
+            Post
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -275,6 +308,7 @@ const CommentModal: React.FC<{
   );
 };
 
+// -------- Main Feed --------
 const MainFeed: React.FC = () => {
   const { currentUser } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -282,54 +316,38 @@ const MainFeed: React.FC = () => {
   const [activePostId, setActivePostId] = useState<string | null>(null);
 
   useEffect(() => {
-    const postsRef = collection(db, "posts");
-    const q = query(postsRef, orderBy("timestamp", "desc"));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const postData: Post[] = snapshot.docs.map((d) => ({
-        id: d.id,
-        ...d.data(),
-      })) as Post[];
-      setPosts(postData);
+    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const data = snapshot.docs.map((d) => ({ id: d.id, ...d.data() })) as Post[];
+      setPosts(data);
       setLoading(false);
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
   const likePost = async (postId: string) => {
     if (!currentUser) return;
-    try {
-      const ref = doc(db, "posts", postId);
-      // (Optional) prevent multiple likes per user: check a likedBy map first
-      await updateDoc(ref, {
-        likes: increment(1),
-      });
-    } catch (e) {
-      console.error("Like failed:", e);
-    }
+    const ref = doc(db, "posts", postId);
+    await updateDoc(ref, { likes: increment(1) });
   };
 
-  const openComments = (postId: string) => setActivePostId(postId);
-  const closeComments = () => setActivePostId(null);
-
-  if (loading) {
+  if (loading)
     return (
       <div className="flex justify-center items-center py-20">
         <Loader2 className="animate-spin w-6 h-6 text-muted-foreground" />
       </div>
     );
-  }
 
-  if (posts.length === 0) {
+  if (posts.length === 0)
     return (
       <div className="text-center py-20 text-muted-foreground">No posts yet. Be the first to share something!</div>
     );
-  }
 
   return (
     <div className="space-y-6">
       {posts.map((post) => (
         <Card key={post.id} className="p-4 shadow-sm">
-          {/* User Header */}
+          {/* Header */}
           <div className="flex items-center gap-3 mb-3">
             <Avatar>
               {post.userAvatar ? (
@@ -347,10 +365,10 @@ const MainFeed: React.FC = () => {
             </div>
           </div>
 
-          {/* Text content */}
+          {/* Text */}
           {post.content && <p className="text-sm text-card-foreground mb-3 whitespace-pre-line">{post.content}</p>}
 
-          {/* Media content */}
+          {/* Media */}
           {post.mediaUrl && (
             <div className="mb-3">
               {/\.(jpeg|jpg|gif|png|webp)$/i.test(post.mediaUrl) ? (
@@ -361,15 +379,15 @@ const MainFeed: React.FC = () => {
             </div>
           )}
 
-          {/* Footer actions */}
+          {/* Footer */}
           <Separator className="my-3" />
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <div className="flex gap-3">
               <Button variant="ghost" size="sm" className="gap-2" onClick={() => likePost(post.id)}>
                 <Heart className="h-4 w-4" />
                 {post.likes || 0}
               </Button>
-              <Button variant="ghost" size="sm" className="gap-2" onClick={() => openComments(post.id)}>
+              <Button variant="ghost" size="sm" className="gap-2" onClick={() => setActivePostId(post.id)}>
                 <MessageCircle className="h-4 w-4" />
                 {post.comments?.length || 0}
               </Button>
@@ -379,7 +397,9 @@ const MainFeed: React.FC = () => {
       ))}
 
       {/* Comment Modal */}
-      {activePostId && <CommentModal postId={activePostId} open={Boolean(activePostId)} onClose={closeComments} />}
+      {activePostId && (
+        <CommentModal postId={activePostId} open={Boolean(activePostId)} onClose={() => setActivePostId(null)} />
+      )}
     </div>
   );
 };
