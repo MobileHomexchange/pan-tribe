@@ -26,7 +26,7 @@ const PostCreator = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Check authentication
+  // 🔐 Auth Check
   useEffect(() => {
     if (!auth.currentUser) {
       toast({
@@ -34,17 +34,16 @@ const PostCreator = () => {
         description: "Please log in to create a post",
         variant: "destructive",
       });
-      navigate('/login');
+      navigate("/login");
     }
   }, [navigate, toast]);
 
-  // Handle file selection (input)
+  // 📁 Add File(s)
   const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     await addFiles(Array.from(e.target.files));
   };
 
-  // Handle drag-and-drop events
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -65,7 +64,7 @@ const PostCreator = () => {
   const addFiles = async (files: File[]) => {
     const newMedia: MediaItem[] = await Promise.all(
       files.map(async (file) => {
-        let type: "image" | "video" = file.type.startsWith("image/") ? "image" : "video";
+        const type: "image" | "video" = file.type.startsWith("image/") ? "image" : "video";
         let processedFile = file;
 
         if (type === "image") {
@@ -84,7 +83,7 @@ const PostCreator = () => {
           id: `${file.name}-${Date.now()}-${Math.random()}`,
           progress: 0,
         };
-      })
+      }),
     );
     setMedia((prev) => [...prev, ...newMedia]);
   };
@@ -101,10 +100,10 @@ const PostCreator = () => {
     setMedia(items);
   };
 
-  // Upload files to Firebase
+  // 🚀 Upload and Create Post
   const handleUpload = async () => {
     if (!media.length) return;
-    
+
     const user = auth.currentUser;
     if (!user) {
       toast({
@@ -112,69 +111,64 @@ const PostCreator = () => {
         description: "Please log in to create a post",
         variant: "destructive",
       });
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     setUploading(true);
 
     try {
-      // Force token refresh to ensure valid credentials
       await user.getIdToken(true);
+
+      const uploadedUrls: string[] = [];
 
       for (const item of media) {
         const storageRef = ref(storage, `posts/${user.uid}/${Date.now()}_${item.file.name}`);
         const uploadTask = uploadBytesResumable(storageRef, item.file);
 
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setMedia((prev) =>
-              prev.map((m) => (m.id === item.id ? { ...m, progress } : m))
-            );
-          },
-          (error) => {
-            console.error("Upload error:", error);
-            removeItem(item.id);
-            toast({
-              title: "Upload failed",
-              description: error.message,
-              variant: "destructive",
-            });
-          },
-          async () => {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-
-            setMedia((prev) =>
-              prev.map((m) =>
-                m.id === item.id ? { ...m, uploadedUrl: downloadURL, progress: 100 } : m
-              )
-            );
-
-            await addDoc(collection(db, "posts"), {
-              userId: user.uid,
-              author: user.email || 'Anonymous',
-              mediaUrl: downloadURL,
-              mediaType: item.type,
-              likes: 0,
-              shares: 0,
-              comments: [],
-              createdAt: serverTimestamp(),
-            });
-
-            toast({
-              title: "Post created!",
-              description: "Your media has been shared with your tribe",
-            });
-          }
-        );
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setMedia((prev) => prev.map((m) => (m.id === item.id ? { ...m, progress } : m)));
+            },
+            (error) => reject(error),
+            async () => {
+              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+              uploadedUrls.push(downloadURL);
+              setMedia((prev) =>
+                prev.map((m) => (m.id === item.id ? { ...m, uploadedUrl: downloadURL, progress: 100 } : m)),
+              );
+              resolve();
+            },
+          );
+        });
       }
+
+      // ✅ Save post AFTER all uploads complete
+      await addDoc(collection(db, "posts"), {
+        userId: user.uid,
+        author: user.email || "Anonymous",
+        mediaUrls: uploadedUrls,
+        createdAt: serverTimestamp(),
+        likes: 0,
+        shares: 0,
+        comments: [],
+      });
+
+      toast({
+        title: "Success!",
+        description: "Your post was uploaded successfully.",
+      });
+
+      setMedia([]);
+      navigate("/feed");
     } catch (error: any) {
       console.error("Error uploading:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to upload media",
+        description: error.message || "Failed to upload post.",
         variant: "destructive",
       });
     } finally {
@@ -184,12 +178,10 @@ const PostCreator = () => {
 
   return (
     <div className="p-4">
-      {/* Drag-and-drop area */}
+      {/* Drop Area */}
       <div
-        className={`border-2 border-dashed p-8 rounded-lg text-center cursor-pointer transition-colors ${
-          dragActive 
-            ? "border-primary bg-primary/10" 
-            : "border-border bg-background hover:bg-accent/50"
+        className={`border-2 border-dashed p-8 rounded-lg text-center cursor-pointer transition ${
+          dragActive ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent/50"
         }`}
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
@@ -214,20 +206,16 @@ const PostCreator = () => {
       <Button
         onClick={handleUpload}
         disabled={uploading || media.length === 0}
-        className="mt-4 w-full"
+        className="mt-4 w-full bg-pan-green text-white hover:bg-pan-green/90"
       >
-        {uploading ? "Uploading..." : `Post ${media.length > 0 ? `(${media.length} file${media.length > 1 ? 's' : ''})` : ''}`}
+        {uploading ? "Uploading..." : "Post"}
       </Button>
 
-      {/* Media gallery with drag and drop */}
+      {/* Gallery */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="media-gallery" direction="horizontal">
           {(provided) => (
-            <div
-              className="flex gap-4 mt-6 overflow-x-auto pb-2"
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-            >
+            <div className="flex gap-4 mt-6 overflow-x-auto pb-2" {...provided.droppableProps} ref={provided.innerRef}>
               {media.map((item, index) => (
                 <Draggable key={item.id} draggableId={item.id} index={index}>
                   {(provided, snapshot) => (
@@ -235,50 +223,31 @@ const PostCreator = () => {
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      className={`relative w-48 h-48 border border-border rounded-lg overflow-hidden flex-shrink-0 transition-shadow ${
+                      className={`relative w-48 h-48 border border-border rounded-lg overflow-hidden flex-shrink-0 transition ${
                         snapshot.isDragging ? "shadow-lg" : ""
                       }`}
                     >
                       {item.type === "image" ? (
-                        <img 
-                          src={item.previewUrl} 
-                          alt="preview" 
-                          className="w-full h-full object-cover" 
-                        />
+                        <img src={item.previewUrl} alt="preview" className="w-full h-full object-cover" />
                       ) : (
-                        <video 
-                          src={item.previewUrl} 
-                          controls 
-                          className="w-full h-full object-cover" 
-                        />
+                        <video src={item.previewUrl} controls className="w-full h-full object-cover" />
                       )}
 
-                      {/* Progress overlay */}
+                      {/* Upload Progress */}
                       {item.progress > 0 && item.progress < 100 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/80">
                           <span className="text-foreground font-semibold">{Math.round(item.progress)}%</span>
                         </div>
                       )}
 
-                      {/* Remove button */}
+                      {/* Remove Button */}
                       {!uploading && (
                         <button
                           onClick={() => removeItem(item.id)}
-                          className="absolute top-2 right-2 bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full p-1 shadow-lg transition-colors"
+                          className="absolute top-2 right-2 bg-destructive text-white rounded-full p-1 shadow-lg hover:bg-destructive/80 transition"
                         >
                           <X className="h-4 w-4" />
                         </button>
-                      )}
-
-                      {/* Download button */}
-                      {item.uploadedUrl && (
-                        <a
-                          href={item.uploadedUrl}
-                          download
-                          className="absolute bottom-2 right-2 bg-background text-foreground px-2 py-1 text-xs rounded shadow-lg hover:bg-accent transition-colors"
-                        >
-                          Download
-                        </a>
                       )}
                     </div>
                   )}
