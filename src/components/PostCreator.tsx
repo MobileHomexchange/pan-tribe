@@ -26,7 +26,6 @@ const PostCreator = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔐 Auth Check
   useEffect(() => {
     if (!auth.currentUser) {
       toast({
@@ -38,7 +37,6 @@ const PostCreator = () => {
     }
   }, [navigate, toast]);
 
-  // 📁 Add File(s)
   const handleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files) return;
     await addFiles(Array.from(e.target.files));
@@ -47,8 +45,7 @@ const PostCreator = () => {
   const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") setDragActive(true);
-    if (e.type === "dragleave") setDragActive(false);
+    setDragActive(e.type === "dragenter" || e.type === "dragover");
   };
 
   const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
@@ -100,9 +97,15 @@ const PostCreator = () => {
     setMedia(items);
   };
 
-  // 🚀 Upload and Create Post
   const handleUpload = async () => {
-    if (!media.length) return;
+    if (!media.length) {
+      toast({
+        title: "No files selected",
+        description: "Please add a photo or video to post.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const user = auth.currentUser;
     if (!user) {
@@ -116,10 +119,8 @@ const PostCreator = () => {
     }
 
     setUploading(true);
-
     try {
       await user.getIdToken(true);
-
       const uploadedUrls: string[] = [];
 
       for (const item of media) {
@@ -146,7 +147,7 @@ const PostCreator = () => {
         });
       }
 
-      // ✅ Save post AFTER all uploads complete
+      // ✅ Save Firestore Post
       await addDoc(collection(db, "posts"), {
         userId: user.uid,
         author: user.email || "Anonymous",
@@ -162,7 +163,9 @@ const PostCreator = () => {
         description: "Your post was uploaded successfully.",
       });
 
+      // 🧹 Auto clear & redirect
       setMedia([]);
+      fileInputRef.current!.value = "";
       navigate("/feed");
     } catch (error: any) {
       console.error("Error uploading:", error);
@@ -178,7 +181,6 @@ const PostCreator = () => {
 
   return (
     <div className="p-4">
-      {/* Drop Area */}
       <div
         className={`border-2 border-dashed p-8 rounded-lg text-center cursor-pointer transition ${
           dragActive ? "border-primary bg-primary/10" : "border-border bg-background hover:bg-accent/50"
@@ -211,7 +213,6 @@ const PostCreator = () => {
         {uploading ? "Uploading..." : "Post"}
       </Button>
 
-      {/* Gallery */}
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="media-gallery" direction="horizontal">
           {(provided) => (
@@ -233,14 +234,12 @@ const PostCreator = () => {
                         <video src={item.previewUrl} controls className="w-full h-full object-cover" />
                       )}
 
-                      {/* Upload Progress */}
                       {item.progress > 0 && item.progress < 100 && (
                         <div className="absolute inset-0 flex items-center justify-center bg-background/80">
                           <span className="text-foreground font-semibold">{Math.round(item.progress)}%</span>
                         </div>
                       )}
 
-                      {/* Remove Button */}
                       {!uploading && (
                         <button
                           onClick={() => removeItem(item.id)}
