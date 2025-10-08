@@ -1,55 +1,53 @@
-import { Menu } from "lucide-react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { useEffect, useState } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Home, Plus } from "lucide-react";
 
 interface TopBarProps {
-  onMenuToggle: () => void;
+  onMenuToggle?: () => void;
 }
 
 export function TopBar({ onMenuToggle }: TopBarProps) {
-  const { scrollY } = useScroll();
-
-  // Motion transforms for opacity and position
-  const opacity = useTransform(scrollY, [0, 100], [1, 0.9]);
-  const y = useTransform(scrollY, [0, 100], [0, -5]);
-
-  const [hasShadow, setHasShadow] = useState(false);
-
-  // Add shadow only when scrolling
-  useEffect(() => {
-    const handleScroll = () => {
-      setHasShadow(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const navigate = useNavigate();
 
   return (
-    <motion.header
-      style={{ opacity, y }}
-      className={`fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 py-3 bg-white md:px-6 transition-shadow duration-300 ${
-        hasShadow ? "shadow-md border-b border-gray-100" : "shadow-sm border-transparent"
-      }`}
-    >
-      {/* Left Section - Logo + Menu Icon */}
+    <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-border shadow-sm flex items-center justify-between px-4 py-2">
+      {/* Left Side */}
       <div className="flex items-center gap-3">
-        {/* Mobile Menu Button */}
-        <button
-          onClick={onMenuToggle}
-          className="md:hidden p-2 rounded-md hover:bg-gray-100 transition-colors duration-200"
-        >
-          <Menu className="h-5 w-5 text-gray-700" />
+        <button onClick={onMenuToggle} className="p-2 rounded-md hover:bg-muted focus:outline-none focus:ring">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke="currentColor"
+            className="w-6 h-6 text-foreground"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
         </button>
 
-        {/* App Title */}
         <h1 className="text-lg font-semibold text-pan-green">Tribe Pulse</h1>
       </div>
 
-      {/* Right Section - Placeholder for icons/actions */}
-      <div className="flex items-center gap-3">
-        {/* <Bell className="h-5 w-5 text-gray-700" /> */}
-        {/* <UserCircle className="h-6 w-6 text-gray-700" /> */}
+      {/* Right Side */}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={() => navigate("/create-post")}
+          className="flex items-center gap-2 bg-pan-green text-white px-3 py-2 rounded-lg hover:bg-pan-green/90 transition"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Create Post</span>
+        </button>
+
+        <button
+          onClick={() => navigate("/feed")}
+          className="flex items-center justify-center p-2 rounded-lg hover:bg-muted transition"
+        >
+          <Home className="w-5 h-5 text-pan-green" />
+        </button>
       </div>
-    </motion.header>
+    </header>
   );
 }
+
+export default TopBar;
