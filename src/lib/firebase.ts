@@ -1,12 +1,9 @@
 // src/lib/firebase.ts
-import { initializeApp, FirebaseApp } from "firebase/app";
-import { getAuth, setPersistence, browserLocalPersistence, Auth } from "firebase/auth";
-import { getFirestore, Firestore } from "firebase/firestore";
-import { getStorage, FirebaseStorage } from "firebase/storage";
-
-// Optional analytics (guarded so it won't break in non-browser contexts)
-type Analytics = any;
-let analytics: Analytics | null = null;
+import { initializeApp } from "firebase/app";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDP5e8qVmZfGOTECfAZWHUY9LOiv4qgqCg",
@@ -18,29 +15,29 @@ const firebaseConfig = {
   measurementId: "G-P01T48K595",
 };
 
-const app: FirebaseApp = initializeApp(firebaseConfig);
-const auth: Auth = getAuth(app);
-const db: Firestore = getFirestore(app);
-const storage: FirebaseStorage = getStorage(app);
+// ✅ Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
+// ✅ Keep users logged in
 setPersistence(auth, browserLocalPersistence)
   .then(() => console.log("✅ Auth persistence set to local"))
-  .catch((e) => console.error("❌ Error setting auth persistence:", e?.code, e?.message));
+  .catch((error) => console.error("❌ Error setting auth persistence:", error.code, error.message));
 
-// Lazily init analytics only in the browser
+// ✅ Optional analytics (only runs in browser)
 if (typeof window !== "undefined") {
-  import("firebase/analytics")
-    .then(async ({ getAnalytics, isSupported }) => {
-      try {
-        if (await isSupported()) {
-          analytics = getAnalytics(app);
-          console.log("✅ Analytics initialized");
-        }
-      } catch (e) {
-        console.warn("⚠️ Analytics not available:", e);
+  isSupported()
+    .then((supported) => {
+      if (supported) {
+        const analytics = getAnalytics(app);
+        console.log("✅ Analytics initialized");
+      } else {
+        console.log("⚠️ Analytics not supported in this environment");
       }
     })
-    .catch(() => {});
+    .catch((err) => console.warn("⚠️ Analytics error:", err));
 }
 
-export { app, auth, db, storage, analytics };
+export { app, auth, db, storage };
