@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { SmartPostCreator, PostType } from "@/components/SmartPostCreator";
@@ -15,9 +15,10 @@ export default function CreatePost() {
   const navigate = useNavigate();
   const [selectedPostType, setSelectedPostType] = useState<PostType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const handleSmartPostSubmit = async (formData: Record<string, any>) => {
-    console.log("🟢 Submit triggered with:", formData); // Debugging step
+    console.log("🟢 Submit triggered with:", formData);
 
     if (!currentUser) {
       toast.error("You must be logged in to create a post");
@@ -26,6 +27,7 @@ export default function CreatePost() {
     }
 
     setIsSubmitting(true);
+    setUploadProgress(0);
 
     try {
       let mediaUrl = null;
@@ -43,8 +45,29 @@ export default function CreatePost() {
           : file;
 
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
-        await uploadBytes(fileRef, uploadFile);
-        mediaUrl = await getDownloadURL(fileRef);
+        const uploadTask = uploadBytesResumable(fileRef, uploadFile);
+
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            console.error("❌ Upload error:", error);
+            toast.error("Upload failed. Please try again.");
+            setIsSubmitting(false);
+          },
+          async () => {
+            mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            setUploadProgress(100);
+          },
+        );
+
+        // Wait until upload completes
+        await new Promise((resolve, reject) => {
+          uploadTask.on("state_changed", null, reject, resolve);
+        });
       }
 
       const { media, ...restFormData } = formData;
@@ -70,6 +93,7 @@ export default function CreatePost() {
       toast.error(`Failed to create post: ${error.message || "Unknown error"}`);
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
@@ -84,10 +108,29 @@ export default function CreatePost() {
             onSubmit={handleSmartPostSubmit}
             onCancel={() => {
               setSelectedPostType(null);
-              navigate("/feed"); // ✅ Now the "Cancel" button brings you back home
+              navigate("/feed");
             }}
             isSubmitting={isSubmitting}
           />
+        )}
+
+        {/* Upload progress bar */}
+        {uploadProgress !== null && (
+          <div className="w-full bg-gray-200 h-2 mt-4 rounded">
+            <div
+              className="bg-green-600 h-2 rounded transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
+
+        {/* Button feedback */}
+        {isSubmitting && (
+          <p className="text-sm text-gray-500 mt-2 text-center">
+            {uploadProgress && uploadProgress < 100
+              ? `Uploading... ${Math.round(uploadProgress)}%`
+              : "Finalizing post..."}
+          </p>
         )}
       </div>
     </Layout>
