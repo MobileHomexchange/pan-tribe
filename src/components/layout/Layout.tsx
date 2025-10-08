@@ -1,36 +1,50 @@
-import React from "react";
-import { RightSidebar } from "./RightSidebar";
+import React, { useState, ReactNode } from "react";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import { TopBar } from "@/components/layout/TopBar";
+import MainFeed from "@/components/feed/MainFeed";
+import { RightSidebar } from "@/components/layout/RightSidebar";
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children?: ReactNode;
 }
 
-export function Layout({ children }: LayoutProps) {
+export function Layout({ children }: LayoutProps = {}) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
-    <div className="w-full mx-auto grid grid-cols-1 lg:grid-cols-3 gap-5 px-2 sm:px-4 md:px-6">
-      {/* Main Feed Area */}
-      <div className="lg:col-span-2 w-full">
-        {children}
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        {/* Left Sidebar */}
+        <AppSidebar />
 
-        {/* Mobile Sidebar (ads below feed) */}
-        <div className="block lg:hidden mt-6 space-y-4">
-          <RightSidebar />
-        </div>
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Top Bar */}
+          <TopBar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-        {/* Floating Mobile Banner */}
-        <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden">
-          <div className="mx-auto w-full max-w-md p-2">
-            <a href="https://your-ad-link.com" target="_blank" rel="noopener noreferrer">
-              <img src="/ads/mobile-banner.jpg" alt="Ad Banner" className="rounded-lg shadow-lg w-full object-cover" />
-            </a>
-          </div>
+          {/* Main Content */}
+          <main className="flex-1 pt-16 pb-5">
+            {children ? (
+              children
+            ) : (
+              <div className="w-full mx-auto grid grid-cols-1 lg:grid-cols-3 gap-5">
+                {/* Main Feed */}
+                <div className="lg:col-span-2">
+                  <MainFeed />
+                </div>
+
+                {/* Right Sidebar */}
+                <div className="hidden lg:block px-5">
+                  <RightSidebar />
+                </div>
+              </div>
+            )}
+          </main>
         </div>
       </div>
-
-      {/* Desktop Sidebar */}
-      <div className="hidden lg:block px-5">
-        <RightSidebar />
-      </div>
-    </div>
+    </SidebarProvider>
   );
 }
+
+export default Layout;
