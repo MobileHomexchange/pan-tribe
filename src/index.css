@@ -13,17 +13,17 @@ All colors MUST be HSL.
     --pan-black: 0 0% 0%;
     --pan-green: 155 100% 27%;
     --pan-gold: 48 97% 54%;
-    
+
     /* Light variants */
     --light-gold: 48 84% 92%;
     --light-green: 155 52% 90%;
     --light-red: 0 68% 96%;
-    
+
     /* Social media grays */
     --fb-hover: 210 10% 96%;
     --fb-border: 210 8% 88%;
     --text-muted: 210 6% 46%;
-    
+
     /* Core design tokens */
     --background: 210 10% 96%;
     --foreground: 0 0% 13%;
@@ -31,7 +31,7 @@ All colors MUST be HSL.
     --card-foreground: 0 0% 13%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 13%;
-    
+
     /* Pan-African themed tokens */
     --primary: 155 100% 27%;
     --primary-foreground: 0 0% 100%;
@@ -43,12 +43,12 @@ All colors MUST be HSL.
     --accent-foreground: 0 0% 13%;
     --destructive: 0 77% 52%;
     --destructive-foreground: 0 0% 100%;
-    
+
     --border: 210 8% 88%;
     --input: 0 0% 100%;
     --ring: 155 100% 27%;
     --radius: 0.5rem;
-    
+
     /* Sidebar tokens */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 0 0% 13%;
@@ -58,18 +58,18 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 0 0% 13%;
     --sidebar-border: 210 8% 88%;
     --sidebar-ring: 155 100% 27%;
-    
+
     /* Social media specific */
     --post-hover: 210 10% 98%;
     --like-color: 155 100% 27%;
     --comment-color: 210 6% 46%;
-    
+
     /* Gradients */
     --gradient-pan: linear-gradient(135deg, hsl(var(--pan-green)), hsl(var(--pan-black)));
     --gradient-gold: linear-gradient(135deg, hsl(var(--pan-gold)), hsl(var(--pan-red)));
     --shadow-elegant: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    
+
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
@@ -121,4 +121,56 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+/* ===============================
+   TribePulse Reels & Banner Styling
+   =============================== */
+
+.reel-container {
+  @apply relative w-screen h-screen flex items-center justify-center bg-black overflow-hidden;
+}
+
+/* Prevents ad overlay from blocking swipe gestures */
+.reel-container video {
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Floating Mobile Banner */
+.mobile-banner {
+  @apply fixed bottom-2 left-1/2 transform -translate-x-1/2 z-40 w-[95%] max-w-md bg-white/90 backdrop-blur-md rounded-lg shadow-lg border border-gray-300 transition-all duration-300 ease-in-out;
+}
+
+.mobile-banner img {
+  @apply rounded-md object-cover w-full h-auto;
+}
+
+/* Slide-up animation for banners */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.4s ease-out forwards;
+}
+
+/* Personal Ad Overlay */
+.personal-ad-overlay {
+  @apply absolute inset-0 flex items-center justify-center bg-black/70 z-50;
+}
+
+.personal-ad-card {
+  @apply w-11/12 max-w-sm bg-white rounded-xl p-4 text-center shadow-2xl border border-gray-200;
+}
+
+/* Sponsored Tag */
+.sponsored-label {
+  @apply absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-md z-50;
 }
