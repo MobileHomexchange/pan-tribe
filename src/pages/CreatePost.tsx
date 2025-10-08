@@ -8,6 +8,7 @@ import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { SmartPostCreator, PostType } from "@/components/SmartPostCreator";
 import { PostTypeSelector } from "@/components/PostTypeSelector";
+import { Layout } from "@/components/layout/Layout";
 
 export default function CreatePost() {
   const { currentUser } = useAuth();
@@ -16,12 +17,16 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSmartPostSubmit = async (formData: Record<string, any>) => {
+    console.log("🟢 Submit triggered with:", formData); // Debugging step
+
     if (!currentUser) {
       toast.error("You must be logged in to create a post");
+      navigate("/login");
       return;
     }
 
     setIsSubmitting(true);
+
     try {
       let mediaUrl = null;
 
@@ -43,6 +48,7 @@ export default function CreatePost() {
       }
 
       const { media, ...restFormData } = formData;
+
       const postData = {
         ...restFormData,
         mediaUrl,
@@ -55,28 +61,35 @@ export default function CreatePost() {
       };
 
       await addDoc(collection(db, "posts"), postData);
+      toast.success("✅ Post created successfully!");
+      console.log("✅ Post saved to Firestore:", postData);
 
-      toast.success("Post created successfully!");
       navigate("/feed");
     } catch (error: any) {
-      console.error("❌ Error creating post:", error.message);
-      toast.error("Failed to create post. Please try again.");
+      console.error("❌ Error creating post:", error);
+      toast.error(`Failed to create post: ${error.message || "Unknown error"}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      {!selectedPostType ? (
-        <PostTypeSelector onSelect={setSelectedPostType} />
-      ) : (
-        <SmartPostCreator
-          type={selectedPostType}
-          onSubmit={handleSmartPostSubmit}
-          onCancel={() => setSelectedPostType(null)}
-        />
-      )}
-    </div>
+    <Layout>
+      <div className="max-w-2xl mx-auto p-6">
+        {!selectedPostType ? (
+          <PostTypeSelector onSelect={setSelectedPostType} />
+        ) : (
+          <SmartPostCreator
+            type={selectedPostType}
+            onSubmit={handleSmartPostSubmit}
+            onCancel={() => {
+              setSelectedPostType(null);
+              navigate("/feed"); // ✅ Now the "Cancel" button brings you back home
+            }}
+            isSubmitting={isSubmitting}
+          />
+        )}
+      </div>
+    </Layout>
   );
 }
