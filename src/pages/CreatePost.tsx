@@ -1,227 +1,148 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db } from "../lib/firebase";
-import imageCompression from "browser-image-compression";
-import { toast } from "sonner";
-import { useAuth } from "../contexts/AuthContext";
-import { PostTypeSelector } from "../components/PostTypeSelector";
-import { SmartPostCreator, PostType } from "../components/SmartPostCreator";
-import { Layout } from "../components/layout/Layout";
-
-const CreatePost = () => {
-  const { currentUser } = useAuth();
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [selectedType, setSelectedType] = useState<PostType | null>(null);
-
-  const handleSmartPostSubmit = async (formData: Record<string, any>) => {
-  console.log("🚀 Starting post submission...", formData);
+const handleSmartPostSubmit = async (formData: Record<string, any>) => {
+  console.log("🚀 Smart post starting...");
 
   if (!currentUser) {
-    toast.error("You must be logged in to create a post");
+    toast.error("Please log in to post");
     navigate("/login");
     return;
   }
 
-  // Quick network check
-  if (!navigator.onLine) {
-    toast.error("No internet connection. Please check your network.");
-    return;
-  }
+  // Enhanced file validation
+  if (formData.media instanceof File) {
+    const validation = validateFile(formData.media);
+    if (!validation.valid) {
+      toast.error(validation.message);
+      return;
+    }
 
+    // Use ultra-fast for small files, compressed for larger ones
+    if (formData.media.size <= 1 * 1024 * 1024) {
+      // 1MB threshold
+      console.log("⚡ Using ultra-fast upload for small file");
+      return await handleUltraFastPost(formData);
+    } else {
+      console.log("📐 Using compressed upload for larger file");
+      return await handleCompressedPost(formData);
+    }
+  } else {
+    // No media - ultra fast text post
+    return await handleUltraFastPost(formData);
+  }
+};
+
+// Ultra-fast for small files or text posts
+const handleUltraFastPost = async (formData: Record<string, any>) => {
+  setIsSubmitting(true);
+
+  try {
+    let mediaUrl = null;
+
+    if (formData.media instanceof File) {
+      const fileRef = ref(storage, `posts/${currentUser.uid}/quick_${Date.now()}_${formData.media.name}`);
+      const snapshot = await uploadBytes(fileRef, formData.media);
+      mediaUrl = await getDownloadURL(snapshot.ref);
+    }
+
+    const postData = {
+      ...formData,
+      media: undefined,
+      mediaUrl,
+      userId: currentUser.uid,
+      userName: currentUser.displayName || "Anonymous",
+      userAvatar: currentUser.photoURL || "",
+      timestamp: serverTimestamp(),
+      likes: 0,
+      comments: [],
+    };
+
+    await addDoc(collection(db, "posts"), postData);
+    toast.success("✅ Posted!");
+    setTimeout(() => navigate("/feed"), 300);
+  } catch (error: any) {
+    console.error("❌ Post failed:", error);
+    toast.error("Post failed. Please try again.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+// Compressed version for larger files
+const handleCompressedPost = async (formData: Record<string, any>) => {
   setIsSubmitting(true);
   setUploadProgress(0);
 
   try {
     let mediaUrl = null;
 
-    // Handle media upload with better progress tracking
     if (formData.media instanceof File) {
-      mediaUrl = await uploadWithProgress(formData.media, currentUser.uid);
+      console.log("📐 Compressing image...");
+      const compressedFile = await imageCompression(formData.media, {
+        maxSizeMB: 0.5,
+        maxWidthOrHeight: 800,
+        useWebWorker: true,
+      });
+
+      const fileRef = ref(storage, `posts/${currentUser.uid}/compressed_${Date.now()}_${formData.media.name}`);
+      const uploadTask = uploadBytesResumable(fileRef, compressedFile);
+
+      mediaUrl = await new Promise((resolve, reject) => {
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          reject,
+          async () => {
+            const url = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(url);
+          },
+        );
+      });
     }
 
-    // Quick Firestore write
-    await createPostDocument(formData, mediaUrl, currentUser);
+    const postData = {
+      ...formData,
+      media: undefined,
+      mediaUrl,
+      userId: currentUser.uid,
+      userName: currentUser.displayName || "Anonymous",
+      userAvatar: currentUser.photoURL || "",
+      timestamp: serverTimestamp(),
+      likes: 0,
+      comments: [],
+    };
 
-    toast.success("✅ Post created successfully!");
-    console.log("🎉 Post creation complete!");
-
-    // Small delay for better UX
+    await addDoc(collection(db, "posts"), postData);
+    toast.success("✅ Posted!");
     setTimeout(() => navigate("/feed"), 500);
   } catch (error: any) {
-    console.error("❌ Post creation failed:", error);
-    toast.error(`Failed to create post: ${error.message || "Please try again"}`);
+    console.error("❌ Post failed:", error);
+    toast.error("Post failed. Please try again.");
   } finally {
     setIsSubmitting(false);
     setUploadProgress(null);
   }
 };
 
-// Fast upload with reliable progress tracking
-const uploadWithProgress = async (file: File, userId: string): Promise<string> => {
-  const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-  const UPLOAD_TIMEOUT = 45000; // 45 seconds
+// Validation function
+const validateFile = (file: File): { valid: boolean; message?: string } => {
+  const MAX_SIZE = 8 * 1024 * 1024; // 8MB
+  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
 
-  // Validate file quickly
   if (file.size > MAX_SIZE) {
-    throw new Error(`File must be smaller than 5MB. Current size: ${(file.size / 1024 / 1024).toFixed(1)}MB`);
+    return {
+      valid: false,
+      message: `File must be smaller than 8MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
+    };
   }
 
-  let processedFile = file;
-  const isImage = file.type.startsWith("image/");
-
-  // Smart compression - only compress images over 500KB
-  if (isImage && file.size > 500 * 1024) {
-    try {
-      console.log("📐 Smart compressing image...");
-      processedFile = await imageCompression(file, {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 1024, // Smaller for faster processing
-        useWebWorker: true,
-        initialQuality: 0.6,
-        alwaysKeepResolution: false,
-      });
-      console.log(
-        `✅ Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(processedFile.size / 1024 / 1024).toFixed(2)}MB`,
-      );
-    } catch (compressError) {
-      console.warn("⚠️ Compression failed, using original file:", compressError);
-      processedFile = file; // Fallback to original
-    }
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      message: "Please use JPEG, PNG, GIF, or WebP images only.",
+    };
   }
 
-  // Create unique filename
-  const timestamp = Date.now();
-  const randomId = Math.random().toString(36).substring(2, 10);
-  const fileExtension = processedFile.name.split(".").pop() || "file";
-  const fileName = `post_${timestamp}_${randomId}.${fileExtension}`;
-
-  const fileRef = ref(storage, `posts/${userId}/${fileName}`);
-  console.log("📤 Starting upload...");
-
-  return new Promise((resolve, reject) => {
-    const uploadTask = uploadBytesResumable(fileRef, processedFile);
-    let uploadTimeout: NodeJS.Timeout;
-
-    // Set timeout to prevent hanging
-    uploadTimeout = setTimeout(() => {
-      uploadTask.cancel();
-      reject(new Error("Upload timeout - taking too long. Please try again."));
-    }, UPLOAD_TIMEOUT);
-
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        // Clear timeout on progress
-        clearTimeout(uploadTimeout);
-
-        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        const roundedProgress = Math.max(1, Math.round(progress)); // Ensure at least 1% shows
-
-        console.log(`📊 Upload progress: ${roundedProgress}%`);
-        setUploadProgress(roundedProgress);
-
-        // Reset timeout on any progress
-        uploadTimeout = setTimeout(() => {
-          uploadTask.cancel();
-          reject(new Error("Upload stalled. Please check your connection."));
-        }, UPLOAD_TIMEOUT);
-      },
-      (error) => {
-        clearTimeout(uploadTimeout);
-        console.error("❌ Upload error:", error);
-
-        // Better error messages
-        let errorMessage = "Upload failed. ";
-        switch (error.code) {
-          case "storage/unauthorized":
-            errorMessage += "You don't have permission to upload.";
-            break;
-          case "storage/canceled":
-            errorMessage += "Upload was canceled.";
-            break;
-          case "storage/unknown":
-            errorMessage += "Unknown error occurred. Check your connection.";
-            break;
-          default:
-            errorMessage += "Please try again.";
-        }
-
-        reject(new Error(errorMessage));
-      },
-      async () => {
-        clearTimeout(uploadTimeout);
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          console.log("✅ Upload completed! URL:", downloadURL);
-          setUploadProgress(100);
-          resolve(downloadURL);
-        } catch (urlError) {
-          reject(new Error("Failed to get file URL after upload."));
-        }
-      },
-    );
-  });
+  return { valid: true };
 };
-
-// Fast document creation
-const createPostDocument = async (formData: Record<string, any>, mediaUrl: string | null, user: any) => {
-  const { media, ...postContent } = formData;
-
-  const postData = {
-    ...postContent,
-    mediaUrl,
-    userId: user.uid,
-    userName: user.displayName || "Anonymous",
-    userAvatar: user.photoURL || "",
-    timestamp: serverTimestamp(),
-    likes: 0,
-    comments: [],
-    clientTimestamp: new Date().toISOString(), // For immediate UI update
-  };
-
-  console.log("📝 Creating post document...");
-
-  try {
-    await addDoc(collection(db, "posts"), postData);
-    console.log("✅ Post document created!");
-  } catch (error) {
-    console.error("❌ Firestore error:", error);
-    throw new Error("Failed to save post. Please try again.");
-  }
-};
-
-  return (
-    <Layout>
-      <div className="max-w-2xl mx-auto p-6">
-        {!selectedType ? (
-          <PostTypeSelector onSelect={(type) => setSelectedType(type)} />
-        ) : (
-          <SmartPostCreator
-            type={selectedType}
-            onSubmit={handleSmartPostSubmit}
-            onCancel={() => setSelectedType(null)}
-          />
-        )}
-        {uploadProgress !== null && (
-          <div className="mt-4">
-            <div className="text-sm text-muted-foreground mb-2">
-              Uploading: {uploadProgress}%
-            </div>
-            <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
-              <div
-                className="bg-primary h-full transition-all duration-300"
-                style={{ width: `${uploadProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </Layout>
-  );
-};
-
-export default CreatePost;
