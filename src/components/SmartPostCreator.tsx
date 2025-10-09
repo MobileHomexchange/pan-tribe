@@ -1,237 +1,108 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-
-export type PostType = "announcement" | "question" | "idea" | "praise" | "general";
-
-interface PostTemplate {
-  fields: string[];
-  layout: string;
-  label: string;
-  icon?: string;
-}
-
-// Post type templates
-const postTemplates: Record<PostType, PostTemplate> = {
-  general: {
-    fields: ["content", "media"],
-    layout: "basic",
-    label: "General Post",
-    icon: "📝",
-  },
-  announcement: {
-    fields: ["title", "summary", "priority", "media"],
-    layout: "featured",
-    label: "Community Announcement",
-    icon: "📢",
-  },
-  question: {
-    fields: ["question", "details", "category", "media"],
-    layout: "qna",
-    label: "Ask the Community",
-    icon: "❓",
-  },
-  idea: {
-    fields: ["title", "problem", "solution", "benefits", "media"],
-    layout: "structured",
-    label: "Share Your Idea",
-    icon: "💡",
-  },
-  praise: {
-    fields: ["recipient", "message", "category", "media"],
-    layout: "highlight",
-    label: "Give Praise",
-    icon: "⭐",
-  },
-};
-
-// Field label map
-const fieldLabels: Record<string, string> = {
-  content: "What's on your mind?",
-  title: "Title",
-  summary: "Short Summary",
-  priority: "Priority Level",
-  question: "Your Question",
-  details: "Additional Details",
-  category: "Category",
-  problem: "What's the Problem?",
-  solution: "Your Solution",
-  benefits: "Key Benefits",
-  recipient: "Who Are You Praising?",
-  message: "Your Message",
-  media: "Upload Photo or Video",
-};
+import { useState, FC, FormEvent } from "react";
+import { PostType } from "./PostTypeSelector";
 
 interface SmartPostCreatorProps {
   type: PostType;
-  onSubmit: (formData: Record<string, any>) => void;
-  onCancel?: () => void;
+  onSubmit: (data: Record<string, any>) => void;
+  onCancel: () => void;
+  isSubmitting?: boolean;
 }
 
-// Dynamic field renderer
-const renderField = (field: string, value: any, setValue: (value: any) => void) => {
-  switch (field) {
-    case "media":
-      return (
-        <div className="space-y-3">
-          <Input
-            id="media"
-            type="file"
-            accept="image/*,video/*"
-            onChange={(e) => setValue(e.target.files?.[0] || null)}
-            className="cursor-pointer"
-          />
+export const SmartPostCreator: FC<SmartPostCreatorProps> = ({ type, onSubmit, onCancel, isSubmitting = false }) => {
+  const [content, setContent] = useState("");
+  const [media, setMedia] = useState<File | null>(null);
+  const [link, setLink] = useState("");
 
-          {value && (
-            <div className="mt-2 rounded-lg overflow-hidden border border-border p-2">
-              {value.type.startsWith("image/") ? (
-                <img src={URL.createObjectURL(value)} alt="Preview" className="max-h-60 w-auto rounded-md mx-auto" />
-              ) : (
-                <video controls className="max-h-60 w-auto rounded-md mx-auto" src={URL.createObjectURL(value)} />
-              )}
-            </div>
-          )}
-        </div>
-      );
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const formData: Record<string, any> = { content };
 
-    case "summary":
-    case "details":
-    case "message":
-    case "problem":
-    case "solution":
-    case "benefits":
-    case "question":
-    case "content":
-      return (
-        <Textarea
-          placeholder={`Enter ${fieldLabels[field]}...`}
-          value={value || ""}
-          onChange={(e) => setValue(e.target.value)}
-          className="min-h-[100px] resize-none"
-        />
-      );
+    if (media) formData.media = media;
+    if (link) formData.link = link;
+    formData.type = type;
 
-    case "priority":
-      return (
-        <Select value={value || ""} onValueChange={setValue}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Priority" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="high">High Priority</SelectItem>
-            <SelectItem value="normal">Normal Priority</SelectItem>
-            <SelectItem value="low">Low Priority</SelectItem>
-          </SelectContent>
-        </Select>
-      );
-
-    case "category":
-      return (
-        <Select value={value || ""} onValueChange={setValue}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="general">General</SelectItem>
-            <SelectItem value="tech">Technology</SelectItem>
-            <SelectItem value="art">Art & Design</SelectItem>
-            <SelectItem value="music">Music</SelectItem>
-            <SelectItem value="business">Business</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
-          </SelectContent>
-        </Select>
-      );
-
-    default:
-      return (
-        <Input
-          type="text"
-          placeholder={`Enter ${fieldLabels[field]}...`}
-          value={value || ""}
-          onChange={(e) => setValue(e.target.value)}
-        />
-      );
-  }
-};
-
-// Main component
-export const SmartPostCreator: React.FC<SmartPostCreatorProps> = ({ type, onSubmit, onCancel }) => {
-  const template = postTemplates[type];
-  const [formData, setFormData] = useState<Record<string, any>>({});
-
-  const handleChange = (field: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    onSubmit(formData);
   };
-
-  const handleSubmit = () => {
-    if (!template) {
-      console.error("Invalid post type:", type);
-      return;
-    }
-
-    const hasRequiredData = template.fields.some((field) => {
-      const value = formData[field];
-      return value && (typeof value === "string" ? value.trim() : true);
-    });
-
-    if (!hasRequiredData) {
-      console.warn("⚠️ Please fill in at least one field before posting.");
-      return;
-    }
-
-    onSubmit({ ...formData, postType: type });
-  };
-
-  if (!template) {
-    return <p className="text-destructive">⚠️ Unknown post type: {type}</p>;
-  }
 
   return (
-    <motion.div
-      className="w-full space-y-4"
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 pb-3 border-b border-border">
-        <span className="text-2xl">{template.icon}</span>
-        <div className="flex-1">
-          <h3 className="text-lg font-semibold text-card-foreground">{template.label}</h3>
-        </div>
-        <Badge variant="secondary" className="capitalize">
-          {template.layout}
-        </Badge>
-      </div>
+    <form onSubmit={handleSubmit} className="p-6 bg-white shadow rounded-xl space-y-4">
+      {type === "text" && (
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="What's on your mind?"
+          className="w-full border rounded p-3"
+          rows={5}
+          disabled={isSubmitting}
+        />
+      )}
 
-      {/* Dynamic Fields */}
-      {template.fields.map((field) => (
-        <div key={field} className="space-y-2">
-          <Label htmlFor={field} className="text-sm font-medium">
-            {fieldLabels[field]}
-          </Label>
-          {renderField(field, formData[field], (value) => handleChange(field, value))}
-        </div>
-      ))}
+      {type === "image" && (
+        <>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setMedia(e.target.files?.[0] || null)}
+            disabled={isSubmitting}
+          />
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Write a caption..."
+            className="w-full border rounded p-3"
+            rows={3}
+            disabled={isSubmitting}
+          />
+        </>
+      )}
 
-      {/* Actions */}
-      <div className="flex gap-2 pt-4">
-        <Button onClick={handleSubmit} className="flex-1">
-          Post
-        </Button>
-        {onCancel && (
-          <Button onClick={onCancel} variant="outline" className="flex-1">
-            Cancel
-          </Button>
-        )}
+      {type === "video" && (
+        <>
+          <input
+            type="file"
+            accept="video/*"
+            onChange={(e) => setMedia(e.target.files?.[0] || null)}
+            disabled={isSubmitting}
+          />
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Write a caption..."
+            className="w-full border rounded p-3"
+            rows={3}
+            disabled={isSubmitting}
+          />
+        </>
+      )}
+
+      {type === "link" && (
+        <input
+          type="url"
+          value={link}
+          onChange={(e) => setLink(e.target.value)}
+          placeholder="Paste a link..."
+          className="w-full border rounded p-3"
+          disabled={isSubmitting}
+        />
+      )}
+
+      <div className="flex justify-between mt-4">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded"
+          disabled={isSubmitting}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Posting..." : "Create Post"}
+        </button>
       </div>
-    </motion.div>
+    </form>
   );
 };
-
-export default SmartPostCreator;
