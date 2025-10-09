@@ -1,10 +1,11 @@
 // src/lib/firebase.ts
 import { initializeApp } from "firebase/app";
-import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAnalytics } from "firebase/analytics";
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDP5e8qVmZfGOTECfAZWHUY9LOiv4qgqCg",
   authDomain: "tribe-l-pulse.firebaseapp.com",
@@ -15,29 +16,16 @@ const firebaseConfig = {
   measurementId: "G-P01T48K595",
 };
 
-// ✅ Initialize Firebase
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
 
-// ✅ Keep users logged in
-setPersistence(auth, browserLocalPersistence)
-  .then(() => console.log("✅ Auth persistence set to local"))
-  .catch((error) => console.error("❌ Error setting auth persistence:", error.code, error.message));
+// Initialize Firebase services
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+export const storage = getStorage(app);
 
-// ✅ Optional analytics (only runs in browser)
-if (typeof window !== "undefined") {
-  isSupported()
-    .then((supported) => {
-      if (supported) {
-        const analytics = getAnalytics(app);
-        console.log("✅ Analytics initialized");
-      } else {
-        console.log("⚠️ Analytics not supported in this environment");
-      }
-    })
-    .catch((err) => console.warn("⚠️ Analytics error:", err));
-}
+// Initialize Analytics (optional)
+export const analytics = typeof window !== "undefined" ? getAnalytics(app) : null;
 
-export { app, auth, db, storage };
+// Export the Firebase app instance
+export default app;
