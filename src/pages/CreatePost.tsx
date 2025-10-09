@@ -1,60 +1,91 @@
-// src/pages/CreatePost.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAuth } from "@/contexts/AuthContext";
+import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db, auth } from "../lib/firebase"; // Updated import path
-import { useAuthState } from "react-firebase-hooks/auth";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import imageCompression from "browser-image-compression";
+import { toast } from "sonner";
+import { SmartPostCreator, PostType } from "@/components/SmartPostCreator";
+import { PostTypeSelector } from "@/components/PostTypeSelector";
+import { Layout } from "@/components/layout/Layout";
 
-const CreatePost = () => {
+// Define a stronger type for the form data
+interface PostFormData {
+  title?: string;
+  content?: string;
+  media?: File | null;
+}
+
+export default function CreatePost() {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [currentUser] = useAuthState(auth);
+
+  const [selectedPostType, setSelectedPostType] = useState<PostType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  const handleSmartPostSubmit = async (formData: Record<string, any>) => {
-    console.log("⚡ Ultra-fast post starting...");
+  const handleSmartPostSubmit = async (formData: PostFormData) => {
+    console.log("🟢 Submit triggered with:", formData);
 
     if (!currentUser) {
-      toast.error("Please log in to post");
+      toast.error("You must be logged in to create a post");
       navigate("/login");
       return;
     }
 
-    // Quick file validation
-    if (formData.media instanceof File) {
-      if (formData.media.size > 3 * 1024 * 1024) {
-        toast.error("File must be smaller than 3MB for quick posting");
-        return;
-      }
-
-      // Check file type
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-      if (!allowedTypes.includes(formData.media.type)) {
-        toast.error("Please use JPEG, PNG, GIF, or WebP images only");
-        return;
-      }
-    }
-
     setIsSubmitting(true);
+    setUploadProgress(0);
 
     try {
-      let mediaUrl = null;
+      let mediaUrl: string | null = null;
 
-      // Skip compression for maximum speed
+      // If a file is included, handle upload
       if (formData.media instanceof File) {
-        console.log("📤 Quick uploading without compression...");
-        const fileRef = ref(storage, `posts/${currentUser.uid}/quick_${Date.now()}_${formData.media.name}`);
-        const snapshot = await uploadBytes(fileRef, formData.media);
-        mediaUrl = await getDownloadURL(snapshot.ref);
-        console.log("✅ Quick upload complete!");
+        const file = formData.media;
+        const isImage = file.type.startsWith("image/");
+
+        // Compress image if applicable
+        const uploadFile = isImage
+          ? await imageCompression(file, {
+              maxSizeMB: 1,
+              maxWidthOrHeight: 1920,
+              useWebWorker: true,
+            })
+          : file;
+
+        // Create a storage reference
+        const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, uploadFile);
+
+        // Use a single upload listener inside a Promise
+        await new Promise<void>((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => {
+              console.error("❌ Upload error:", error);
+              toast.error("Upload failed. Please try again.");
+              setIsSubmitting(false);
+              reject(error);
+            },
+            async () => {
+              mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
+              setUploadProgress(100);
+              resolve();
+            },
+          );
+        });
       }
 
-      // Immediate Firestore write
+      // Remove media from form data to avoid saving raw File objects
+      const { media, ...restFormData } = formData;
+
       const postData = {
-        ...formData,
-        media: undefined, // Remove the file object
+        ...restFormData,
         mediaUrl,
         userId: currentUser.uid,
         userName: currentUser.displayName || "Anonymous",
@@ -64,60 +95,56 @@ const CreatePost = () => {
         comments: [],
       };
 
-      console.log("📝 Quick Firestore write...");
       await addDoc(collection(db, "posts"), postData);
 
-      toast.success("✅ Posted instantly!");
-      setTimeout(() => navigate("/feed"), 300);
+      toast.success("✅ Post created successfully!");
+      console.log("✅ Post saved to Firestore:", postData);
+      navigate("/feed");
     } catch (error: any) {
-      console.error("❌ Quick post failed:", error);
-
-      if (error.message.includes("File too large")) {
-        toast.error("File too large. Please use a file smaller than 3MB.");
-      } else {
-        toast.error("Post failed. Try again with a smaller file.");
-      }
+      console.error("❌ Error creating post:", error);
+      toast.error(`Failed to create post: ${error.message || "Unknown error"}`);
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
-  // Your form submission handler
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-
-    const postData = {
-      content: formData.get("content") as string,
-      media: formData.get("media") as File,
-    };
-
-    await handleSmartPostSubmit(postData);
-  };
-
   return (
-    <div className="create-post-container">
-      <h1>Create Post</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="content">What's on your mind?</label>
-          <textarea id="content" name="content" required rows={4} placeholder="Share your thoughts..." />
-        </div>
+    <Layout>
+      <div className="max-w-2xl mx-auto p-6">
+        {!selectedPostType ? (
+          <PostTypeSelector onSelect={setSelectedPostType} />
+        ) : (
+          <SmartPostCreator
+            type={selectedPostType}
+            onSubmit={handleSmartPostSubmit}
+            onCancel={() => {
+              setSelectedPostType(null);
+              navigate("/feed");
+            }}
+            isSubmitting={isSubmitting}
+          />
+        )}
 
-        <div>
-          <label htmlFor="media">Upload Photo or Video</label>
-          <input type="file" id="media" name="media" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" />
-        </div>
+        {/* Upload progress bar */}
+        {uploadProgress !== null && (
+          <div className="w-full bg-gray-200 h-2 mt-4 rounded">
+            <div
+              className="bg-green-600 h-2 rounded transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
 
-        <button type="submit" disabled={isSubmitting} className="submit-btn">
-          {isSubmitting ? "Posting..." : "Create Post"}
-        </button>
-
-        {uploadProgress !== null && <div className="upload-progress">Upload Progress: {uploadProgress}%</div>}
-      </form>
-    </div>
+        {/* Feedback message */}
+        {isSubmitting && (
+          <p className="text-sm text-gray-500 mt-2 text-center">
+            {uploadProgress && uploadProgress < 100
+              ? `Uploading... ${Math.round(uploadProgress)}%`
+              : "Finalizing post..."}
+          </p>
+        )}
+      </div>
+    </Layout>
   );
-};
-
-export default CreatePost;
+}
