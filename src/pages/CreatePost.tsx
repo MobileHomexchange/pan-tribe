@@ -1,12 +1,11 @@
+// src/pages/CreatePost.tsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db } from "../config/firebase"; // Adjust path to your firebase config
+import { storage, db, auth } from "../lib/firebase"; // Updated import path
 import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../config/firebase"; // Adjust path to your firebase config
-import imageCompression from "browser-image-compression";
 
 const CreatePost = () => {
   const navigate = useNavigate();
@@ -83,30 +82,42 @@ const CreatePost = () => {
     }
   };
 
-  // Example form handler - replace with your actual form logic
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Your form submission handler
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Your form data collection logic here
-    const formData = {
-      content: "Your post content", // Replace with actual form data
-      media: null as File | null, // Replace with actual file
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    const postData = {
+      content: formData.get("content") as string,
+      media: formData.get("media") as File,
     };
 
-    await handleSmartPostSubmit(formData);
+    await handleSmartPostSubmit(postData);
   };
 
   return (
-    <div>
+    <div className="create-post-container">
       <h1>Create Post</h1>
       <form onSubmit={handleSubmit}>
-        {/* Your form JSX here */}
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Posting..." : "Post"}
+        <div>
+          <label htmlFor="content">What's on your mind?</label>
+          <textarea id="content" name="content" required rows={4} placeholder="Share your thoughts..." />
+        </div>
+
+        <div>
+          <label htmlFor="media">Upload Photo or Video</label>
+          <input type="file" id="media" name="media" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" />
+        </div>
+
+        <button type="submit" disabled={isSubmitting} className="submit-btn">
+          {isSubmitting ? "Posting..." : "Create Post"}
         </button>
-        {uploadProgress !== null && <div>Upload Progress: {uploadProgress}%</div>}
+
+        {uploadProgress !== null && <div className="upload-progress">Upload Progress: {uploadProgress}%</div>}
       </form>
     </div>
   );
 };
 
-export default CreatePost; // This fixes the default export error
+export default CreatePost;
