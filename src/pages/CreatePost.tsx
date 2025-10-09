@@ -1,123 +1,169 @@
-// src/pages/CreatePost.tsx
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useAuth } from "@/contexts/AuthContext";
+import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db, auth } from "../lib/firebase"; // Updated import path
-import { useAuthState } from "react-firebase-hooks/auth";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import imageCompression from "browser-image-compression";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
-const CreatePost = () => {
+export default function CreatePost() {
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
-  const [currentUser] = useAuthState(auth);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [content, setContent] = useState("");
+  const [media, setMedia] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fontColor, setFontColor] = useState("#000000");
+  const [bgColor, setBgColor] = useState("#ffffff");
 
-  const handleSmartPostSubmit = async (formData: Record<string, any>) => {
-    console.log("⚡ Ultra-fast post starting...");
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMedia(file);
+      setMediaPreview(URL.createObjectURL(file));
+    }
+  };
 
+  const handleSubmit = async () => {
     if (!currentUser) {
-      toast.error("Please log in to post");
+      toast.error("Please log in to create a post");
       navigate("/login");
       return;
     }
 
-    // Quick file validation
-    if (formData.media instanceof File) {
-      if (formData.media.size > 3 * 1024 * 1024) {
-        toast.error("File must be smaller than 3MB for quick posting");
-        return;
-      }
-
-      // Check file type
-      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-      if (!allowedTypes.includes(formData.media.type)) {
-        toast.error("Please use JPEG, PNG, GIF, or WebP images only");
-        return;
-      }
+    if (!content && !media) {
+      toast.error("Please add text, image, or video");
+      return;
     }
 
     setIsSubmitting(true);
+    let mediaUrl = null;
 
     try {
-      let mediaUrl = null;
+      if (media) {
+        const file = media;
+        const isImage = file.type.startsWith("image/");
+        const uploadFile = isImage ? await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : file;
 
-      // Skip compression for maximum speed
-      if (formData.media instanceof File) {
-        console.log("📤 Quick uploading without compression...");
-        const fileRef = ref(storage, `posts/${currentUser.uid}/quick_${Date.now()}_${formData.media.name}`);
-        const snapshot = await uploadBytes(fileRef, formData.media);
-        mediaUrl = await getDownloadURL(snapshot.ref);
-        console.log("✅ Quick upload complete!");
+        const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, uploadFile);
+
+        uploadTask.on("state_changed", (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        });
+
+        await new Promise((resolve, reject) => {
+          uploadTask.on("state_changed", null, reject, async () => {
+            mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
+            resolve(null);
+          });
+        });
       }
 
-      // Immediate Firestore write
       const postData = {
-        ...formData,
-        media: undefined, // Remove the file object
-        mediaUrl,
         userId: currentUser.uid,
         userName: currentUser.displayName || "Anonymous",
         userAvatar: currentUser.photoURL || "",
+        content,
+        fontColor,
+        bgColor,
+        mediaUrl,
         timestamp: serverTimestamp(),
-        likes: 0,
+        likes: [],
         comments: [],
       };
 
-      console.log("📝 Quick Firestore write...");
       await addDoc(collection(db, "posts"), postData);
 
-      toast.success("✅ Posted instantly!");
-      setTimeout(() => navigate("/feed"), 300);
+      toast.success("✅ Post created successfully!");
+      navigate("/feed");
     } catch (error: any) {
-      console.error("❌ Quick post failed:", error);
-
-      if (error.message.includes("File too large")) {
-        toast.error("File too large. Please use a file smaller than 3MB.");
-      } else {
-        toast.error("Post failed. Try again with a smaller file.");
-      }
+      console.error("❌ Error creating post:", error);
+      toast.error("Failed to create post. Try again.");
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
     }
   };
 
-  // Your form submission handler
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const form = e.target as HTMLFormElement;
-    const formData = new FormData(form);
-
-    const postData = {
-      content: formData.get("content") as string,
-      media: formData.get("media") as File,
-    };
-
-    await handleSmartPostSubmit(postData);
-  };
-
   return (
-    <div className="create-post-container">
-      <h1>Create Post</h1>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="content">What's on your mind?</label>
-          <textarea id="content" name="content" required rows={4} placeholder="Share your thoughts..." />
+    <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-lg mt-6 space-y-4">
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Create a Post</h2>
+
+      {/* Text Input */}
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+        placeholder="What's on your mind?"
+        className="w-full border rounded-lg p-3 text-lg resize-none"
+        rows={4}
+        style={{ color: fontColor, backgroundColor: bgColor }}
+      />
+
+      {/* Color Pickers */}
+      <div className="flex items-center justify-between">
+        <div className="flex gap-4">
+          <div>
+            <label className="text-sm text-gray-600 block">Font Color</label>
+            <input
+              type="color"
+              value={fontColor}
+              onChange={(e) => setFontColor(e.target.value)}
+              className="w-10 h-10 border rounded-full cursor-pointer"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600 block">Background</label>
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => setBgColor(e.target.value)}
+              className="w-10 h-10 border rounded-full cursor-pointer"
+            />
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="media">Upload Photo or Video</label>
-          <input type="file" id="media" name="media" accept="image/jpeg,image/jpg,image/png,image/gif,image/webp" />
+        <label className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+          📸 Add Media
+          <input type="file" accept="image/*,video/*" hidden onChange={handleFileChange} />
+        </label>
+      </div>
+
+      {/* Media Preview */}
+      {mediaPreview && (
+        <div className="mt-3">
+          {media?.type.startsWith("video/") ? (
+            <video src={mediaPreview} controls className="w-full rounded-lg max-h-80" />
+          ) : (
+            <img src={mediaPreview} alt="Preview" className="w-full rounded-lg max-h-80 object-cover" />
+          )}
         </div>
+      )}
 
-        <button type="submit" disabled={isSubmitting} className="submit-btn">
-          {isSubmitting ? "Posting..." : "Create Post"}
-        </button>
+      {/* Upload Progress */}
+      {uploadProgress !== null && (
+        <div className="w-full bg-gray-200 h-2 rounded mt-2">
+          <div
+            className="bg-green-600 h-2 rounded transition-all duration-300"
+            style={{ width: `${uploadProgress}%` }}
+          ></div>
+        </div>
+      )}
 
-        {uploadProgress !== null && <div className="upload-progress">Upload Progress: {uploadProgress}%</div>}
-      </form>
+      {/* Submit Button */}
+      <div className="flex justify-end mt-4">
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+        >
+          {isSubmitting ? "Posting..." : "Post"}
+        </Button>
+      </div>
     </div>
   );
-};
-
-export default CreatePost;
+}
