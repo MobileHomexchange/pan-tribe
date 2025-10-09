@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -14,48 +14,38 @@ interface Post {
   content?: string;
   mediaUrl?: string;
   timestamp?: any;
-  isBlog?: boolean;
+  fontColor?: string;
+  bgColor?: string;
 }
 
 export default function MainFeed() {
   const { currentUser } = useAuth();
-  const [feedItems, setFeedItems] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFeed = async () => {
-      setLoading(true);
-      try {
-        const postsSnap = await getDocs(query(collection(db, "posts"), orderBy("timestamp", "desc")));
-        const posts = postsSnap.docs.map((doc) => ({
+    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const feed = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          isBlog: false,
         })) as Post[];
-
-        const blogsSnap = await getDocs(query(collection(db, "blogs"), orderBy("timestamp", "desc")));
-        const blogs = blogsSnap.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          isBlog: true,
-        })) as Post[];
-
-        const combined = [...posts, ...blogs].sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
-
-        setFeedItems(combined);
-      } catch (error) {
-        console.error("❌ Error loading feed:", error);
-        toast.error("Could not load feed");
-      } finally {
+        setPosts(feed);
         setLoading(false);
-      }
-    };
+      },
+      (error) => {
+        console.error("❌ Error loading posts:", error);
+        toast.error("Could not load feed");
+      },
+    );
 
-    fetchFeed();
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
-    return <p className="text-center text-gray-500 p-6">Loading feed...</p>;
+    return <p className="text-center text-gray-500 p-6">Loading posts...</p>;
   }
 
   return (
@@ -80,42 +70,56 @@ export default function MainFeed() {
         </div>
       </div>
 
-      {/* Feed Cards */}
-      {feedItems.map((item) => (
+      {/* Feed Posts */}
+      {posts.map((post) => (
         <div
-          key={item.id}
-          className={`bg-white rounded-xl shadow-sm border transition hover:shadow-md duration-300 ${
-            item.isBlog ? "border-yellow-200 bg-yellow-50" : "border-gray-200"
-          }`}
+          key={post.id}
+          className="bg-white rounded-xl shadow-sm border hover:shadow-md transition duration-300 overflow-hidden"
         >
           {/* Header */}
           <div className="flex items-center gap-3 p-4 border-b">
-            {item.userAvatar && (
-              <img src={item.userAvatar} alt={item.userName} className="w-10 h-10 rounded-full object-cover" />
+            {post.userAvatar && (
+              <img src={post.userAvatar} alt={post.userName} className="w-10 h-10 rounded-full object-cover" />
             )}
             <div>
-              <h3 className="font-semibold text-gray-900">{item.userName || "Anonymous"}</h3>
-              {item.isBlog && (
-                <span className="text-xs font-semibold text-orange-600 bg-orange-100 px-2 py-1 rounded-md">
-                  Featured Blog
-                </span>
-              )}
+              <h3 className="font-semibold text-gray-900">{post.userName || "Anonymous"}</h3>
+              <span className="text-xs text-gray-400">
+                {post.timestamp?.toDate ? new Date(post.timestamp.toDate()).toLocaleString() : "Just now"}
+              </span>
             </div>
           </div>
 
           {/* Content */}
-          {item.mediaUrl && <img src={item.mediaUrl} alt="Post" className="w-full object-cover max-h-96" />}
-          <div className="p-4 text-gray-800 leading-relaxed">{item.content}</div>
+          <div
+            className="p-4 text-lg leading-relaxed"
+            style={{
+              color: post.fontColor || "#000",
+              backgroundColor: post.bgColor || "#fff",
+            }}
+          >
+            {post.content}
+          </div>
 
-          {/* Reactions Bar */}
-          <div className="flex justify-between items-center border-t px-4 py-2 text-sm text-gray-600">
-            <div className="flex gap-3">
-              <button className="hover:text-red-500">❤️ Like</button>
-              <button className="hover:text-green-600">💬 Comment</button>
+          {/* Media */}
+          {post.mediaUrl && (
+            <div className="bg-black">
+              {post.mediaUrl.endsWith(".mp4") || post.mediaUrl.includes("video") ? (
+                <video src={post.mediaUrl} controls className="w-full max-h-[500px] object-cover" />
+              ) : (
+                <img src={post.mediaUrl} alt="Post Media" className="w-full object-cover max-h-[500px]" />
+              )}
             </div>
-            {currentUser?.uid === item.userId && (
+          )}
+
+          {/* Footer Actions */}
+          <div className="flex justify-between items-center border-t px-4 py-3 text-sm text-gray-600">
+            <div className="flex gap-4">
+              <button className="hover:text-red-500 transition">❤️ Like</button>
+              <button className="hover:text-green-600 transition">💬 Comment</button>
+            </div>
+            {currentUser?.uid === post.userId && (
               <Link to="/manage-posts">
-                <Button variant="outline" size="sm" className="text-xs">
+                <Button variant="outline" size="sm" className="text-xs hover:bg-gray-100">
                   Manage
                 </Button>
               </Link>
@@ -123,6 +127,10 @@ export default function MainFeed() {
           </div>
         </div>
       ))}
+
+      {posts.length === 0 && (
+        <p className="text-center text-gray-400 italic mt-6">No posts yet — be the first to share something!</p>
+      )}
     </div>
   );
 }
