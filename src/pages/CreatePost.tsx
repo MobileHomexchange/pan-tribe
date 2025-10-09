@@ -51,16 +51,19 @@ export default function CreatePost() {
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
-        uploadTask.on("state_changed", (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(progress);
-        });
-
-        await new Promise((resolve, reject) => {
-          uploadTask.on("state_changed", null, reject, async () => {
-            mediaUrl = await getDownloadURL(uploadTask.snapshot.ref);
-            resolve(null);
-          });
+        mediaUrl = await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            (error) => reject(error),
+            async () => {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            },
+          );
         });
       }
 
