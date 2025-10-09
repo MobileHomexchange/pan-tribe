@@ -1,148 +1,112 @@
-const handleSmartPostSubmit = async (formData: Record<string, any>) => {
-  console.log("🚀 Smart post starting...");
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { storage, db } from "../config/firebase"; // Adjust path to your firebase config
+import { useAuthState } from "react-firebase-hooks/auth";
+import { auth } from "../config/firebase"; // Adjust path to your firebase config
+import imageCompression from "browser-image-compression";
 
-  if (!currentUser) {
-    toast.error("Please log in to post");
-    navigate("/login");
-    return;
-  }
+const CreatePost = () => {
+  const navigate = useNavigate();
+  const [currentUser] = useAuthState(auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  // Enhanced file validation
-  if (formData.media instanceof File) {
-    const validation = validateFile(formData.media);
-    if (!validation.valid) {
-      toast.error(validation.message);
+  const handleSmartPostSubmit = async (formData: Record<string, any>) => {
+    console.log("⚡ Ultra-fast post starting...");
+
+    if (!currentUser) {
+      toast.error("Please log in to post");
+      navigate("/login");
       return;
     }
 
-    // Use ultra-fast for small files, compressed for larger ones
-    if (formData.media.size <= 1 * 1024 * 1024) {
-      // 1MB threshold
-      console.log("⚡ Using ultra-fast upload for small file");
-      return await handleUltraFastPost(formData);
-    } else {
-      console.log("📐 Using compressed upload for larger file");
-      return await handleCompressedPost(formData);
-    }
-  } else {
-    // No media - ultra fast text post
-    return await handleUltraFastPost(formData);
-  }
-};
-
-// Ultra-fast for small files or text posts
-const handleUltraFastPost = async (formData: Record<string, any>) => {
-  setIsSubmitting(true);
-
-  try {
-    let mediaUrl = null;
-
+    // Quick file validation
     if (formData.media instanceof File) {
-      const fileRef = ref(storage, `posts/${currentUser.uid}/quick_${Date.now()}_${formData.media.name}`);
-      const snapshot = await uploadBytes(fileRef, formData.media);
-      mediaUrl = await getDownloadURL(snapshot.ref);
+      if (formData.media.size > 3 * 1024 * 1024) {
+        toast.error("File must be smaller than 3MB for quick posting");
+        return;
+      }
+
+      // Check file type
+      const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
+      if (!allowedTypes.includes(formData.media.type)) {
+        toast.error("Please use JPEG, PNG, GIF, or WebP images only");
+        return;
+      }
     }
 
-    const postData = {
-      ...formData,
-      media: undefined,
-      mediaUrl,
-      userId: currentUser.uid,
-      userName: currentUser.displayName || "Anonymous",
-      userAvatar: currentUser.photoURL || "",
-      timestamp: serverTimestamp(),
-      likes: 0,
-      comments: [],
-    };
+    setIsSubmitting(true);
 
-    await addDoc(collection(db, "posts"), postData);
-    toast.success("✅ Posted!");
-    setTimeout(() => navigate("/feed"), 300);
-  } catch (error: any) {
-    console.error("❌ Post failed:", error);
-    toast.error("Post failed. Please try again.");
-  } finally {
-    setIsSubmitting(false);
-  }
-};
+    try {
+      let mediaUrl = null;
 
-// Compressed version for larger files
-const handleCompressedPost = async (formData: Record<string, any>) => {
-  setIsSubmitting(true);
-  setUploadProgress(0);
+      // Skip compression for maximum speed
+      if (formData.media instanceof File) {
+        console.log("📤 Quick uploading without compression...");
+        const fileRef = ref(storage, `posts/${currentUser.uid}/quick_${Date.now()}_${formData.media.name}`);
+        const snapshot = await uploadBytes(fileRef, formData.media);
+        mediaUrl = await getDownloadURL(snapshot.ref);
+        console.log("✅ Quick upload complete!");
+      }
 
-  try {
-    let mediaUrl = null;
+      // Immediate Firestore write
+      const postData = {
+        ...formData,
+        media: undefined, // Remove the file object
+        mediaUrl,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || "Anonymous",
+        userAvatar: currentUser.photoURL || "",
+        timestamp: serverTimestamp(),
+        likes: 0,
+        comments: [],
+      };
 
-    if (formData.media instanceof File) {
-      console.log("📐 Compressing image...");
-      const compressedFile = await imageCompression(formData.media, {
-        maxSizeMB: 0.5,
-        maxWidthOrHeight: 800,
-        useWebWorker: true,
-      });
+      console.log("📝 Quick Firestore write...");
+      await addDoc(collection(db, "posts"), postData);
 
-      const fileRef = ref(storage, `posts/${currentUser.uid}/compressed_${Date.now()}_${formData.media.name}`);
-      const uploadTask = uploadBytesResumable(fileRef, compressedFile);
+      toast.success("✅ Posted instantly!");
+      setTimeout(() => navigate("/feed"), 300);
+    } catch (error: any) {
+      console.error("❌ Quick post failed:", error);
 
-      mediaUrl = await new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setUploadProgress(progress);
-          },
-          reject,
-          async () => {
-            const url = await getDownloadURL(uploadTask.snapshot.ref);
-            resolve(url);
-          },
-        );
-      });
+      if (error.message.includes("File too large")) {
+        toast.error("File too large. Please use a file smaller than 3MB.");
+      } else {
+        toast.error("Post failed. Try again with a smaller file.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    const postData = {
-      ...formData,
-      media: undefined,
-      mediaUrl,
-      userId: currentUser.uid,
-      userName: currentUser.displayName || "Anonymous",
-      userAvatar: currentUser.photoURL || "",
-      timestamp: serverTimestamp(),
-      likes: 0,
-      comments: [],
+  // Example form handler - replace with your actual form logic
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // Your form data collection logic here
+    const formData = {
+      content: "Your post content", // Replace with actual form data
+      media: null as File | null, // Replace with actual file
     };
 
-    await addDoc(collection(db, "posts"), postData);
-    toast.success("✅ Posted!");
-    setTimeout(() => navigate("/feed"), 500);
-  } catch (error: any) {
-    console.error("❌ Post failed:", error);
-    toast.error("Post failed. Please try again.");
-  } finally {
-    setIsSubmitting(false);
-    setUploadProgress(null);
-  }
+    await handleSmartPostSubmit(formData);
+  };
+
+  return (
+    <div>
+      <h1>Create Post</h1>
+      <form onSubmit={handleSubmit}>
+        {/* Your form JSX here */}
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Posting..." : "Post"}
+        </button>
+        {uploadProgress !== null && <div>Upload Progress: {uploadProgress}%</div>}
+      </form>
+    </div>
+  );
 };
 
-// Validation function
-const validateFile = (file: File): { valid: boolean; message?: string } => {
-  const MAX_SIZE = 8 * 1024 * 1024; // 8MB
-  const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"];
-
-  if (file.size > MAX_SIZE) {
-    return {
-      valid: false,
-      message: `File must be smaller than 8MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`,
-    };
-  }
-
-  if (!ALLOWED_TYPES.includes(file.type)) {
-    return {
-      valid: false,
-      message: "Please use JPEG, PNG, GIF, or WebP images only.",
-    };
-  }
-
-  return { valid: true };
-};
+export default CreatePost; // This fixes the default export error
