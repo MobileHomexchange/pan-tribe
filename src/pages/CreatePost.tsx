@@ -1,10 +1,23 @@
-import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from "firebase/storage";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { storage, db } from "../config/firebase";
+import { storage, db } from "../lib/firebase";
 import imageCompression from "browser-image-compression";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
+import { useAuth } from "../contexts/AuthContext";
+import { PostTypeSelector } from "../components/PostTypeSelector";
+import { SmartPostCreator, PostType } from "../components/SmartPostCreator";
+import { Layout } from "../components/layout/Layout";
 
-const handleSmartPostSubmit = async (formData: Record<string, any>) => {
+const CreatePost = () => {
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [selectedType, setSelectedType] = useState<PostType | null>(null);
+
+  const handleSmartPostSubmit = async (formData: Record<string, any>) => {
   console.log("🚀 Starting post submission...", formData);
 
   if (!currentUser) {
@@ -180,3 +193,35 @@ const createPostDocument = async (formData: Record<string, any>, mediaUrl: strin
     throw new Error("Failed to save post. Please try again.");
   }
 };
+
+  return (
+    <Layout>
+      <div className="max-w-2xl mx-auto p-6">
+        {!selectedType ? (
+          <PostTypeSelector onSelect={(type) => setSelectedType(type)} />
+        ) : (
+          <SmartPostCreator
+            type={selectedType}
+            onSubmit={handleSmartPostSubmit}
+            onCancel={() => setSelectedType(null)}
+          />
+        )}
+        {uploadProgress !== null && (
+          <div className="mt-4">
+            <div className="text-sm text-muted-foreground mb-2">
+              Uploading: {uploadProgress}%
+            </div>
+            <div className="w-full bg-secondary h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-primary h-full transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </Layout>
+  );
+};
+
+export default CreatePost;
