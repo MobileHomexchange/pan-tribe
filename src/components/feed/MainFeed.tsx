@@ -1,42 +1,6 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { db } from "@/lib/firebase";
-import {
-  collection,
-  onSnapshot,
-  orderBy,
-  query,
-  updateDoc,
-  doc,
-  arrayUnion,
-  arrayRemove,
-  addDoc,
-} from "firebase/firestore";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { toast } from "sonner";
-
-interface Post {
-  id: string;
-  userId?: string;
-  userName?: string;
-  userAvatar?: string;
-  content?: string;
-  mediaUrl?: string;
-  timestamp?: any;
-  fontColor?: string;
-  bgColor?: string;
-  likes?: string[];
-}
-
-interface Comment {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  text: string;
-  timestamp: any;
-}
+// MainFeed.tsx - Updated visual styling
+// Add this import at the top
+import { useLocation } from "react-router-dom";
 
 export default function MainFeed() {
   const { currentUser } = useAuth();
@@ -44,175 +8,182 @@ export default function MainFeed() {
   const [comments, setComments] = useState<Record<string, Comment[]>>({});
   const [newComment, setNewComment] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const location = useLocation();
 
-  // Fetch posts
-  useEffect(() => {
-    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-    const unsub = onSnapshot(q, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Post[];
-      setPosts(data);
-      setLoading(false);
-    });
-    return () => unsub();
-  }, []);
+  const isMyTribePage = location.pathname === "/my-tribe" || location.pathname.includes("tribe");
 
-  // Fetch comments for each post
-  useEffect(() => {
-    const unsubscribers: (() => void)[] = [];
-    posts.forEach((post) => {
-      const q = query(collection(db, `posts/${post.id}/comments`), orderBy("timestamp", "asc"));
-      const unsub = onSnapshot(q, (snap) => {
-        setComments((prev) => ({
-          ...prev,
-          [post.id]: snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Comment[],
-        }));
-      });
-      unsubscribers.push(unsub);
-    });
-    return () => unsubscribers.forEach((unsub) => unsub());
-  }, [posts]);
+  // ... rest of your existing state and functions remain the same
 
-  const toggleLike = async (postId: string, liked: boolean) => {
-    if (!currentUser) return toast.error("Log in to like posts");
-    const postRef = doc(db, "posts", postId);
-    await updateDoc(postRef, {
-      likes: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid),
-    });
-  };
-
-  const addComment = async (postId: string) => {
-    const text = newComment[postId];
-    if (!text?.trim()) return;
-    await addDoc(collection(db, `posts/${postId}/comments`), {
-      userId: currentUser?.uid,
-      userName: currentUser?.displayName || "Anonymous",
-      userAvatar: currentUser?.photoURL || "",
-      text,
-      timestamp: new Date(),
-    });
-    setNewComment((prev) => ({ ...prev, [postId]: "" }));
-  };
-
-  const getNextPost = (currentPost: Post) => {
-    const related = posts.find(
-      (p) => p.userId === currentPost.userId && p.id !== currentPost.id && p.content?.toLowerCase().includes("part"),
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-40">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <p className="ml-3 text-gray-500">Loading feed...</p>
+      </div>
     );
-    return related || posts[Math.floor(Math.random() * posts.length)];
-  };
-
-  if (loading) return <p className="text-center text-gray-500 p-6">Loading feed...</p>;
 
   return (
-    <div className="space-y-6">
-      {posts.map((post) => {
-        const liked = currentUser && post.likes?.includes(currentUser.uid);
-        const postComments = comments[post.id] || [];
+    <div className="space-y-4">
+      {posts.length === 0 && !loading ? (
+        <div className="text-center py-10 bg-white rounded-lg shadow-sm border">
+          <p className="text-gray-500">No posts yet. Be the first to share something!</p>
+        </div>
+      ) : (
+        posts.map((post) => {
+          const liked = currentUser && post.likes?.includes(currentUser.uid);
+          const postComments = comments[post.id] || [];
 
-        return (
-          <div
-            key={post.id}
-            className="bg-white rounded-xl shadow-sm border hover:shadow-md transition duration-300 overflow-hidden"
-          >
-            {/* Header */}
-            <div className="flex items-center gap-3 p-4 border-b">
-              {post.userAvatar && (
-                <img src={post.userAvatar} alt={post.userName} className="w-10 h-10 rounded-full object-cover" />
-              )}
-              <div>
-                <h3 className="font-semibold text-gray-900">{post.userName || "Anonymous"}</h3>
-                <span className="text-xs text-gray-400">
-                  {post.timestamp?.toDate ? new Date(post.timestamp.toDate()).toLocaleString() : "Just now"}
-                </span>
-              </div>
-            </div>
-
-            {/* Content */}
+          return (
             <div
-              className="p-4 text-lg leading-relaxed"
-              style={{
-                color: post.fontColor || "#000",
-                backgroundColor: post.bgColor || "#fff",
-              }}
+              key={post.id}
+              id={post.id}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 overflow-hidden"
             >
-              {post.content}
-            </div>
-
-            {/* Media */}
-            {post.mediaUrl && (
-              <div className="bg-black">
-                {post.mediaUrl.endsWith(".mp4") || post.mediaUrl.includes("video") ? (
-                  <video src={post.mediaUrl} controls className="w-full max-h-[500px] object-cover" />
+              {/* Header - Improved styling */}
+              <div className="flex items-center gap-3 p-4 border-b border-gray-100">
+                {post.userAvatar ? (
+                  <img
+                    src={post.userAvatar}
+                    alt={post.userName}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-200"
+                  />
                 ) : (
-                  <img src={post.mediaUrl} alt="Post Media" className="w-full object-cover max-h-[500px]" />
-                )}
-              </div>
-            )}
-
-            {/* Footer Actions */}
-            <div className="flex justify-between items-center border-t px-4 py-3 text-sm text-gray-600">
-              <div className="flex gap-4 items-center">
-                <button
-                  className={`transition ${liked ? "text-red-500" : "hover:text-red-500"}`}
-                  onClick={() => toggleLike(post.id, liked)}
-                >
-                  ❤️ {post.likes?.length || 0}
-                </button>
-                <button
-                  className="hover:text-green-600"
-                  onClick={() => document.getElementById(`comments-${post.id}`)?.classList.toggle("hidden")}
-                >
-                  💬 {postComments.length}
-                </button>
-                {post.mediaUrl && (
-                  <button
-                    className="text-blue-500 hover:text-blue-700"
-                    onClick={() => {
-                      const next = getNextPost(post);
-                      toast.success(`Next content: ${next.userName || "New Creator"}`);
-                      document.getElementById(next.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
-                    }}
-                  >
-                    ⏭️ Next Video
-                  </button>
-                )}
-              </div>
-
-              {currentUser?.uid === post.userId && (
-                <Link to="/manage-posts">
-                  <Button variant="outline" size="sm" className="text-xs">
-                    Manage
-                  </Button>
-                </Link>
-              )}
-            </div>
-
-            {/* Comment Section */}
-            <div id={`comments-${post.id}`} className="hidden border-t bg-gray-50 p-3">
-              {postComments.map((c) => (
-                <div key={c.id} className="flex items-start gap-2 mb-2">
-                  <img src={c.userAvatar || "/default-avatar.png"} alt="" className="w-8 h-8 rounded-full" />
-                  <div className="bg-white p-2 rounded-lg shadow text-sm flex-1">
-                    <strong>{c.userName}</strong>
-                    <p>{c.text}</p>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                    {post.userName?.charAt(0) || "A"}
                   </div>
+                )}
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-900 hover:text-blue-600 cursor-pointer">
+                    {post.userName || "Anonymous"}
+                  </h3>
+                  <span className="text-xs text-gray-500">
+                    {post.timestamp?.toDate
+                      ? new Date(post.timestamp.toDate()).toLocaleString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "numeric",
+                        })
+                      : "Just now"}
+                  </span>
                 </div>
-              ))}
-              <div className="flex items-center gap-2 mt-3">
-                <input
-                  type="text"
-                  placeholder="Write a comment..."
-                  className="flex-1 border rounded-lg px-3 py-1 text-sm"
-                  value={newComment[post.id] || ""}
-                  onChange={(e) => setNewComment((prev) => ({ ...prev, [post.id]: e.target.value }))}
-                />
-                <button onClick={() => addComment(post.id)} className="text-green-600 font-semibold">
-                  Post
-                </button>
+              </div>
+
+              {/* Content - Improved spacing and typography */}
+              <div
+                className="p-5 text-base leading-relaxed whitespace-pre-wrap"
+                style={{
+                  color: post.fontColor || "#1f2937",
+                  backgroundColor: post.bgColor || "#fff",
+                }}
+              >
+                {post.content}
+              </div>
+
+              {/* Media - Improved sizing */}
+              {post.mediaUrl && (
+                <div className="bg-gray-900 flex justify-center">
+                  {post.mediaUrl.endsWith(".mp4") || post.mediaUrl.includes("video") ? (
+                    <video src={post.mediaUrl} controls className="max-w-full max-h-[600px] object-contain" />
+                  ) : (
+                    <img src={post.mediaUrl} alt="Post Media" className="max-w-full max-h-[600px] object-contain" />
+                  )}
+                </div>
+              )}
+
+              {/* Footer Actions - Improved button styling */}
+              <div className="flex justify-between items-center border-t border-gray-100 px-4 py-3 text-sm">
+                <div className="flex gap-4 items-center">
+                  <button
+                    className={`flex items-center gap-1 transition-all duration-200 ${
+                      liked ? "text-red-500 font-semibold" : "text-gray-600 hover:text-red-500"
+                    }`}
+                    onClick={() => toggleLike(post.id, liked)}
+                  >
+                    <span className="text-lg">❤️</span>
+                    <span>{post.likes?.length || 0}</span>
+                  </button>
+                  <button
+                    className="flex items-center gap-1 text-gray-600 hover:text-green-600 transition-colors duration-200"
+                    onClick={() => document.getElementById(`comments-${post.id}`)?.classList.toggle("hidden")}
+                  >
+                    <span className="text-lg">💬</span>
+                    <span>{postComments.length}</span>
+                  </button>
+                  {post.mediaUrl && (
+                    <button
+                      className="flex items-center gap-1 text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                      onClick={() => {
+                        const next = getNextPost(post);
+                        toast.success(`Next content from ${next.userName || "New Creator"}`);
+                        document.getElementById(next.id)?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }}
+                    >
+                      <span className="text-lg">⏭️</span>
+                      <span>Next</span>
+                    </button>
+                  )}
+                </div>
+
+                {currentUser?.uid === post.userId && (
+                  <Link to="/manage-posts">
+                    <Button variant="outline" size="sm" className="text-xs h-8">
+                      Manage
+                    </Button>
+                  </Link>
+                )}
+              </div>
+
+              {/* Comment Section - Improved styling */}
+              <div id={`comments-${post.id}`} className="hidden border-t border-gray-100 bg-gray-50/50 p-4">
+                <div className="space-y-3">
+                  {postComments.map((c) => (
+                    <div key={c.id} className="flex items-start gap-3">
+                      <img
+                        src={c.userAvatar || "/default-avatar.png"}
+                        alt=""
+                        className="w-8 h-8 rounded-full flex-shrink-0"
+                      />
+                      <div className="bg-white p-3 rounded-xl shadow-sm border border-gray-100 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <strong className="text-sm text-gray-900">{c.userName}</strong>
+                          <span className="text-xs text-gray-400">
+                            {c.timestamp?.toDate
+                              ? new Date(c.timestamp.toDate()).toLocaleTimeString("en-US", {
+                                  hour: "numeric",
+                                  minute: "numeric",
+                                })
+                              : "Now"}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-700">{c.text}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Comment Input - Improved styling */}
+                <div className="flex items-center gap-2 mt-4">
+                  <input
+                    type="text"
+                    placeholder="Write a comment..."
+                    className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    value={newComment[post.id] || ""}
+                    onChange={(e) => setNewComment((prev) => ({ ...prev, [post.id]: e.target.value }))}
+                    onKeyPress={(e) => e.key === "Enter" && addComment(post.id)}
+                  />
+                  <button
+                    onClick={() => addComment(post.id)}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-600 transition-colors duration-200"
+                  >
+                    Post
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })
+      )}
     </div>
   );
 }
