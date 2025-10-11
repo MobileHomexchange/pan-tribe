@@ -10,7 +10,6 @@ import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
-import Feed from "./pages/Feed";
 import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
 import Marketplace from "./pages/Marketplace";
@@ -62,7 +61,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
+              <Route path="/feed" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/home" element={<ProtectedRoute><Index /></ProtectedRoute>} />
               <Route path="/my-tribe" element={<ProtectedRoute><MyTribe /></ProtectedRoute>} />
               <Route path="/my-tribe/group/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
