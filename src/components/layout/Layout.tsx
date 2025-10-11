@@ -1,9 +1,11 @@
+// Layout.tsx
 import React, { useState, ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
 import MainFeed from "@/components/feed/MainFeed";
 import { RightSidebar } from "@/components/layout/RightSidebar";
+import { useLocation } from "react-router-dom";
 
 interface LayoutProps {
   children?: ReactNode;
@@ -11,12 +13,33 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps = {}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // Check if we're on the "my tribe" page
+  const isMyTribePage = location.pathname === "/my-tribe" || location.pathname.includes("tribe");
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Left Sidebar */}
-        <AppSidebar />
+        {/* Left Sidebar - Conditionally render ads on tribe page */}
+        {isMyTribePage ? (
+          <div className="w-64 bg-white border-r border-gray-200 p-4">
+            <h3 className="font-semibold text-lg mb-4">Sponsored Ads</h3>
+            {/* Placeholder for controlled ads */}
+            <div className="space-y-4">
+              <div className="bg-gray-100 rounded-lg p-3 text-center">
+                <p className="text-sm text-gray-600">Ad Space 1</p>
+                <p className="text-xs text-gray-400">Your controlled ad here</p>
+              </div>
+              <div className="bg-gray-100 rounded-lg p-3 text-center">
+                <p className="text-sm text-gray-600">Ad Space 2</p>
+                <p className="text-xs text-gray-400">Your controlled ad here</p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <AppSidebar />
+        )}
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
@@ -28,15 +51,17 @@ export function Layout({ children }: LayoutProps = {}) {
             {children ? (
               children
             ) : (
-              <div className="w-full mx-auto grid grid-cols-1 lg:grid-cols-3 gap-5">
-                {/* Main Feed */}
+              <div className="w-full mx-auto grid grid-cols-1 lg:grid-cols-4 gap-5 px-4">
+                {/* Main Feed - Adjusted for better spacing */}
                 <div className="lg:col-span-2">
                   <MainFeed />
                 </div>
 
-                {/* Right Sidebar */}
-                <div className="hidden lg:block px-5">
-                  <RightSidebar />
+                {/* Right Sidebar for Ads */}
+                <div className="hidden lg:block lg:col-span-1">
+                  <div className="sticky top-20">
+                    <RightSidebar />
+                  </div>
                 </div>
               </div>
             )}
