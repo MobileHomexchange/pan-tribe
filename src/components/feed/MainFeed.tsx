@@ -1,6 +1,44 @@
-// MainFeed.tsx - Updated visual styling
-// Add this import at the top
+// MainFeed.tsx - Corrected with all imports
+import { useEffect, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { db } from "@/lib/firebase";
+import {
+  collection,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  doc,
+  arrayUnion,
+  arrayRemove,
+  addDoc,
+} from "firebase/firestore";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { toast } from "sonner";
 import { useLocation } from "react-router-dom";
+
+interface Post {
+  id: string;
+  userId?: string;
+  userName?: string;
+  userAvatar?: string;
+  content?: string;
+  mediaUrl?: string;
+  timestamp?: any;
+  fontColor?: string;
+  bgColor?: string;
+  likes?: string[];
+}
+
+interface Comment {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  text: string;
+  timestamp: any;
+}
 
 export default function MainFeed() {
   const { currentUser } = useAuth();
@@ -12,7 +50,62 @@ export default function MainFeed() {
 
   const isMyTribePage = location.pathname === "/my-tribe" || location.pathname.includes("tribe");
 
-  // ... rest of your existing state and functions remain the same
+  // Fetch posts
+  useEffect(() => {
+    const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Post[];
+      setPosts(data);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, []);
+
+  // Fetch comments for each post
+  useEffect(() => {
+    const unsubscribers: (() => void)[] = [];
+    posts.forEach((post) => {
+      const q = query(collection(db, `posts/${post.id}/comments`), orderBy("timestamp", "asc"));
+      const unsub = onSnapshot(q, (snap) => {
+        setComments((prev) => ({
+          ...prev,
+          [post.id]: snap.docs.map((d) => ({ id: d.id, ...d.data() })) as Comment[],
+        }));
+      });
+      unsubscribers.push(unsub);
+    });
+    return () => unsubscribers.forEach((unsub) => unsub());
+  }, [posts]);
+
+  const toggleLike = async (postId: string, liked: boolean) => {
+    if (!currentUser) return toast.error("Log in to like posts");
+    const postRef = doc(db, "posts", postId);
+    await updateDoc(postRef, {
+      likes: liked ? arrayRemove(currentUser.uid) : arrayUnion(currentUser.uid),
+    });
+  };
+
+  const addComment = async (postId: string) => {
+    const text = newComment[postId];
+    if (!text?.trim()) return;
+    if (!currentUser) return toast.error("Log in to comment");
+
+    await addDoc(collection(db, `posts/${postId}/comments`), {
+      userId: currentUser.uid,
+      userName: currentUser.displayName || "Anonymous",
+      userAvatar: currentUser.photoURL || "",
+      text,
+      timestamp: new Date(),
+    });
+    setNewComment((prev) => ({ ...prev, [postId]: "" }));
+  };
+
+  const getNextPost = (currentPost: Post) => {
+    const related = posts.find(
+      (p) => p.userId === currentPost.userId && p.id !== currentPost.id && p.content?.toLowerCase().includes("part"),
+    );
+    return related || posts[Math.floor(Math.random() * posts.length)];
+  };
 
   if (loading)
     return (
@@ -98,7 +191,7 @@ export default function MainFeed() {
                     className={`flex items-center gap-1 transition-all duration-200 ${
                       liked ? "text-red-500 font-semibold" : "text-gray-600 hover:text-red-500"
                     }`}
-                    onClick={() => toggleLike(post.id, liked)}
+                    onClick={() => toggleLike(post.id, !!liked)}
                   >
                     <span className="text-lg">❤️</span>
                     <span>{post.likes?.length || 0}</span>
