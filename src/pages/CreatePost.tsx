@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 export default function CreatePost() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const returnTo = searchParams.get('returnTo') || '/feed';
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -83,7 +85,7 @@ export default function CreatePost() {
       await addDoc(collection(db, "posts"), postData);
 
       toast.success("✅ Post created successfully!");
-      navigate("/feed");
+      navigate(returnTo);
     } catch (error: any) {
       console.error("❌ Error creating post:", error);
       toast.error("Failed to create post. Try again.");

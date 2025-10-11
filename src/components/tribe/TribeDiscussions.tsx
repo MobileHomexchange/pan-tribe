@@ -107,7 +107,7 @@ export function TribeDiscussions() {
         </h3>
         <Button 
           className="bg-primary hover:bg-primary/90 text-primary-foreground"
-          onClick={() => navigate('/create-post')}
+          onClick={() => navigate('/create-post?returnTo=/my-tribe')}
         >
           <i className="fas fa-plus mr-2"></i>
           New Post
