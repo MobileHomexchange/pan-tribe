@@ -1,108 +1,90 @@
-import { useEffect, useState } from "react";
-import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
-import { db } from "@/lib/firebaseConfig";
-import { Layout } from "@/components/layout/Layout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { PostImage } from "@/components/feed/PostImage";
-import DOMPurify from 'dompurify';
+// FeedScreen.tsx
+import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, Share } from "react-native";
+import { collection, onSnapshot, orderBy, query, doc, updateDoc, increment } from "firebase/firestore";
+import { db } from "../lib/firebaseConfig";
 
-interface Post {
-  id: string;
-  text: string;
-  author: string;
-  imageUrl?: string;
-  createdAt?: any;
-}
+export default function FeedScreen({ navigation }) {
+  const [posts, setPosts] = useState([]);
 
-const POSTS_PER_PAGE = 20;
-
-const Feed = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  // 🔥 Fetch posts live from Firestore
   useEffect(() => {
-    // Real-time listener for posts with pagination limit
-    const postsQuery = query(
-      collection(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(POSTS_PER_PAGE)
-    );
-    
-    const unsubscribe = onSnapshot(
-      postsQuery,
-      (snapshot) => {
-        const postsList = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Post[];
-        setPosts(postsList);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching posts:", error);
-        setLoading(false);
-      }
-    );
-
-    return () => unsubscribe();
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      setPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+    });
+    return unsubscribe;
   }, []);
 
-  if (loading) {
-    return (
-      <Layout>
-        <div className="w-full px-4 space-y-6">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-10 w-10 bg-muted rounded-full animate-pulse" />
-                  <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                </div>
-                <div className="h-20 bg-muted rounded animate-pulse" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </Layout>
-    );
-  }
+  // ❤️ Like a post
+  const handleLike = async (postId) => {
+    try {
+      await updateDoc(doc(db, "posts", postId), { likes: increment(1) });
+    } catch (error) {
+      console.error("Error liking post:", error);
+    }
+  };
+
+  // 🔗 Share a post
+  const handleShare = async (post) => {
+    try {
+      await Share.share({
+        message: `${post.title}\n\n${post.content}`,
+      });
+    } catch (error) {
+      console.log("Share error:", error);
+    }
+  };
+
+  // 🧩 Render each post
+  const renderPost = ({ item }) => (
+    <View
+      style={{
+        backgroundColor: "#fff",
+        margin: 10,
+        padding: 15,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 5,
+      }}
+    >
+      <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.title}</Text>
+      <Text style={{ marginVertical: 10 }}>{item.content}</Text>
+
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-around",
+          borderTopWidth: 1,
+          borderColor: "#eee",
+          paddingTop: 10,
+        }}
+      >
+        {/* ❤️ Like Button */}
+        <TouchableOpacity onPress={() => handleLike(item.id)}>
+          <Text>👍 {item.likes ?? 0}</Text>
+        </TouchableOpacity>
+
+        {/* 💬 Comment Button */}
+        <TouchableOpacity onPress={() => navigation.navigate("Comments", { postId: item.id })}>
+          <Text>💬 {item.commentsCount ?? 0}</Text>
+        </TouchableOpacity>
+
+        {/* 🔗 Share Button */}
+        <TouchableOpacity onPress={() => handleShare(item)}>
+          <Text>🔗 Share</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
   return (
-    <Layout>
-      <div className="w-full px-4 space-y-6">
-        {posts.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No posts yet. Be the first to post!</p>
-            </CardContent>
-          </Card>
-        ) : (
-          posts.map((post) => (
-            <Card key={post.id}>
-              <CardContent className="p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarFallback>
-                      {post.author?.charAt(0)?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="font-semibold text-foreground">{post.author}</div>
-                </div>
-                <div className="text-foreground whitespace-pre-wrap mb-3">
-                  {DOMPurify.sanitize(post.text, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] })}
-                </div>
-                {post.imageUrl && (
-                  <PostImage src={post.imageUrl} alt="Post image" />
-                )}
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-    </Layout>
+    <FlatList
+      data={posts}
+      renderItem={renderPost}
+      keyExtractor={(item) => item.id}
+      contentContainerStyle={{ paddingBottom: 50 }}
+    />
   );
-};
-
-export default Feed;
+}
