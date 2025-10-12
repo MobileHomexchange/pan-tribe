@@ -10,7 +10,7 @@ interface TribeLayoutProps {
 export default function TribeLayout({ children, active }: TribeLayoutProps) {
   const navItems = [
     { name: "Feed", icon: Home, href: "/feed" },
-    { name: "My Tribe", icon: Users, href: "/mytribe" },
+    { name: "My Tribe", icon: Users, href: "/my-tribe" },
     { name: "Saved", icon: Bookmark, href: "/saved" },
     { name: "Profile", icon: UserCircle2, href: "/profile" },
   ];
@@ -27,7 +27,7 @@ export default function TribeLayout({ children, active }: TribeLayoutProps) {
                 href={href}
                 className={cn(
                   "flex items-center gap-2 p-2 rounded-md hover:bg-green-50 transition",
-                  active === name && "bg-green-100 font-semibold text-green-700"
+                  active === name && "bg-green-100 font-semibold text-green-700",
                 )}
               >
                 <Icon className="w-5 h-5" />
@@ -38,7 +38,7 @@ export default function TribeLayout({ children, active }: TribeLayoutProps) {
         </ul>
       </aside>
 
-      {/* Main Content */}
+      {/* Main content */}
       <main className="flex-1 p-6 overflow-y-auto">{children}</main>
     </div>
   );
