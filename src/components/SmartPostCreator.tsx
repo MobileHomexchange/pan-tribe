@@ -1,108 +1,60 @@
-import { useState, FC, FormEvent } from "react";
-import { PostType } from "./PostTypeSelector";
+import React, { useState } from "react";
+import { db } from "@/lib/firebaseConfig";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useRouter } from "next/router";
 
-interface SmartPostCreatorProps {
-  type: PostType;
-  onSubmit: (data: Record<string, any>) => void;
-  onCancel: () => void;
-  isSubmitting?: boolean;
-}
-
-export const SmartPostCreator: FC<SmartPostCreatorProps> = ({ type, onSubmit, onCancel, isSubmitting = false }) => {
+export default function SmartCreator() {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [media, setMedia] = useState<File | null>(null);
-  const [link, setLink] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData: Record<string, any> = { content };
-
-    if (media) formData.media = media;
-    if (link) formData.link = link;
-    formData.type = type;
-
-    onSubmit(formData);
+    if (!title.trim() || !content.trim()) return;
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "posts"), {
+        title: title.trim(),
+        content: content.trim(),
+        createdAt: serverTimestamp(),
+        likes: 0,
+        commentsCount: 0,
+        authorName: "Anonymous",
+      });
+      router.push("/feed");
+    } catch (err) {
+      console.error("Error posting:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 bg-white shadow rounded-xl space-y-4">
-      {type === "text" && (
+    <div className="max-w-md mx-auto p-6 bg-white shadow rounded">
+      <h1 className="text-2xl font-bold mb-4 text-green-700">Create Post</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full border rounded p-2"
+        />
         <textarea
+          placeholder="Write something..."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          placeholder="What's on your mind?"
-          className="w-full border rounded p-3"
-          rows={5}
-          disabled={isSubmitting}
+          className="w-full border rounded p-2 h-32"
         />
-      )}
-
-      {type === "image" && (
-        <>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setMedia(e.target.files?.[0] || null)}
-            disabled={isSubmitting}
-          />
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write a caption..."
-            className="w-full border rounded p-3"
-            rows={3}
-            disabled={isSubmitting}
-          />
-        </>
-      )}
-
-      {type === "video" && (
-        <>
-          <input
-            type="file"
-            accept="video/*"
-            onChange={(e) => setMedia(e.target.files?.[0] || null)}
-            disabled={isSubmitting}
-          />
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="Write a caption..."
-            className="w-full border rounded p-3"
-            rows={3}
-            disabled={isSubmitting}
-          />
-        </>
-      )}
-
-      {type === "link" && (
-        <input
-          type="url"
-          value={link}
-          onChange={(e) => setLink(e.target.value)}
-          placeholder="Paste a link..."
-          className="w-full border rounded p-3"
-          disabled={isSubmitting}
-        />
-      )}
-
-      <div className="flex justify-between mt-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="bg-gray-300 hover:bg-gray-400 px-4 py-2 rounded"
-          disabled={isSubmitting}
-        >
-          Cancel
-        </button>
         <button
           type="submit"
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-          disabled={isSubmitting}
+          disabled={loading}
+          className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
         >
-          {isSubmitting ? "Posting..." : "Create Post"}
+          {loading ? "Posting..." : "Post"}
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   );
-};
+}
