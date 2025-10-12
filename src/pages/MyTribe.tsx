@@ -15,7 +15,7 @@ export default function MyTribe() {
 
   return (
     <TribeLayout>
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="space-y-4">
         <h1 className="text-2xl font-bold text-green-700 mb-4">My Tribe Posts</h1>
         {posts.length ? (
           posts.map((p) => (

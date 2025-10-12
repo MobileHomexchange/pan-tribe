@@ -14,7 +14,7 @@ export default function Feed() {
 
   return (
     <TribeLayout>
-      <div className="max-w-2xl mx-auto space-y-4">
+      <div className="space-y-4">
         {posts.map((p) => (
           <div key={p.id} className="bg-white border rounded-lg shadow-sm p-4">
             <div className="flex items-center gap-3 mb-2">
