@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { db } from "@/lib/firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { useRouter } from "next/router";
+import { useNavigate } from "react-router-dom";
 
 export default function SmartCreator() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ export default function SmartCreator() {
         commentsCount: 0,
         authorName: "Anonymous",
       });
-      router.push("/feed");
+      navigate("/feed");
     } catch (err) {
       console.error("Error posting:", err);
     } finally {

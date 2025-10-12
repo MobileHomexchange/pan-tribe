@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import TribeLayout from "../layout/TribeLayout";
 import { db } from "@/lib/firebaseConfig";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 
@@ -13,8 +12,7 @@ export default function MainFeed() {
   }, []);
 
   return (
-    <TribeLayout>
-      <div className="space-y-4">
+    <div className="space-y-4">
         {posts.map((post) => (
           <div key={post.id} className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex items-center mb-2">
@@ -39,7 +37,6 @@ export default function MainFeed() {
             </div>
           </div>
         ))}
-      </div>
-    </TribeLayout>
+    </div>
   );
 }
