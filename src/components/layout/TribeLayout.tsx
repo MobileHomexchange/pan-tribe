@@ -15,7 +15,8 @@ export default function TribeLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="flex min-h-screen bg-gray-50">
-      <aside className="w-64 border-r bg-white p-4">
+      <main className="flex-1 p-6 overflow-y-auto flex justify-center">{children}</main>
+      <aside className="w-64 border-l bg-white p-4">
         <h2 className="text-xl font-bold mb-6 text-green-700">Tribe Pulse</h2>
         <ul className="space-y-2">
           {navItems.map(({ name, icon: Icon, href }) => {
@@ -38,7 +39,6 @@ export default function TribeLayout({ children }: { children: React.ReactNode })
           })}
         </ul>
       </aside>
-      <main className="flex-1 p-6 overflow-y-auto">{children}</main>
     </div>
   );
 }
