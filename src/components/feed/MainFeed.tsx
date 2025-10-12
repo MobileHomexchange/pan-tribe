@@ -13,7 +13,7 @@ export default function MainFeed() {
   }, []);
 
   return (
-    <TribeLayout active="Feed">
+    <TribeLayout>
       <div className="max-w-2xl mx-auto space-y-4">
         {posts.map((post) => (
           <div key={post.id} className="bg-white rounded-lg shadow-sm border p-4">
