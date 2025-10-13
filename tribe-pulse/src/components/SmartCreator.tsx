@@ -1,0 +1,68 @@
+import React, { useState } from "react";
+import { db } from "../lib/firebaseConfig";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useRouter } from "expo-router";
+
+export default function SmartCreator() {
+  const router = useRouter();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !content.trim()) {
+      alert("Please enter both a title and some content.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addDoc(collection(db, "posts"), {
+        title: title.trim(),
+        content: content.trim(),
+        createdAt: serverTimestamp(),
+        likes: 0,
+        commentsCount: 0,
+        authorName: "Anonymous",
+      });
+      alert("Post created!");
+      router.push("/feed");
+    } catch (err) {
+      console.error("Error creating post:", err);
+      alert("Something went wrong while creating the post.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6 mt-10">
+      <h1 className="text-2xl font-bold text-green-700 mb-4 text-center">
+        Create Post
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input
+          type="text"
+          placeholder="Title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="w-full border rounded p-2"
+        />
+        <textarea
+          placeholder="Write something..."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          className="w-full border rounded p-2 h-32"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded"
+        >
+          {loading ? "Posting..." : "Post"}
+        </button>
+      </form>
+    </div>
+  );
+}
