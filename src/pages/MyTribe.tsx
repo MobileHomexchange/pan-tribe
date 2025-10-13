@@ -141,8 +141,8 @@ export default function MyTribe() {
       title: newPost.title,
       content: newPost.content,
       author: {
-        name: currentUser?.display_name || "Current User",
-        initials: currentUser?.display_name ? currentUser.display_name[0].toUpperCase() : "U",
+        name: currentUser?.displayName || "Current User",
+        initials: currentUser?.displayName ? currentUser.displayName[0].toUpperCase() : "U",
       },
       colorCaption: newPost.colorCaption,
       backgroundColor: newPost.backgroundColor,
@@ -197,7 +197,7 @@ export default function MyTribe() {
           </Button>
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-gradient-to-br from-primary to-secondary text-white font-bold">
-              {getInitials(currentUser?.display_name || "U")}
+              {getInitials(currentUser?.displayName || "U")}
             </AvatarFallback>
           </Avatar>
         </div>
