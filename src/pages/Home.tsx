@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { TopBar } from "@/components/layout/TopBar";
+import { Layout } from "@/components/layout/Layout";
 import { UserProfileCard } from "@/components/home/UserProfileCard";
 import { CreatePostInput } from "@/components/home/CreatePostInput";
 import { PostCard } from "@/components/home/PostCard";
@@ -96,10 +96,8 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
-      <TopBar />
-      
-      <div className="pt-16">
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
           {/* LEFT SIDEBAR - Fixed width */}
           <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
@@ -240,6 +238,6 @@ export default function Home() {
           </aside>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
