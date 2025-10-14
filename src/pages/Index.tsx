@@ -5,6 +5,7 @@ import { CreatePostInput } from "@/components/home/CreatePostInput";
 import { LiveSessionCard } from "@/components/home/LiveSessionCard";
 import { AdRotator } from "@/components/home/AdRotator";
 import { TribeDashboardWidget } from "@/components/home/TribeDashboardWidget";
+import { StickyAdBanner } from "@/components/home/StickyAdBanner";
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Video } from "lucide-react";
@@ -53,6 +54,7 @@ const Index = () => {
 
   return (
     <Layout>
+      <StickyAdBanner />
       <div className="min-h-screen bg-pattern">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
           {/* CENTER FEED - Flexible width */}
