@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
-import { UserProfileCard } from "@/components/home/UserProfileCard";
 import { CreatePostInput } from "@/components/home/CreatePostInput";
 import { PostCard } from "@/components/home/PostCard";
 import { LiveSessionCard } from "@/components/home/LiveSessionCard";
 import { AdRotator } from "@/components/home/AdRotator";
 import { TribeDashboardWidget } from "@/components/home/TribeDashboardWidget";
+import { HomeLeftSidebar } from "@/components/home/HomeLeftSidebar";
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Home as HomeIcon, Users, MessageSquare, Settings, Video, PenSquare } from "lucide-react";
+import { Home as HomeIcon, Users, ShoppingBag, Film, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -89,63 +88,54 @@ export default function Home() {
   }, []);
 
   const navigationLinks = [
-    { icon: HomeIcon, label: "Home", path: "/home" },
-    { icon: Users, label: "MyTribe", path: "/my-tribe" },
-    { icon: MessageSquare, label: "Messages", path: "/messages" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { 
+      icon: <HomeIcon className="w-5 h-5 text-white" />, 
+      label: "Dashboard", 
+      path: "/feed",
+      color: "bg-primary"
+    },
+    { 
+      icon: <Users className="w-5 h-5 text-white" />, 
+      label: "MyTribe", 
+      path: "/my-tribe",
+      color: "bg-primary"
+    },
+    { 
+      icon: <ShoppingBag className="w-5 h-5 text-white" />, 
+      label: "Marketplace", 
+      path: "/marketplace",
+      color: "bg-primary"
+    },
+    { 
+      icon: <Film className="w-5 h-5 text-white" />, 
+      label: "Reels", 
+      path: "/reels",
+      color: "bg-primary"
+    },
   ];
 
   return (
     <Layout>
       <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
-          {/* LEFT SIDEBAR - Fixed width */}
-          <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
-            <UserProfileCard
-              userName={currentUser?.displayName || "User"}
-              userAvatar={currentUser?.photoURL || ""}
-              tribeName="Your Tribe"
-              status="Active"
-            />
-
-            {/* Navigation Links */}
-            <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4 space-y-2">
-              {navigationLinks.map((link) => (
-                <Button
-                  key={link.path}
-                  variant="ghost"
-                  className="w-full justify-start gap-3 hover:bg-social-hover"
-                  onClick={() => navigate(link.path)}
-                >
-                  <link.icon className="w-5 h-5 text-primary" />
-                  <span className="text-foreground">{link.label}</span>
-                </Button>
-              ))}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4 space-y-3">
-              <h3 className="font-semibold text-foreground mb-3">Quick Actions</h3>
-              <Button
-                onClick={() => navigate("/create-post")}
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
-                <PenSquare className="w-4 h-4 mr-2" />
-                Create Post
-              </Button>
-              <Button
-                onClick={() => navigate("/session")}
-                variant="outline"
-                className="w-full border-primary text-primary hover:bg-primary/10"
-              >
-                <Video className="w-4 h-4 mr-2" />
-                Go Live
-              </Button>
-            </div>
-          </aside>
+          {/* LEFT SIDEBAR */}
+          <HomeLeftSidebar
+            userName={currentUser?.displayName || "User"}
+            userAvatar={currentUser?.photoURL || ""}
+            tribeName="My Tribe"
+            status="Active"
+            navigationLinks={navigationLinks}
+            onCreatePost={() => navigate("/create-post")}
+            onGoLive={() => navigate("/session")}
+            userTribes={[
+              { id: "1", name: "Faith Mobile Homes", memberCount: 234 },
+              { id: "2", name: "Tech Enthusiasts", memberCount: 156 },
+              { id: "3", name: "Affordable Housing", memberCount: 89 }
+            ]}
+          />
 
           {/* CENTER FEED - Flexible width */}
-          <main className="flex-1 max-w-3xl mx-auto space-y-4">
+          <main className="flex-1 max-w-3xl mx-auto space-y-6">
             {/* Create Post Input */}
             <CreatePostInput
               userAvatar={currentUser?.photoURL || ""}
@@ -192,7 +182,7 @@ export default function Home() {
           </main>
 
           {/* RIGHT SIDEBAR - Fixed width */}
-          <aside className="hidden lg:block w-96 space-y-4 sticky top-24 h-fit">
+          <aside className="hidden lg:block w-96 space-y-6 sticky top-24 h-fit">
             {/* Tribe Dashboard Widget */}
             <TribeDashboardWidget
               sessionsJoined={12}
