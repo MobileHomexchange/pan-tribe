@@ -7,13 +7,13 @@ import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, query, where, onSnapshot, orderBy, limit, getDocs } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { Layout } from "@/components/layout/Layout";
-import { LeftSidebar } from "@/components/tribe/dashboard/LeftSidebar";
-import { TribeBanner } from "@/components/tribe/dashboard/TribeBanner";
+import { TribeOverview } from "@/components/tribe/dashboard/TribeOverview";
 import { LiveSessionCard } from "@/components/tribe/dashboard/LiveSessionCard";
 import { PastSessionCard } from "@/components/tribe/dashboard/PastSessionCard";
-import { TribeInsights } from "@/components/tribe/dashboard/TribeInsights";
 import { OnlineMembers } from "@/components/tribe/dashboard/OnlineMembers";
 import { TribeChat } from "@/components/tribe/TribeChat";
+import { TribeFeed } from "@/components/tribe/TribeFeed";
+import { TribeAdBanner } from "@/components/tribe/TribeAdBanner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface TribeData {
@@ -269,86 +269,73 @@ export default function MyTribe() {
     <Layout>
       <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
-        {/* Left Sidebar */}
-        <LeftSidebar 
-          isAdmin={isAdmin}
-          userTribes={userTribes}
-          onEditTribe={() => toast.info("Edit tribe feature coming soon")}
-          onManageMembers={() => toast.info("Manage members feature coming soon")}
-        />
-        
-        {/* Center Feed */}
-        <main className="flex-1 max-w-3xl mx-auto space-y-6">
-          {/* Tribe Banner */}
-          <TribeBanner 
-            banner={tribe.banner}
-            avatar={tribe.avatar}
-            name={tribe.name}
-            category={tribe.category}
-            memberCount={tribe.memberCount}
-            isAdmin={isAdmin}
-            onEditBanner={() => toast.info("Edit banner feature coming soon")}
-          />
+          
+          {/* LEFT COLUMN - Tribe Overview & Sessions */}
+          <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
+            {/* Tribe Overview */}
+            <TribeOverview 
+              tribe={tribe}
+              isAdmin={isAdmin}
+              onEdit={() => toast.info("Edit tribe feature coming soon")}
+              onManage={() => toast.info("Manage members feature coming soon")}
+            />
 
-          {/* Description Card */}
-          <div className="bg-card rounded-lg p-6 shadow-card">
-            <p className="text-foreground leading-relaxed">{tribe.description}</p>
-          </div>
-
-          {/* Action Bar */}
-          <div className="flex gap-3">
-            <Button 
-              size="lg"
-              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg"
-              onClick={handleStartLiveSession}
-            >
-              <Video className="w-5 h-5 mr-2" />
-              Start Live Session
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              onClick={() => toast.info("Create post feature coming soon")}
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Create Post
-            </Button>
-          </div>
-
-          {/* Live Session Card */}
-          <LiveSessionCard 
-            session={activeSession}
-            onJoinSession={handleJoinSession}
-          />
-
-          {/* Past Sessions Feed */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <Video className="w-5 h-5 text-primary" />
-              Past Sessions
-            </h2>
-            {pastSessions.map(session => (
-              <PastSessionCard 
-                key={session.id}
-                session={session}
-                onWatchReplay={(url) => window.open(url, '_blank')}
+            {/* Active Sessions */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground px-2">Active Sessions</h3>
+              <LiveSessionCard 
+                session={activeSession}
+                onJoinSession={handleJoinSession}
               />
-            ))}
-          </div>
+              {isAdmin && (
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  onClick={handleStartLiveSession}
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  Start Session
+                </Button>
+              )}
+            </div>
 
-          {/* Tribe Insights */}
-          <div className="pt-6">
-            <h2 className="text-xl font-bold text-foreground mb-4">Tribe Insights</h2>
-            <TribeInsights stats={tribeStats} />
-          </div>
-        </main>
-        
-        {/* Right Sidebar - Desktop */}
-        <aside className="hidden lg:block w-96 space-y-4">
-          <OnlineMembers members={onlineMembers} />
-          <TribeChat />
-        </aside>
-      </div>
+            {/* Past Sessions */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground px-2 flex items-center gap-2">
+                <Video className="w-4 h-4 text-primary" />
+                Past Sessions
+              </h3>
+              <div className="space-y-2 max-h-96 overflow-y-auto">
+                {pastSessions.slice(0, 3).map(session => (
+                  <PastSessionCard 
+                    key={session.id}
+                    session={session}
+                    onWatchReplay={(url) => window.open(url, '_blank')}
+                  />
+                ))}
+              </div>
+            </div>
+          </aside>
+          
+          {/* MIDDLE COLUMN - Tribe Feed */}
+          <main className="flex-1 max-w-3xl mx-auto">
+            <TribeFeed 
+              currentTribeId={tribe.id}
+              userTribeIds={userTribes.map(t => t.id)}
+            />
+          </main>
+          
+          {/* RIGHT COLUMN - Online Members, Chat & Ads */}
+          <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit max-h-[calc(100vh-8rem)] overflow-y-auto">
+            {/* Online Members */}
+            <OnlineMembers members={onlineMembers} />
+            
+            {/* Tribe Chat */}
+            <TribeChat />
+            
+            {/* Ad Banner */}
+            <TribeAdBanner />
+          </aside>
+        </div>
 
       {/* Mobile Chat Toggle */}
       <Sheet>
