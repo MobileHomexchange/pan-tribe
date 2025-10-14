@@ -6,7 +6,7 @@ import {
   setPersistence,
   browserLocalPersistence, // ✅ Added for auth persistence
 } from "firebase/auth";
-import { auth } from "@/lib/firebaseConfig";
+import { auth } from "@/lib/firebase";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
