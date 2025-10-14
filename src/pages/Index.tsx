@@ -5,10 +5,9 @@ import { CreatePostInput } from "@/components/home/CreatePostInput";
 import { LiveSessionCard } from "@/components/home/LiveSessionCard";
 import { AdRotator } from "@/components/home/AdRotator";
 import { TribeDashboardWidget } from "@/components/home/TribeDashboardWidget";
-import { HomeLeftSidebar } from "@/components/home/HomeLeftSidebar";
 import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Home as HomeIcon, Users, ShoppingBag, Film, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
@@ -51,53 +50,11 @@ const Index = () => {
     return () => unsubscribe();
   }, []);
 
-  const navigationLinks = [
-    { 
-      icon: <HomeIcon className="w-5 h-5 text-white" />, 
-      label: "Dashboard", 
-      path: "/feed",
-      color: "bg-primary"
-    },
-    { 
-      icon: <Users className="w-5 h-5 text-white" />, 
-      label: "MyTribe", 
-      path: "/my-tribe",
-      color: "bg-primary"
-    },
-    { 
-      icon: <ShoppingBag className="w-5 h-5 text-white" />, 
-      label: "Marketplace", 
-      path: "/marketplace",
-      color: "bg-primary"
-    },
-    { 
-      icon: <Film className="w-5 h-5 text-white" />, 
-      label: "Reels", 
-      path: "/reels",
-      color: "bg-primary"
-    },
-  ];
 
   return (
     <Layout>
       <div className="min-h-screen bg-pattern">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
-          {/* LEFT SIDEBAR */}
-          <HomeLeftSidebar
-            userName={currentUser?.displayName || "User"}
-            userAvatar={currentUser?.photoURL || ""}
-            tribeName="My Tribe"
-            status="Active"
-            navigationLinks={navigationLinks}
-            onCreatePost={() => navigate("/create-post")}
-            onGoLive={() => navigate("/session")}
-            userTribes={[
-              { id: "1", name: "Faith Mobile Homes", memberCount: 234 },
-              { id: "2", name: "Tech Enthusiasts", memberCount: 156 },
-              { id: "3", name: "Affordable Housing", memberCount: 89 }
-            ]}
-          />
-
           {/* CENTER FEED - Flexible width */}
           <main className="flex-1 max-w-3xl mx-auto space-y-6">
             {/* Create Post Input */}
