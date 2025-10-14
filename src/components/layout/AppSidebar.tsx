@@ -15,7 +15,8 @@ import {
   Menu,
   Video,
   Briefcase,
-  FileText
+  FileText,
+  LayoutDashboard
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,6 +32,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const mainItems = [
+  { title: "Dashboard", url: "/my-tribe", icon: LayoutDashboard },
   { title: "Friends", url: "/friends", icon: Users },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
