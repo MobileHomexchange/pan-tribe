@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, query, where, onSnapshot, orderBy, limit, getDocs } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
+import { Layout } from "@/components/layout/Layout";
 import { LeftSidebar } from "@/components/tribe/dashboard/LeftSidebar";
 import { TribeBanner } from "@/components/tribe/dashboard/TribeBanner";
 import { LiveSessionCard } from "@/components/tribe/dashboard/LiveSessionCard";
@@ -265,8 +266,9 @@ export default function MyTribe() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
-      <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
+    <Layout>
+      <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
+        <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
         {/* Left Sidebar */}
         <LeftSidebar 
           isAdmin={isAdmin}
@@ -367,6 +369,7 @@ export default function MyTribe() {
           </div>
         </SheetContent>
       </Sheet>
-    </div>
+      </div>
+    </Layout>
   );
 }

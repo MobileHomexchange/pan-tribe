@@ -21,25 +21,8 @@ export function Layout({ children }: LayoutProps = {}) {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Left Sidebar - Conditionally render ads on tribe page */}
-        {isMyTribePage ? (
-          <div className="w-64 bg-white border-r border-gray-200 p-4">
-            <h3 className="font-semibold text-lg mb-4">Sponsored Ads</h3>
-            {/* Placeholder for controlled ads */}
-            <div className="space-y-4">
-              <div className="bg-gray-100 rounded-lg p-3 text-center">
-                <p className="text-sm text-gray-600">Ad Space 1</p>
-                <p className="text-xs text-gray-400">Your controlled ad here</p>
-              </div>
-              <div className="bg-gray-100 rounded-lg p-3 text-center">
-                <p className="text-sm text-gray-600">Ad Space 2</p>
-                <p className="text-xs text-gray-400">Your controlled ad here</p>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <AppSidebar />
-        )}
+        {/* Left Sidebar - Hide on tribe pages */}
+        {!isMyTribePage && <AppSidebar />}
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
