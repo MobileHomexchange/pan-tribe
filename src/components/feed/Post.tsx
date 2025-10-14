@@ -152,9 +152,9 @@ export function Post({ post, onInteraction }: PostProps) {
   };
 
   return (
-    <div className="w-full bg-card rounded-lg shadow-sm p-4 border border-social-border">
+    <div className="w-full bg-card rounded-xl shadow-md p-5 border border-social-border">
       {/* Post Header */}
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-4">
         <ClickableAvatar 
           userId={post.userId}
           userName={post.userName}
@@ -172,7 +172,7 @@ export function Post({ post, onInteraction }: PostProps) {
       </div>
 
       {/* Post Content */}
-      <div className="mb-3">
+      <div className="mb-4">
         <div 
           className="text-card-foreground whitespace-pre-wrap leading-relaxed"
           dangerouslySetInnerHTML={{ 
@@ -186,7 +186,7 @@ export function Post({ post, onInteraction }: PostProps) {
 
       {/* Post Image/Video */}
       {(post.imageUrl || post.videoUrl) && (
-        <div className="mb-3">
+        <div className="mb-4">
           {post.imageUrl && (
             <img 
               src={post.imageUrl} 
@@ -206,13 +206,13 @@ export function Post({ post, onInteraction }: PostProps) {
 
       {/* Poll */}
       {post.pollId && (
-        <div className="mb-3">
+        <div className="mb-4">
           <Poll pollId={post.pollId} />
         </div>
       )}
 
       {/* Post Stats */}
-      <div className="flex justify-between items-center py-2 border-b border-social-border mb-2 text-sm text-social-muted">
+      <div className="flex justify-between items-center py-3 border-b border-social-border mb-3 text-sm text-social-muted">
         <div className="flex items-center gap-1">
           <ThumbsUp className="h-4 w-4" />
           <span>{likeCount}</span>

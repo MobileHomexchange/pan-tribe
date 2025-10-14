@@ -56,7 +56,7 @@ const Index = () => {
       <div className="min-h-screen bg-pattern">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
           {/* CENTER FEED - Flexible width */}
-          <main className="flex-1 max-w-3xl mx-auto space-y-6">
+          <main className="flex-1 max-w-4xl mx-auto space-y-6">
             {/* Create Post Input */}
             <CreatePostInput
               userAvatar={currentUser?.photoURL || ""}

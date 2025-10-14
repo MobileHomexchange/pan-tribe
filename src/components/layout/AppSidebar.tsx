@@ -62,7 +62,7 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <Sidebar className={`${collapsed ? "w-14" : "w-72"} transition-all duration-300`} collapsible="icon">
+    <Sidebar className={`${collapsed ? "w-14" : "w-60"} transition-all duration-300`} collapsible="icon">
       <SidebarContent className="bg-sidebar border-r border-sidebar-border">
         {/* User Profile */}
         <SidebarGroup>
@@ -71,7 +71,7 @@ export function AppSidebar() {
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="h-12 p-2">
                   <NavLink to="/" className={`flex items-center gap-3 hover:bg-sidebar-accent rounded-lg ${isActive("/") ? "bg-light-gold" : ""}`}>
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pan-green to-pan-black flex items-center justify-center text-pan-gold font-bold text-sm">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pan-green to-pan-black flex items-center justify-center text-pan-gold font-bold text-sm">
                       JS
                     </div>
                     {!collapsed && <span className="font-medium text-sidebar-foreground">John Smith</span>}
@@ -95,8 +95,8 @@ export function AppSidebar() {
                         isActive(item.url) ? "bg-light-gold" : ""
                       }`}
                     >
-                      <div className="w-9 h-9 rounded-full bg-light-gold flex items-center justify-center">
-                        <item.icon className="h-5 w-5 text-pan-green" />
+                      <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center">
+                        <item.icon className="h-4 w-4 text-pan-green" />
                       </div>
                       {!collapsed && <span className="font-medium text-sidebar-foreground">{item.title}</span>}
                     </NavLink>
@@ -129,8 +129,8 @@ export function AppSidebar() {
                           isActive(item.url) ? "bg-light-gold" : ""
                         }`}
                       >
-                        <div className="w-9 h-9 rounded-full bg-light-gold flex items-center justify-center">
-                          <item.icon className="h-5 w-5 text-pan-green" />
+                        <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center">
+                          <item.icon className="h-4 w-4 text-pan-green" />
                         </div>
                         <span className="font-medium text-sidebar-foreground">{item.title}</span>
                       </NavLink>
@@ -143,8 +143,8 @@ export function AppSidebar() {
                     onClick={() => setShortcutsExpanded(!shortcutsExpanded)}
                     className="flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-sidebar-accent transition-colors"
                   >
-                    <div className="w-9 h-9 rounded-full bg-light-gold flex items-center justify-center">
-                      <ChevronDown className={`h-5 w-5 text-pan-green transition-transform ${shortcutsExpanded ? 'rotate-180' : ''}`} />
+                    <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center">
+                      <ChevronDown className={`h-4 w-4 text-pan-green transition-transform ${shortcutsExpanded ? 'rotate-180' : ''}`} />
                     </div>
                     <span className="font-medium text-sidebar-foreground">See more</span>
                   </SidebarMenuButton>
