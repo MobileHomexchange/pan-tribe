@@ -3,6 +3,7 @@ import React, { useState, ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
+import { HeaderBanner } from "@/components/layout/HeaderBanner";
 import MainFeed from "@/components/feed/MainFeed";
 import { RightSidebar } from "@/components/layout/RightSidebar";
 import { useLocation } from "react-router-dom";
@@ -13,6 +14,7 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps = {}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [bannerHeight, setBannerHeight] = useState(0);
   const location = useLocation();
 
   // Check if we're on the "my tribe" page
@@ -29,8 +31,11 @@ export function Layout({ children }: LayoutProps = {}) {
           {/* Top Bar */}
           <TopBar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
 
+          {/* Header Banner */}
+          <HeaderBanner onHeightChange={setBannerHeight} />
+
           {/* Main Content */}
-          <main className="flex-1 pt-16 pb-5">
+          <main className="flex-1 pb-5" style={{ paddingTop: `${64 + bannerHeight}px` }}>
             {children ? (
               children
             ) : (
