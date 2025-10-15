@@ -231,7 +231,6 @@ const MonetizationManagement = () => {
           <TabsTrigger value="banner">Ad Banner Management</TabsTrigger>
           <TabsTrigger value="analytics">Analytics & Reports</TabsTrigger>
           <TabsTrigger value="subscriptions">Premium Subscriptions</TabsTrigger>
-          <TabsTrigger value="marketplace">Marketplace Commissions</TabsTrigger>
         </TabsList>
 
         <TabsContent value="banner" className="space-y-6">
@@ -419,22 +418,6 @@ const MonetizationManagement = () => {
           </Card>
         </TabsContent>
 
-        <TabsContent value="marketplace" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Marketplace Commissions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <DollarSign className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">Commission Tracking</h3>
-                <p className="text-muted-foreground">
-                  Marketplace commission analytics will be displayed here.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
       </Tabs>
     </div>
   );

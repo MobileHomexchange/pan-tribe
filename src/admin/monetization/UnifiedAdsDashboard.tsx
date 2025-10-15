@@ -13,7 +13,6 @@ import { Switch } from "@/components/ui/switch";
 
 export default function UnifiedAdsDashboard() {
   const [feedAds, setFeedAds] = useState<AdData[]>([]);
-  const [reelsAds, setReelsAds] = useState<AdData[]>([]);
   const [newAdContent, setNewAdContent] = useState("");
   const [newAdPriority, setNewAdPriority] = useState(3);
 
@@ -29,23 +28,11 @@ export default function UnifiedAdsDashboard() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch Reels Ads
-  useEffect(() => {
-    const unsubscribe = onSnapshot(collection(db, "reelsAds"), (snapshot) => {
-      const ads = snapshot.docs.map(doc => ({ 
-        id: doc.id, 
-        ...doc.data() 
-      } as AdData));
-      setReelsAds(ads);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const toggleAd = async (adType: "feedAds" | "reelsAds", ad: AdData) => {
+  const toggleAd = async (adType: "feedAds", ad: AdData) => {
     await updateDoc(doc(db, adType, ad.id), { isActive: !ad.isActive });
   };
 
-  const resetAd = async (adType: "feedAds" | "reelsAds", ad: AdData) => {
+  const resetAd = async (adType: "feedAds", ad: AdData) => {
     await updateDoc(doc(db, adType, ad.id), { 
       clicks: 0, 
       impressions: 0, 
@@ -56,15 +43,15 @@ export default function UnifiedAdsDashboard() {
     });
   };
 
-  const updatePriority = async (adType: "feedAds" | "reelsAds", ad: AdData, priority: number) => {
+  const updatePriority = async (adType: "feedAds", ad: AdData, priority: number) => {
     await updateDoc(doc(db, adType, ad.id), { priority });
   };
 
-  const updateContent = async (adType: "feedAds" | "reelsAds", ad: AdData, content: string) => {
+  const updateContent = async (adType: "feedAds", ad: AdData, content: string) => {
     await updateDoc(doc(db, adType, ad.id), { content });
   };
 
-  const addNewAd = async (adType: "feedAds" | "reelsAds") => {
+  const addNewAd = async (adType: "feedAds") => {
     if (!newAdContent.trim()) return;
     
     await addDoc(collection(db, adType), {
@@ -90,7 +77,7 @@ export default function UnifiedAdsDashboard() {
     setNewAdPriority(3);
   };
 
-  const deleteAd = async (adType: "feedAds" | "reelsAds", ad: AdData) => {
+  const deleteAd = async (adType: "feedAds", ad: AdData) => {
     await deleteDoc(doc(db, adType, ad.id));
   };
 
@@ -155,7 +142,7 @@ export default function UnifiedAdsDashboard() {
     );
   };
 
-  const renderAdCard = (ad: AdData & { userId?: string; title?: string; plan?: string }, adType: "feedAds" | "reelsAds") => (
+  const renderAdCard = (ad: AdData & { userId?: string; title?: string; plan?: string }, adType: "feedAds") => (
     <Card key={ad.id} className="w-full">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
@@ -258,9 +245,8 @@ export default function UnifiedAdsDashboard() {
       </div>
 
       <Tabs defaultValue="feed" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList>
           <TabsTrigger value="feed">Feed Ads ({feedAds.length})</TabsTrigger>
-          <TabsTrigger value="reels">Reels Ads ({reelsAds.length})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="feed" className="space-y-6">
@@ -306,48 +292,6 @@ export default function UnifiedAdsDashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="reels" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Add New Reels Ad</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Content</label>
-                  <Textarea
-                    value={newAdContent}
-                    onChange={(e) => setNewAdContent(e.target.value)}
-                    placeholder="Enter ad video URL"
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Priority (1-5)</label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={5}
-                    value={newAdPriority}
-                    onChange={(e) => setNewAdPriority(parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <Button 
-                    onClick={() => addNewAd("reelsAds")}
-                    className="w-full mt-2"
-                    disabled={!newAdContent.trim()}
-                  >
-                    Add Reels Ad
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {reelsAds.map(ad => renderAdCard(ad, "reelsAds"))}
-          </div>
-        </TabsContent>
       </Tabs>
     </div>
   );

@@ -13,7 +13,6 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
-import Marketplace from "./pages/Marketplace";
 import Profile from "./pages/Profile";
 import Memories from "./pages/Memories";
 import SocialCommerce from "./pages/SocialCommerce";
@@ -21,8 +20,6 @@ import AdsManager from "./pages/AdsManager";
 import Events from "./pages/Events";
 import Saved from "./pages/Saved";
 import CreatePost from "./pages/CreatePost";
-import Reels from "./pages/Reels";
-import Careers from "./pages/Careers";
 import BlogSubmissions from "./pages/BlogSubmissions";
 import Photos from "./pages/Photos";
 import Music from "./pages/Music";
@@ -67,18 +64,15 @@ const App = () => (
               <Route path="/my-tribe" element={<ProtectedRoute><MyTribe /></ProtectedRoute>} />
               <Route path="/my-tribe/group/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
               <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
               <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/memories" element={<ProtectedRoute><Memories /></ProtectedRoute>} />
-              <Route path="/social-commerce" element={<ProtectedRoute><SocialCommerce /></ProtectedRoute>} />
+              <Route path="/social-commerce" element={<ProtectedAdminRoute><SocialCommerce /></ProtectedAdminRoute>} />
               <Route path="/ads" element={<ProtectedRoute><AdsManager /></ProtectedRoute>} />
               <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
               <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
-              <Route path="/reels" element={<ProtectedRoute><Reels /></ProtectedRoute>} />
               <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
-              <Route path="/careers" element={<ProtectedRoute><Careers /></ProtectedRoute>} />
-              <Route path="/blog-submissions" element={<ProtectedRoute><BlogSubmissions /></ProtectedRoute>} />
-              <Route path="/blogs" element={<ProtectedRoute><Blogs /></ProtectedRoute>} />
+              <Route path="/blog-submissions" element={<ProtectedAdminRoute><BlogSubmissions /></ProtectedAdminRoute>} />
+              <Route path="/blogs" element={<ProtectedAdminRoute><Blogs /></ProtectedAdminRoute>} />
               <Route path="/photos" element={<ProtectedRoute><Photos /></ProtectedRoute>} />
               <Route path="/music" element={<ProtectedRoute><Music /></ProtectedRoute>} />
               <Route path="/art" element={<ProtectedRoute><Art /></ProtectedRoute>} />

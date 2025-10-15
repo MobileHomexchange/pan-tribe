@@ -1,22 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
-import ReelsHorizontalResponsive from "./ReelsHorizontalResponsive";
 import { StoriesComponent } from "./StoriesComponent";
 import { PostComponent } from "./PostComponent";
-
-const ReelsPreviewHorizontal = ({ navigate }: { navigate: (path: string) => void }) => (
-  <div className="flex overflow-x-auto py-2">
-    {[...Array(5)].map((_, i) => (
-      <div
-        key={i}
-        className="min-w-[150px] h-[250px] mr-2 rounded-lg bg-black text-white flex items-center justify-center cursor-pointer"
-        onClick={() => navigate("/reels")}
-      >
-        Reel {i + 1}
-      </div>
-    ))}
-  </div>
-);
 
 const HomeScreen = () => {
   const navigate = useNavigate();
@@ -33,9 +18,6 @@ const HomeScreen = () => {
 
         {/* Posts */}
         <PostComponent />
-
-        {/* Reels Preview */}
-        <ReelsPreviewHorizontal navigate={navigate} />
       </div>
     </div>
   );
@@ -59,12 +41,6 @@ const BottomNav = () => {
         👥
       </button>
       <button 
-        onClick={() => navigate("/reels")}
-        className="text-2xl hover:bg-accent hover:text-accent-foreground p-2 rounded"
-      >
-        🎬
-      </button>
-      <button 
         onClick={() => navigate("/profile")}
         className="text-2xl hover:bg-accent hover:text-accent-foreground p-2 rounded"
       >
@@ -79,7 +55,6 @@ const AppMobileSkeleton = () => (
   <Router>
     <Routes>
       <Route path="/home" element={<HomeScreen />} />
-      <Route path="/reels" element={<ReelsHorizontalResponsive />} />
       {/* Add Friends, Profile routes here */}
       <Route path="*" element={<HomeScreen />} />
     </Routes>

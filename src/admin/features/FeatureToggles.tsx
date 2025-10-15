@@ -54,60 +54,6 @@ const FeatureToggles = () => {
         settings: { maxParticipants: 50, recordingEnabled: true }
       },
       {
-        id: 'reels',
-        name: 'Reels & Short Videos',
-        description: 'Allow users to create and share short video content',
-        category: 'content',
-        enabled: true,
-        icon: Camera,
-        hasAdvancedSettings: true,
-        settings: { maxDuration: 60, autoplay: true }
-      },
-      {
-        id: 'memories',
-        name: 'Memories',
-        description: 'Photo and video memories feature',
-        category: 'content',
-        enabled: false,
-        icon: Heart
-      },
-      {
-        id: 'raise_hand',
-        name: 'Raise Hand / Hit Drum',
-        description: 'Speaking request features in live conferences',
-        category: 'core',
-        enabled: true,
-        icon: Users
-      },
-      {
-        id: 'marketplace',
-        name: 'Social Commerce',
-        description: 'Marketplace and product listings',
-        category: 'commerce',
-        enabled: true,
-        icon: ShoppingCart,
-        hasAdvancedSettings: true,
-        settings: { commissionRate: 5, autoApproval: false }
-      },
-      {
-        id: 'events',
-        name: 'Events Module',
-        description: 'Event creation and management',
-        category: 'social',
-        enabled: true,
-        icon: Calendar
-      },
-      {
-        id: 'careers',
-        name: 'Career Hub',
-        description: 'Job postings and career networking',
-        category: 'commerce',
-        enabled: true,
-        icon: Briefcase,
-        hasAdvancedSettings: true,
-        settings: { jobPostingFee: 99, verificationRequired: true }
-      },
-      {
         id: 'discussions',
         name: 'Tribe Discussions',
         description: 'Threaded discussions within tribes',

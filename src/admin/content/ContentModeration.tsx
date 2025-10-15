@@ -258,7 +258,6 @@ const ContentModeration = () => {
                     <SelectItem value="all">All Types</SelectItem>
                     <SelectItem value="post">Posts</SelectItem>
                     <SelectItem value="blog">Blogs</SelectItem>
-                    <SelectItem value="reel">Reels</SelectItem>
                     <SelectItem value="comment">Comments</SelectItem>
                   </SelectContent>
                 </Select>
