@@ -51,7 +51,7 @@ export function CreateTribePost({ tribeId, userAvatar, userName }: CreateTribePo
 
   if (!isExpanded) {
     return (
-      <div className="bg-card rounded-xl shadow-md p-4 border border-border">
+      <div className="sticky top-[130px] z-20 bg-card/95 backdrop-blur-sm rounded-xl shadow-md p-4 border border-border mb-4">
         <div className="flex items-center gap-3">
           <Avatar className="w-10 h-10">
             <AvatarImage src={userAvatar} />
@@ -71,7 +71,7 @@ export function CreateTribePost({ tribeId, userAvatar, userName }: CreateTribePo
   }
 
   return (
-    <div className="bg-card rounded-xl shadow-md p-5 border border-border">
+    <div className="sticky top-[130px] z-20 bg-card/95 backdrop-blur-sm rounded-xl shadow-md p-5 border border-border mb-4">
       <div className="flex items-start gap-3 mb-4">
         <Avatar className="w-10 h-10">
           <AvatarImage src={userAvatar} />

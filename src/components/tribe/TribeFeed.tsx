@@ -3,6 +3,7 @@ import { db } from "@/lib/firebase";
 import { collection, query, where, orderBy, onSnapshot, getDocs, or } from "firebase/firestore";
 import { TribeFeedPost } from "./TribeFeedPost";
 import { CreateTribePost } from "./CreateTribePost";
+import { TribeFeedAdBanner } from "./TribeFeedAdBanner";
 import { InlineFeedAd } from "@/components/feed/InlineFeedAd";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -91,8 +92,11 @@ export function TribeFeed({ currentTribeId, userTribeIds }: TribeFeedProps) {
   }
 
   return (
-    <div className="space-y-5">
-      {/* Create Post Input */}
+    <div className="space-y-0">
+      {/* Google Ad Banner - Sticky */}
+      <TribeFeedAdBanner />
+      
+      {/* Create Post Input - Sticky below ad */}
       <CreateTribePost 
         tribeId={currentTribeId}
         userAvatar={currentUser?.photoURL || ""}
@@ -100,22 +104,24 @@ export function TribeFeed({ currentTribeId, userTribeIds }: TribeFeedProps) {
       />
 
       {/* Posts Feed */}
-      {posts.length === 0 ? (
-        <div className="bg-card rounded-xl p-12 text-center shadow-md">
-          <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
-        </div>
-      ) : (
-        posts.map((post, index) => (
-          <div key={post.id}>
-            <TribeFeedPost post={post} />
-            
-            {/* Inject ad every 20 posts */}
-            {(index + 1) % 20 === 0 && (
-              <InlineFeedAd adIndex={Math.floor((index + 1) / 20)} />
-            )}
+      <div className="space-y-5 mt-5">
+        {posts.length === 0 ? (
+          <div className="bg-card rounded-xl p-12 text-center shadow-md">
+            <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
           </div>
-        ))
-      )}
+        ) : (
+          posts.map((post, index) => (
+            <div key={post.id}>
+              <TribeFeedPost post={post} />
+              
+              {/* Inject ad every 20 posts */}
+              {(index + 1) % 20 === 0 && (
+                <InlineFeedAd adIndex={Math.floor((index + 1) / 20)} />
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
