@@ -4,7 +4,6 @@ import { Switch } from "@/components/ui/switch";
 import LiveEventButton from "@/components/LiveEventButton";
 import ScheduleEventModal from "@/components/ScheduleEventModal";
 import { useToast } from "@/hooks/use-toast";
-import { DrumHitFeature } from "./DrumHitFeature";
 import { useAuth } from "@/contexts/AuthContext";
 
 export function TribeConference() {
@@ -88,11 +87,6 @@ export function TribeConference() {
           </p>
         </div>
       )}
-
-      {/* Drum Hit Feature for Live Events */}
-      <div className="mt-5">
-        <DrumHitFeature eventId={tribeId} />
-      </div>
 
       {showScheduleModal && (
         <ScheduleEventModal
