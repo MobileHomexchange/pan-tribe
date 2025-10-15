@@ -289,23 +289,8 @@ export default function MyTribe() {
           
           {/* LEFT COLUMN - Sessions & Memberships */}
           <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
-            {/* Active Sessions */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-foreground px-2">Active Sessions</h3>
-              <LiveSessionCard 
-                session={activeSessions.find(s => s.tribeId === tribe.id) || null}
-                onJoinSession={handleJoinSession}
-              />
-              {isAdmin && (
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                  onClick={handleStartLiveSession}
-                >
-                  <Video className="w-4 h-4 mr-2" />
-                  Start Session
-                </Button>
-              )}
-            </div>
+            {/* Sponsored Ad */}
+            <TribeAdBanner />
 
             {/* Past Sessions */}
             <div className="space-y-3">
@@ -372,10 +357,25 @@ export default function MyTribe() {
             />
           </main>
           
-          {/* RIGHT COLUMN - Ad, Live Now, Suggested Tribes */}
+          {/* RIGHT COLUMN - Active Sessions, Live Now, Suggested Tribes */}
           <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit max-h-[calc(100vh-8rem)]">
-            {/* Sponsored Ad */}
-            <TribeAdBanner />
+            {/* Active Sessions */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-foreground px-2">Active Sessions</h3>
+              <LiveSessionCard 
+                session={activeSessions.find(s => s.tribeId === tribe.id) || null}
+                onJoinSession={handleJoinSession}
+              />
+              {isAdmin && (
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  onClick={handleStartLiveSession}
+                >
+                  <Video className="w-4 h-4 mr-2" />
+                  Start Session
+                </Button>
+              )}
+            </div>
             
             {/* Live Now - Multiple Sessions */}
             <LiveNowCard 
