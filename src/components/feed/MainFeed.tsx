@@ -7,9 +7,12 @@ export default function MainFeed() {
   const [posts, setPosts] = useState([]);
 
   useEffect(() => {
-    console.log("🔥 Firestore connected:", db); // ✅ Test line    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+    console.log("🔥 Firestore connected:", db);
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
 
-    const unsub = onSnapshot(q, (snapshot) => setPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))));
+    const unsub = onSnapshot(q, (snapshot) => 
+      setPosts(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })))
+    );
     return unsub;
   }, []);
 
