@@ -10,7 +10,7 @@ export function TopBar({ onMenuToggle }: TopBarProps) {
   const navigate = useNavigate();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 bg-white border-b border-border shadow-sm flex items-center justify-between px-4 py-2">
+    <header className="fixed top-0 left-0 right-0 z-30 bg-card border-b border-border shadow-sm flex items-center justify-between px-4 py-2">
       {/* Left Side */}
       <div className="flex items-center gap-3">
         <button onClick={onMenuToggle} className="p-2 rounded-md hover:bg-muted focus:outline-none focus:ring">
