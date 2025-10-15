@@ -59,11 +59,13 @@ const Index = () => {
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
           {/* CENTER FEED - Flexible width */}
           <main className="flex-1 max-w-4xl mx-auto space-y-6">
-            {/* Create Post Input */}
-            <CreatePostInput
-              userAvatar={currentUser?.photoURL || ""}
-              onCreatePost={() => navigate("/create-post")}
-            />
+            {/* Sticky Create Post Input */}
+            <div className="sticky top-20 z-10 bg-pattern pb-4">
+              <CreatePostInput
+                userAvatar={currentUser?.photoURL || ""}
+                onCreatePost={() => navigate("/create-post")}
+              />
+            </div>
 
             {/* Live Sessions Block */}
             {liveSessions.length > 0 && (
@@ -90,48 +92,72 @@ const Index = () => {
             <MainFeed />
           </main>
 
-          {/* RIGHT SIDEBAR - Fixed width */}
-          <aside className="hidden lg:block w-96 space-y-6 sticky top-24 h-fit">
-            {/* Tribe Dashboard Widget */}
-            <TribeDashboardWidget
-              sessionsJoined={12}
-              followers={245}
-              tribeCount={3}
-              isAdmin={false}
-              onStartSession={() => navigate("/session")}
-            />
-
-            {/* Live Sessions Summary */}
-            {liveSessions.length > 0 && (
-              <div className="bg-card rounded-lg shadow-card p-4">
-                <h3 className="font-semibold text-foreground mb-3">Trending Live</h3>
-                <div className="space-y-2">
-                  {liveSessions.slice(0, 3).map((session) => (
-                    <div
-                      key={session.id}
-                      className="p-3 bg-background rounded-lg hover:bg-social-hover cursor-pointer transition-colors"
-                      onClick={() => navigate(`/session?room=${session.roomName}`)}
-                    >
-                      <p className="font-medium text-sm text-foreground">
-                        {session.tribeName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {session.participantCount} watching
-                      </p>
-                    </div>
-                  ))}
-                </div>
+          {/* RIGHT SIDEBAR - Sticky Activity & Ads Board */}
+          <aside className="hidden lg:block w-96 sticky top-24 h-fit max-h-[calc(100vh-7rem)] flex flex-col">
+            {/* ACTIVITY SECTION */}
+            <div className="space-y-4 mb-6">
+              <div className="bg-card rounded-lg shadow-card p-4 border-l-4 border-primary">
+                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                  Activity
+                </h3>
+                
+                {/* Tribe Dashboard Widget */}
+                <TribeDashboardWidget
+                  sessionsJoined={12}
+                  followers={245}
+                  tribeCount={3}
+                  isAdmin={false}
+                  onStartSession={() => navigate("/session")}
+                />
               </div>
-            )}
 
-            {/* Ad Rotation */}
-            <AdRotator />
+              {/* Live Sessions Summary */}
+              {liveSessions.length > 0 && (
+                <div className="bg-card rounded-lg shadow-card p-4">
+                  <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                    <Video className="w-4 h-4 text-destructive" />
+                    Trending Live
+                  </h4>
+                  <div className="space-y-2">
+                    {liveSessions.slice(0, 3).map((session) => (
+                      <div
+                        key={session.id}
+                        className="p-3 bg-background rounded-lg hover:bg-social-hover cursor-pointer transition-colors"
+                        onClick={() => navigate(`/session?room=${session.roomName}`)}
+                      >
+                        <p className="font-medium text-sm text-foreground">
+                          {session.tribeName}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {session.participantCount} watching
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Google Ad Banners Placeholder */}
-            <div className="bg-muted rounded-lg p-4 text-center border border-border">
-              <p className="text-xs text-muted-foreground mb-2">Advertisement</p>
-              <div className="bg-background rounded h-[250px] flex items-center justify-center">
-                <span className="text-muted-foreground text-sm">300x250 Ad</span>
+            {/* SPONSORED SECTION - Sticky Ads */}
+            <div className="space-y-4 sticky top-24">
+              <div className="bg-card rounded-lg shadow-card p-4 border-l-4 border-muted">
+                <h3 className="font-bold text-muted-foreground mb-4 text-sm uppercase tracking-wide">
+                  Sponsored
+                </h3>
+                
+                {/* Ad Rotation */}
+                <div className="mb-4">
+                  <AdRotator />
+                </div>
+
+                {/* Vertical Sticky Ad - 300x600 */}
+                <div className="bg-muted/50 rounded-lg p-3 text-center border border-border">
+                  <p className="text-xs text-muted-foreground mb-2">Advertisement</p>
+                  <div className="bg-background rounded h-[600px] flex items-center justify-center">
+                    <span className="text-muted-foreground text-sm">300x600 Vertical Ad</span>
+                  </div>
+                </div>
               </div>
             </div>
           </aside>
