@@ -15,9 +15,63 @@ interface TribeOverviewProps {
   isAdmin: boolean;
   onEdit: () => void;
   onManage: () => void;
+  horizontal?: boolean;
 }
 
-export function TribeOverview({ tribe, isAdmin, onEdit, onManage }: TribeOverviewProps) {
+export function TribeOverview({ tribe, isAdmin, onEdit, onManage, horizontal = false }: TribeOverviewProps) {
+  if (horizontal) {
+    return (
+      <Card className="shadow-card border-border">
+        <CardContent className="flex items-center justify-between p-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="w-16 h-16 ring-2 ring-primary/10">
+              <AvatarImage src={tribe.avatar} />
+              <AvatarFallback className="bg-gradient-to-br from-primary to-accent text-primary-foreground font-bold text-xl">
+                {tribe.name[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">{tribe.name}</h2>
+              <div className="flex items-center gap-3 mt-1">
+                {tribe.category && (
+                  <Badge variant="secondary" className="text-xs bg-primary/10 text-primary border-0">
+                    {tribe.category}
+                  </Badge>
+                )}
+                <span className="text-sm text-muted-foreground flex items-center gap-1">
+                  <Users className="w-4 h-4 inline" />
+                  {tribe.memberCount || 0} members
+                </span>
+              </div>
+            </div>
+          </div>
+          {isAdmin && (
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={onEdit}
+              >
+                <Edit className="w-4 h-4" />
+                Edit
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={onManage}
+              >
+                <Settings className="w-4 h-4" />
+                Manage
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="shadow-card border-border">
       <CardHeader className="pb-3">
