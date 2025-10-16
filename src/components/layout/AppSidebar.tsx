@@ -1,22 +1,20 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { 
   Users, 
   Bookmark, 
   UserCheck, 
   History, 
-  Store, 
   Calendar,
   TrendingUp,
   Music,
   Palette,
   Code,
   ChevronDown,
-  Menu,
-  Video,
-  Briefcase,
   FileText,
-  LayoutDashboard
+  LayoutDashboard,
+  DollarSign
 } from "lucide-react";
 import {
   Sidebar,
@@ -31,19 +29,16 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-const mainItems = [
+const allMainItems = [
   { title: "Dashboard", url: "/my-tribe", icon: LayoutDashboard },
   { title: "Friends", url: "/friends", icon: Users },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
-  { title: "Reels", url: "/reels", icon: Video },
   { title: "Memories", url: "/memories", icon: History },
-  { title: "Marketplace", url: "/marketplace", icon: Store },
-  { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp },
   { title: "Events", url: "/events", icon: Calendar },
-  { title: "Careers", url: "/careers", icon: Briefcase },
-  { title: "Blogs", url: "/blogs", icon: FileText },
-  { title: "Ads Manager", url: "/ads", icon: TrendingUp },
+  { title: "Ads Manager", url: "/ads", icon: DollarSign },
+  { title: "Social Commerce", url: "/social-commerce", icon: TrendingUp, adminOnly: true },
+  { title: "Blogs", url: "/blogs", icon: FileText, adminOnly: true },
 ];
 
 const shortcuts = [
@@ -54,10 +49,20 @@ const shortcuts = [
 
 export function AppSidebar() {
   const { state } = useSidebar();
+  const { isAdmin } = useAuth();
   const location = useLocation();
   const currentPath = location.pathname;
   const [shortcutsExpanded, setShortcutsExpanded] = useState(true);
   const collapsed = state === "collapsed";
+
+  // Filter menu items based on user role
+  const mainItems = allMainItems.filter(item => {
+    // Hide admin-only items from regular users
+    if (item.adminOnly && !isAdmin) {
+      return false;
+    }
+    return true;
+  });
 
   const isActive = (path: string) => currentPath === path;
 

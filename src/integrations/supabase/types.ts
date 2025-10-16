@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      social_commerce_accounts: {
+        Row: {
+          account_name: string
+          assigned_user_id: string
+          created_at: string
+          created_by_admin_id: string
+          description: string | null
+          id: string
+          is_active: boolean
+          settings: Json | null
+          updated_at: string
+        }
+        Insert: {
+          account_name: string
+          assigned_user_id: string
+          created_at?: string
+          created_by_admin_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          settings?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string
+          assigned_user_id?: string
+          created_at?: string
+          created_by_admin_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          settings?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

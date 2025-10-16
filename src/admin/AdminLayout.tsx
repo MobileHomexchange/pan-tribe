@@ -17,7 +17,8 @@ import {
   LogOut,
   Search,
   BookOpen,
-  BarChart3
+  BarChart3,
+  TrendingUp
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -37,6 +38,7 @@ const AdminLayout = () => {
     { icon: FileText, label: 'Content', path: '/admin/content' },
     { icon: BookOpen, label: 'Blog Management', path: '/admin/blog-management' },
     { icon: BarChart3, label: 'Event Analytics', path: '/admin/event-analytics' },
+    { icon: TrendingUp, label: 'Social Commerce', path: '/admin/social-commerce-accounts' },
     { icon: DollarSign, label: 'Monetization', path: '/admin/monetization' },
     { icon: Settings, label: 'Features', path: '/admin/features' },
     { icon: Shield, label: 'Safety', path: '/admin/safety' },

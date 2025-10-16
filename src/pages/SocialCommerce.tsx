@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { TopBar } from "@/components/layout/TopBar";
@@ -82,10 +84,79 @@ ChartJS.register(
 type ActiveSection = 'dashboard' | 'networkEffect' | 'trendingContent' | 'socialProof' | 'followersEngine' | 'unifiedInbox' | 'ugcGallery' | 'settings';
 
 const SocialCommerce = () => {
+  const { currentUser, isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
   const [activeInboxTab, setActiveInboxTab] = useState("all");
   const [data] = useState<SocialCommerceModule>(mockSocialCommerceData);
+  const [assignedAccounts, setAssignedAccounts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Check if user has assigned account or is admin
+  useEffect(() => {
+    const checkAccess = async () => {
+      if (!isAdmin && currentUser) {
+        const { data, error } = await supabase
+          .from('social_commerce_accounts')
+          .select('*')
+          .eq('assigned_user_id', currentUser.uid)
+          .eq('is_active', true);
+        
+        if (!error && data) {
+          setAssignedAccounts(data);
+        }
+      }
+      setLoading(false);
+    };
+    checkAccess();
+  }, [currentUser, isAdmin]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen w-full flex">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <TopBar />
+            <main className="flex-1 p-6">
+              <div className="animate-pulse space-y-4">
+                <div className="h-8 bg-muted rounded w-1/3"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+                <div className="h-4 bg-muted rounded w-full"></div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
+
+  // Check access - deny if not admin and no assigned accounts
+  if (!isAdmin && assignedAccounts.length === 0) {
+    return (
+      <SidebarProvider>
+        <div className="min-h-screen w-full flex">
+          <AppSidebar />
+          <div className="flex-1 flex flex-col">
+            <TopBar />
+            <main className="flex-1 p-6">
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Shield className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+                  <p className="text-muted-foreground">
+                    You do not have permission to access Social Commerce. 
+                    Please contact an administrator to request access.
+                  </p>
+                </CardContent>
+              </Card>
+            </main>
+          </div>
+        </div>
+      </SidebarProvider>
+    );
+  }
 
   const engagementData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],

@@ -44,6 +44,7 @@ import MonetizationManagement from "./admin/monetization/MonetizationManagement"
 import UnifiedAdsDashboard from "./admin/monetization/UnifiedAdsDashboard";
 import BlogManagement from "./admin/blog/BlogManagement";
 import EventAnalytics from "./admin/events/EventAnalytics";
+import SocialCommerceAccountManagement from "./admin/socialcommerce/SocialCommerceAccountManagement";
 
 const queryClient = new QueryClient();
 
@@ -83,7 +84,6 @@ const App = () => (
               <Route path="/event-settings" element={<ProtectedRoute><EventSettings /></ProtectedRoute>} />
               <Route path="/firebase-test" element={<FirebaseTest />} />
               
-              {/* Admin Routes - Protected by admin role */}
               <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
@@ -94,6 +94,7 @@ const App = () => (
                 <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
                 <Route path="blog-management" element={<BlogManagement />} />
                 <Route path="event-analytics" element={<EventAnalytics />} />
+                <Route path="social-commerce-accounts" element={<SocialCommerceAccountManagement />} />
               </Route>
               
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
