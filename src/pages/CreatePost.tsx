@@ -8,7 +8,7 @@ import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
-// Simple preview modal component
+// Simple Preview Modal
 function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
   if (!open) return null;
   return (
@@ -47,10 +47,36 @@ export default function CreatePost() {
     }
   };
 
-  // ---------- Rich text functions ----------
+  // ---------- Fixed Rich Text Functions ----------
   const execCmd = (cmd: string, value: string | null = null) => {
-    document.execCommand(cmd, false, value);
-    setContent(document.getElementById("editorArea")?.innerHTML || "");
+    const editor = document.getElementById("editorArea");
+    if (!editor) return;
+    editor.focus();
+
+    try {
+      const selection = window.getSelection();
+      const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+
+      switch (cmd) {
+        case "bold":
+        case "italic":
+        case "underline":
+        case "insertUnorderedList":
+        case "insertOrderedList":
+        case "formatBlock":
+        case "foreColor":
+        case "hiliteColor":
+        case "createLink":
+          document.execCommand(cmd, false, value);
+          break;
+        default:
+          console.warn(`Unsupported command: ${cmd}`);
+      }
+
+      setContent(editor.innerHTML);
+    } catch (err) {
+      console.error("Formatting error:", err);
+    }
   };
 
   const handleUndo = () => execCmd("undo");
@@ -95,7 +121,7 @@ export default function CreatePost() {
     setContent(document.getElementById("editorArea")?.innerHTML || "");
   };
 
-  // ---------- Firestore submit ----------
+  // ---------- Firestore Submit ----------
   const handleSubmit = async () => {
     if (!currentUser) {
       toast.error("Please log in to create a post");
@@ -166,7 +192,7 @@ export default function CreatePost() {
         {/* Header */}
         <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
 
-        {/* Title */}
+        {/* Title Input */}
         <div className="px-6 py-4 border-b border-gray-200">
           <input
             type="text"
@@ -301,7 +327,7 @@ export default function CreatePost() {
         </div>
       </div>
 
-      {/* Live Preview Modal */}
+      {/* Preview Modal */}
       <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} content={content} />
     </>
   );
