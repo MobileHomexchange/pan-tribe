@@ -12,7 +12,8 @@ export default function CreatePost() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const returnTo = searchParams.get('returnTo') || '/feed';
+  const returnTo = searchParams.get("returnTo") || "/feed";
+
   const [content, setContent] = useState("");
   const [media, setMedia] = useState<File | null>(null);
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
@@ -96,78 +97,114 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-lg mt-6 space-y-4">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Create a Post</h2>
+    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
+      {/* Header */}
+      <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
 
-      {/* Text Input */}
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        placeholder="What's on your mind?"
-        className="w-full border rounded-lg p-3 text-lg resize-none"
-        rows={4}
-        style={{ color: fontColor, backgroundColor: bgColor }}
-      />
-
-      {/* Color Pickers */}
-      <div className="flex items-center justify-between">
-        <div className="flex gap-4">
-          <div>
-            <label className="text-sm text-gray-600 block">Font Color</label>
-            <input
-              type="color"
-              value={fontColor}
-              onChange={(e) => setFontColor(e.target.value)}
-              className="w-10 h-10 border rounded-full cursor-pointer"
-            />
-          </div>
-          <div>
-            <label className="text-sm text-gray-600 block">Background</label>
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => setBgColor(e.target.value)}
-              className="w-10 h-10 border rounded-full cursor-pointer"
-            />
-          </div>
-        </div>
-
-        <label className="cursor-pointer bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-          📸 Add Media
-          <input type="file" accept="image/*,video/*" hidden onChange={handleFileChange} />
-        </label>
+      {/* Title Input */}
+      <div className="px-6 py-4 border-b border-gray-200">
+        <input
+          type="text"
+          placeholder="Write a captivating title..."
+          className="w-full p-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
       </div>
 
-      {/* Media Preview */}
-      {mediaPreview && (
-        <div className="mt-3">
-          {media?.type.startsWith("video/") ? (
-            <video src={mediaPreview} controls className="w-full rounded-lg max-h-80" />
-          ) : (
-            <img src={mediaPreview} alt="Preview" className="w-full rounded-lg max-h-80 object-cover" />
-          )}
+      {/* Toolbar */}
+      <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50">
+        <div className="flex gap-1 border-r border-gray-300 pr-3">
+          <button className="p-2 hover:bg-gray-200 rounded font-bold">B</button>
+          <button className="p-2 hover:bg-gray-200 rounded italic">I</button>
+          <button className="p-2 hover:bg-gray-200 rounded underline">U</button>
         </div>
-      )}
-
-      {/* Upload Progress */}
-      {uploadProgress !== null && (
-        <div className="w-full bg-gray-200 h-2 rounded mt-2">
-          <div
-            className="bg-green-600 h-2 rounded transition-all duration-300"
-            style={{ width: `${uploadProgress}%` }}
-          ></div>
+        <div className="flex gap-1 border-r border-gray-300 pr-3">
+          <button className="p-2 hover:bg-gray-200 rounded">Font</button>
+          <button className="p-2 hover:bg-gray-200 rounded">A</button>
+          <button className="p-2 hover:bg-gray-200 rounded">▢</button>
         </div>
-      )}
+        <div className="flex gap-1 border-r border-gray-300 pr-3">
+          <button className="p-2 hover:bg-gray-200 rounded">H</button>
+          <button className="p-2 hover:bg-gray-200 rounded">•</button>
+          <button className="p-2 hover:bg-gray-200 rounded">1.</button>
+        </div>
+        <div className="flex gap-1">
+          <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
+            🖼️
+            <input type="file" accept="image/*,video/*" hidden onChange={handleFileChange} />
+          </label>
+          <button className="p-2 hover:bg-gray-200 rounded">🎥</button>
+          <button className="p-2 hover:bg-gray-200 rounded">📎</button>
+        </div>
+        <button className="ml-auto bg-[#1877f2] text-white px-3 py-1 rounded-md font-semibold">+ Add Block</button>
+      </div>
 
-      {/* Submit Button */}
-      <div className="flex justify-end mt-4">
+      {/* Editor */}
+      <div className="p-6 space-y-5 min-h-[400px]">
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Start writing your post here..."
+          className="w-full border border-gray-300 rounded-lg p-3 text-lg resize-none"
+          rows={6}
+          style={{ color: fontColor, backgroundColor: bgColor }}
+        />
+
+        {/* Color Pickers */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex gap-4">
+            <div>
+              <label className="text-sm text-gray-600 block">Font Color</label>
+              <input
+                type="color"
+                value={fontColor}
+                onChange={(e) => setFontColor(e.target.value)}
+                className="w-10 h-10 border rounded-full cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-gray-600 block">Background</label>
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => setBgColor(e.target.value)}
+                className="w-10 h-10 border rounded-full cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Media Preview */}
+        {mediaPreview && (
+          <div className="mt-3">
+            {media?.type.startsWith("video/") ? (
+              <video src={mediaPreview} controls className="w-full rounded-lg max-h-80" />
+            ) : (
+              <img src={mediaPreview} alt="Preview" className="w-full rounded-lg max-h-80 object-cover" />
+            )}
+          </div>
+        )}
+
+        {/* Upload Progress */}
+        {uploadProgress !== null && (
+          <div className="w-full bg-gray-200 h-2 rounded mt-2">
+            <div
+              className="bg-green-600 h-2 rounded transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
         <Button
           onClick={handleSubmit}
           disabled={isSubmitting}
           className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
         >
-          {isSubmitting ? "Posting..." : "Post"}
+          {isSubmitting ? "Posting..." : "Publish"}
         </Button>
+        <button className="px-4 py-2 rounded-md border font-semibold">Preview</button>
       </div>
     </div>
   );
