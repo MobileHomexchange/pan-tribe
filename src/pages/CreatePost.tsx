@@ -210,4 +210,9 @@ export default function CreatePost() {
             <button onClick={handleInsertLink} className="p-2 hover:bg-gray-200 rounded">🔗</button>
             <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">➖</button>
           </div>
-          <butto
+                    <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">➖</button>
+        </div>
+        <button className="ml-auto bg-[#1877f2] text-white px-3 py-1 rounded-md font-semibold">
+          + Add Block
+        </button>
+      </div>
