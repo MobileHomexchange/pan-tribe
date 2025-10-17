@@ -14,22 +14,30 @@ import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Color from "@tiptap/extension-color";
 import TextStyle from "@tiptap/extension-text-style";
+import ImageExtension from "@tiptap/extension-image";
 
+// --- Preview Modal ---
 function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
-      <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative">
+      <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative overflow-y-auto max-h-[80vh]">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl">
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
-        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+        <div
+          className="prose max-w-none"
+          dangerouslySetInnerHTML={{
+            __html: content.replace(/<script.*?>.*?<\/script>/gi, ""),
+          }}
+        />
       </div>
     </div>
   );
 }
 
+// --- Main Component ---
 export default function CreatePost() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -42,38 +50,73 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  // TipTap editor setup
+  // --- TipTap Editor Setup ---
   const editor = useEditor({
-    extensions: [StarterKit, Link, Color.configure({ types: ["textStyle"] }), TextStyle],
+    extensions: [
+      StarterKit,
+      Link.configure({ openOnClick: false }),
+      Color.configure({ types: ["textStyle"] }),
+      TextStyle,
+      ImageExtension,
+    ],
     content: "",
     onUpdate: ({ editor }) => setContent(editor.getHTML()),
   });
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setMedia(file);
-    }
-  };
-
+  // --- Media Upload ---
   const handleAddImage = async (file: File) => {
+    if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = e.target?.result as string;
-      editor?.chain().focus().setImage({ src }).run();
+    reader.onload = async (e) => {
+      const base64Src = e.target?.result as string;
+      // Insert temporary image while upload happens
+      editor?.chain().focus().setImage({ src: base64Src }).run();
+
+      // Compress before uploading
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+      });
+
+      const fileRef = ref(storage, `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`);
+      const uploadTask = uploadBytesResumable(fileRef, compressed);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        },
+        (error) => {
+          console.error("Image upload failed:", error);
+          toast.error("Image upload failed");
+        },
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          // Insert the uploaded image using its final URL
+          editor?.chain().focus().setImage({ src: downloadURL }).run();
+          toast.success("Image uploaded successfully!");
+          setUploadProgress(null);
+        },
+      );
     };
     reader.readAsDataURL(file);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleAddImage(file);
+  };
+
+  // --- Firestore Submit ---
   const handleSubmit = async () => {
     if (!currentUser) {
       toast.error("Please log in to create a post");
       navigate("/login");
       return;
     }
-
-    if (!content && !media) {
-      toast.error("Please add text, image, or video");
+    if (!content) {
+      toast.error("Please add some content first");
       return;
     }
 
@@ -82,9 +125,8 @@ export default function CreatePost() {
 
     try {
       if (media) {
-        const file = media;
-        const isImage = file.type.startsWith("image/");
-        const uploadFile = isImage ? await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : file;
+        const isImage = media.type.startsWith("image/");
+        const uploadFile = isImage ? await imageCompression(media, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : media;
 
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
@@ -96,7 +138,7 @@ export default function CreatePost() {
               const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(progress);
             },
-            (error) => reject(error),
+            reject,
             async () => {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
               resolve(url);
@@ -128,6 +170,9 @@ export default function CreatePost() {
     }
   };
 
+  // --- Render ---
+  if (!editor) return <div className="p-6 text-center">Loading editor...</div>;
+
   return (
     <>
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
@@ -136,28 +181,34 @@ export default function CreatePost() {
 
         {/* Toolbar */}
         <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50 items-center">
-          <button onClick={() => editor?.chain().focus().undo().run()} className="p-2">
+          <button onClick={() => editor.chain().focus().undo().run()} className="p-2">
             ↺
           </button>
-          <button onClick={() => editor?.chain().focus().redo().run()} className="p-2">
+          <button onClick={() => editor.chain().focus().redo().run()} className="p-2">
             ↻
           </button>
-          <button onClick={() => editor?.chain().focus().toggleBold().run()} className="p-2 font-bold">
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`p-2 font-bold ${editor.isActive("bold") ? "bg-blue-100" : ""}`}
+          >
             B
           </button>
-          <button onClick={() => editor?.chain().focus().toggleItalic().run()} className="p-2 italic">
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`p-2 italic ${editor.isActive("italic") ? "bg-blue-100" : ""}`}
+          >
             I
           </button>
-          <button onClick={() => editor?.chain().focus().toggleBulletList().run()} className="p-2">
+          <button onClick={() => editor.chain().focus().toggleBulletList().run()} className="p-2">
             •
           </button>
-          <button onClick={() => editor?.chain().focus().toggleOrderedList().run()} className="p-2">
+          <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className="p-2">
             1.
           </button>
           <button
             onClick={() => {
               const url = prompt("Enter link URL");
-              if (url) editor?.chain().focus().setLink({ href: url }).run();
+              if (url) editor.chain().focus().setLink({ href: url }).run();
             }}
             className="p-2"
           >
@@ -165,12 +216,7 @@ export default function CreatePost() {
           </button>
           <label className="cursor-pointer p-2">
             🖼️
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => e.target.files && handleAddImage(e.target.files[0])}
-            />
+            <input type="file" accept="image/*" hidden onChange={handleFileChange} />
           </label>
         </div>
 
@@ -205,6 +251,7 @@ export default function CreatePost() {
         </div>
       </div>
 
+      {/* Preview Modal */}
       <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} content={content} />
     </>
   );
