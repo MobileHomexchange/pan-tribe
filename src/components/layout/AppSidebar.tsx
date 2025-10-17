@@ -13,7 +13,6 @@ import {
   Code,
   ChevronDown,
   FileText,
-  LayoutDashboard,
   DollarSign
 } from "lucide-react";
 import {
@@ -30,7 +29,6 @@ import {
 } from "@/components/ui/sidebar";
 
 const allMainItems = [
-  { title: "Dashboard", url: "/my-tribe", icon: LayoutDashboard },
   { title: "Friends", url: "/friends", icon: Users },
   { title: "Saved", url: "/saved", icon: Bookmark },
   { title: "My Tribe", url: "/my-tribe", icon: UserCheck },
