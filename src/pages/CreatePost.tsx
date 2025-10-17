@@ -18,10 +18,7 @@ function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () =
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
-        <div
-          className="prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
+        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
       </div>
     </div>
   );
@@ -117,9 +114,7 @@ export default function CreatePost() {
       if (media) {
         const file = media;
         const isImage = file.type.startsWith("image/");
-        const uploadFile = isImage
-          ? await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 })
-          : file;
+        const uploadFile = isImage ? await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : file;
 
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
@@ -169,9 +164,7 @@ export default function CreatePost() {
     <>
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
         {/* Header */}
-        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">
-          Create a Post
-        </div>
+        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
 
         {/* Title */}
         <div className="px-6 py-4 border-b border-gray-200">
@@ -185,34 +178,131 @@ export default function CreatePost() {
         {/* Toolbar */}
         <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50">
           <div className="flex gap-1 border-r border-gray-300 pr-3">
-            <button onClick={handleUndo} className="p-2 hover:bg-gray-200 rounded">↺</button>
-            <button onClick={handleRedo} className="p-2 hover:bg-gray-200 rounded">↻</button>
+            <button onClick={handleUndo} className="p-2 hover:bg-gray-200 rounded">
+              ↺
+            </button>
+            <button onClick={handleRedo} className="p-2 hover:bg-gray-200 rounded">
+              ↻
+            </button>
           </div>
           <div className="flex gap-1 border-r border-gray-300 pr-3">
-            <button onClick={handleBold} className="p-2 hover:bg-gray-200 rounded font-bold">B</button>
-            <button onClick={handleItalic} className="p-2 hover:bg-gray-200 rounded italic">I</button>
-            <button onClick={handleUnderline} className="p-2 hover:bg-gray-200 rounded underline">U</button>
+            <button onClick={handleBold} className="p-2 hover:bg-gray-200 rounded font-bold">
+              B
+            </button>
+            <button onClick={handleItalic} className="p-2 hover:bg-gray-200 rounded italic">
+              I
+            </button>
+            <button onClick={handleUnderline} className="p-2 hover:bg-gray-200 rounded underline">
+              U
+            </button>
           </div>
           <div className="flex gap-1 border-r border-gray-300 pr-3">
-            <button onClick={handleHeading} className="p-2 hover:bg-gray-200 rounded">H</button>
-            <button onClick={handleBulletList} className="p-2 hover:bg-gray-200 rounded">•</button>
-            <button onClick={handleNumberList} className="p-2 hover:bg-gray-200 rounded">1.</button>
+            <button onClick={handleHeading} className="p-2 hover:bg-gray-200 rounded">
+              H
+            </button>
+            <button onClick={handleBulletList} className="p-2 hover:bg-gray-200 rounded">
+              •
+            </button>
+            <button onClick={handleNumberList} className="p-2 hover:bg-gray-200 rounded">
+              1.
+            </button>
           </div>
           <div className="flex gap-1 border-r border-gray-300 pr-3">
             <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
               🖼️
-              <input type="file" accept="image/*" hidden onChange={(e) => e.target.files && handleAddImage(e.target.files[0])} />
+              <input
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={(e) => e.target.files && handleAddImage(e.target.files[0])}
+              />
             </label>
             <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
               🎥
-              <input type="file" accept="video/*" hidden onChange={(e) => e.target.files && handleAddVideo(e.target.files[0])} />
+              <input
+                type="file"
+                accept="video/*"
+                hidden
+                onChange={(e) => e.target.files && handleAddVideo(e.target.files[0])}
+              />
             </label>
-            <button onClick={handleInsertLink} className="p-2 hover:bg-gray-200 rounded">🔗</button>
-            <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">➖</button>
+            <button onClick={handleInsertLink} className="p-2 hover:bg-gray-200 rounded">
+              🔗
+            </button>
+            <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">
+              ➖
+            </button>
           </div>
-                    <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">➖</button>
+          <button className="ml-auto bg-[#1877f2] text-white px-3 py-1 rounded-md font-semibold">+ Add Block</button>
         </div>
-        <button className="ml-auto bg-[#1877f2] text-white px-3 py-1 rounded-md font-semibold">
-          + Add Block
-        </button>
+
+        {/* Editor */}
+        <div className="p-6 space-y-5 min-h-[400px]">
+          <div
+            id="editorArea"
+            contentEditable
+            onInput={(e) => setContent((e.target as HTMLElement).innerHTML)}
+            onPaste={handlePaste}
+            className="w-full border border-gray-300 rounded-lg p-3 text-lg min-h-[200px] focus:outline-none"
+            style={{ color: fontColor, backgroundColor: bgColor }}
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+
+          {/* Colors */}
+          <div className="flex gap-4 mt-4">
+            <div>
+              <label className="text-sm text-gray-600 block">Font Color</label>
+              <input
+                type="color"
+                value={fontColor}
+                onChange={(e) => {
+                  setFontColor(e.target.value);
+                  handleFontColor(e.target.value);
+                }}
+                className="w-10 h-10 border rounded-full cursor-pointer"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-gray-600 block">Background</label>
+              <input
+                type="color"
+                value={bgColor}
+                onChange={(e) => {
+                  setBgColor(e.target.value);
+                  handleBgColor(e.target.value);
+                }}
+                className="w-10 h-10 border rounded-full cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {uploadProgress !== null && (
+            <div className="w-full bg-gray-200 h-2 rounded mt-2">
+              <div
+                className="bg-green-600 h-2 rounded transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+          >
+            {isSubmitting ? "Posting..." : "Publish"}
+          </Button>
+          <button onClick={() => setShowPreview(true)} className="px-4 py-2 rounded-md border font-semibold">
+            Preview
+          </button>
+        </div>
       </div>
+
+      {/* Live Preview Modal */}
+      <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} content={content} />
+    </>
+  );
+}
