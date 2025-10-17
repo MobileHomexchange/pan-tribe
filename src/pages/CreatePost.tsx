@@ -30,13 +30,64 @@ export default function CreatePost() {
     }
   };
 
+  // ---------- RICH TEXT ACTIONS ----------
+  const execCmd = (cmd: string, value: string | null = null) => {
+    document.execCommand(cmd, false, value);
+    setContent(document.getElementById("editorArea")?.innerHTML || "");
+  };
+
+  const handleUndo = () => execCmd("undo");
+  const handleRedo = () => execCmd("redo");
+  const handleBold = () => execCmd("bold");
+  const handleItalic = () => execCmd("italic");
+  const handleUnderline = () => execCmd("underline");
+  const handleHeading = () => execCmd("formatBlock", "h2");
+  const handleBulletList = () => execCmd("insertUnorderedList");
+  const handleNumberList = () => execCmd("insertOrderedList");
+
+  const handleFontColor = (color: string) => execCmd("foreColor", color);
+  const handleBgColor = (color: string) => execCmd("hiliteColor", color);
+
+  const handleAddImage = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      execCmd("insertImage", e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddVideo = (file: File) => {
+    const videoURL = URL.createObjectURL(file);
+    const videoTag = `<video controls style="max-width:100%;border-radius:6px;margin-top:8px;"><source src="${videoURL}" type="${file.type}"></video>`;
+    document.getElementById("editorArea")!.insertAdjacentHTML("beforeend", videoTag);
+    setContent(document.getElementById("editorArea")?.innerHTML || "");
+  };
+
+  const handleAddDivider = () => {
+    const hr = "<hr style='border:1px solid #ddd; margin:1rem 0;' />";
+    document.getElementById("editorArea")!.insertAdjacentHTML("beforeend", hr);
+    setContent(document.getElementById("editorArea")?.innerHTML || "");
+  };
+
+  const handleInsertLink = () => {
+    const url = prompt("Enter URL:");
+    if (url) execCmd("createLink", url);
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const text = e.clipboardData.getData("text/plain");
+    document.execCommand("insertText", false, text);
+    setContent(document.getElementById("editorArea")?.innerHTML || "");
+  };
+
+  // ---------- SUBMIT TO FIRESTORE ----------
   const handleSubmit = async () => {
     if (!currentUser) {
       toast.error("Please log in to create a post");
       navigate("/login");
       return;
     }
-
     if (!content && !media) {
       toast.error("Please add text, image, or video");
       return;
@@ -84,7 +135,6 @@ export default function CreatePost() {
       };
 
       await addDoc(collection(db, "posts"), postData);
-
       toast.success("✅ Post created successfully!");
       navigate(returnTo);
     } catch (error: any) {
@@ -98,7 +148,6 @@ export default function CreatePost() {
 
   return (
     <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
-      {/* Header */}
       <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
 
       {/* Title Input */}
@@ -113,76 +162,102 @@ export default function CreatePost() {
       {/* Toolbar */}
       <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50">
         <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <button className="p-2 hover:bg-gray-200 rounded font-bold">B</button>
-          <button className="p-2 hover:bg-gray-200 rounded italic">I</button>
-          <button className="p-2 hover:bg-gray-200 rounded underline">U</button>
+          <button onClick={handleUndo} className="p-2 hover:bg-gray-200 rounded">
+            ↺
+          </button>
+          <button onClick={handleRedo} className="p-2 hover:bg-gray-200 rounded">
+            ↻
+          </button>
         </div>
         <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <button className="p-2 hover:bg-gray-200 rounded">Font</button>
-          <button className="p-2 hover:bg-gray-200 rounded">A</button>
-          <button className="p-2 hover:bg-gray-200 rounded">▢</button>
+          <button onClick={handleBold} className="p-2 hover:bg-gray-200 rounded font-bold">
+            B
+          </button>
+          <button onClick={handleItalic} className="p-2 hover:bg-gray-200 rounded italic">
+            I
+          </button>
+          <button onClick={handleUnderline} className="p-2 hover:bg-gray-200 rounded underline">
+            U
+          </button>
         </div>
         <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <button className="p-2 hover:bg-gray-200 rounded">H</button>
-          <button className="p-2 hover:bg-gray-200 rounded">•</button>
-          <button className="p-2 hover:bg-gray-200 rounded">1.</button>
+          <button onClick={handleHeading} className="p-2 hover:bg-gray-200 rounded">
+            H
+          </button>
+          <button onClick={handleBulletList} className="p-2 hover:bg-gray-200 rounded">
+            •
+          </button>
+          <button onClick={handleNumberList} className="p-2 hover:bg-gray-200 rounded">
+            1.
+          </button>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 border-r border-gray-300 pr-3">
           <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
             🖼️
-            <input type="file" accept="image/*,video/*" hidden onChange={handleFileChange} />
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => e.target.files && handleAddImage(e.target.files[0])}
+            />
           </label>
-          <button className="p-2 hover:bg-gray-200 rounded">🎥</button>
-          <button className="p-2 hover:bg-gray-200 rounded">📎</button>
+          <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
+            🎥
+            <input
+              type="file"
+              accept="video/*"
+              hidden
+              onChange={(e) => e.target.files && handleAddVideo(e.target.files[0])}
+            />
+          </label>
+          <button onClick={handleInsertLink} className="p-2 hover:bg-gray-200 rounded">
+            🔗
+          </button>
+          <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">
+            ➖
+          </button>
         </div>
         <button className="ml-auto bg-[#1877f2] text-white px-3 py-1 rounded-md font-semibold">+ Add Block</button>
       </div>
 
-      {/* Editor */}
+      {/* Rich Text Area */}
       <div className="p-6 space-y-5 min-h-[400px]">
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Start writing your post here..."
-          className="w-full border border-gray-300 rounded-lg p-3 text-lg resize-none"
-          rows={6}
+        <div
+          id="editorArea"
+          contentEditable
+          onInput={(e) => setContent((e.target as HTMLElement).innerHTML)}
+          onPaste={handlePaste}
+          className="w-full border border-gray-300 rounded-lg p-3 text-lg min-h-[200px] focus:outline-none"
           style={{ color: fontColor, backgroundColor: bgColor }}
+          dangerouslySetInnerHTML={{ __html: content }}
         />
 
-        {/* Color Pickers */}
-        <div className="flex items-center justify-between mt-3">
-          <div className="flex gap-4">
-            <div>
-              <label className="text-sm text-gray-600 block">Font Color</label>
-              <input
-                type="color"
-                value={fontColor}
-                onChange={(e) => setFontColor(e.target.value)}
-                className="w-10 h-10 border rounded-full cursor-pointer"
-              />
-            </div>
-            <div>
-              <label className="text-sm text-gray-600 block">Background</label>
-              <input
-                type="color"
-                value={bgColor}
-                onChange={(e) => setBgColor(e.target.value)}
-                className="w-10 h-10 border rounded-full cursor-pointer"
-              />
-            </div>
+        <div className="flex gap-4 mt-4">
+          <div>
+            <label className="text-sm text-gray-600 block">Font Color</label>
+            <input
+              type="color"
+              value={fontColor}
+              onChange={(e) => {
+                setFontColor(e.target.value);
+                handleFontColor(e.target.value);
+              }}
+              className="w-10 h-10 border rounded-full cursor-pointer"
+            />
+          </div>
+          <div>
+            <label className="text-sm text-gray-600 block">Background</label>
+            <input
+              type="color"
+              value={bgColor}
+              onChange={(e) => {
+                setBgColor(e.target.value);
+                handleBgColor(e.target.value);
+              }}
+              className="w-10 h-10 border rounded-full cursor-pointer"
+            />
           </div>
         </div>
-
-        {/* Media Preview */}
-        {mediaPreview && (
-          <div className="mt-3">
-            {media?.type.startsWith("video/") ? (
-              <video src={mediaPreview} controls className="w-full rounded-lg max-h-80" />
-            ) : (
-              <img src={mediaPreview} alt="Preview" className="w-full rounded-lg max-h-80 object-cover" />
-            )}
-          </div>
-        )}
 
         {/* Upload Progress */}
         {uploadProgress !== null && (
