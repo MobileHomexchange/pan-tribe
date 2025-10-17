@@ -8,6 +8,25 @@ import imageCompression from "browser-image-compression";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
+// Simple preview modal component
+function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+      <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl">
+          ✕
+        </button>
+        <h2 className="text-xl font-bold mb-4">Post Preview</h2>
+        <div
+          className="prose max-w-none"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function CreatePost() {
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -21,6 +40,7 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [fontColor, setFontColor] = useState("#000000");
   const [bgColor, setBgColor] = useState("#ffffff");
+  const [showPreview, setShowPreview] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,7 +50,7 @@ export default function CreatePost() {
     }
   };
 
-  // ---------- RICH TEXT ACTIONS ----------
+  // ---------- Rich text functions ----------
   const execCmd = (cmd: string, value: string | null = null) => {
     document.execCommand(cmd, false, value);
     setContent(document.getElementById("editorArea")?.innerHTML || "");
@@ -44,15 +64,12 @@ export default function CreatePost() {
   const handleHeading = () => execCmd("formatBlock", "h2");
   const handleBulletList = () => execCmd("insertUnorderedList");
   const handleNumberList = () => execCmd("insertOrderedList");
-
   const handleFontColor = (color: string) => execCmd("foreColor", color);
   const handleBgColor = (color: string) => execCmd("hiliteColor", color);
 
   const handleAddImage = async (file: File) => {
     const reader = new FileReader();
-    reader.onload = (e) => {
-      execCmd("insertImage", e.target?.result as string);
-    };
+    reader.onload = (e) => execCmd("insertImage", e.target?.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -64,7 +81,7 @@ export default function CreatePost() {
   };
 
   const handleAddDivider = () => {
-    const hr = "<hr style='border:1px solid #ddd; margin:1rem 0;' />";
+    const hr = "<hr style='border:1px solid #ddd;margin:1rem 0;' />";
     document.getElementById("editorArea")!.insertAdjacentHTML("beforeend", hr);
     setContent(document.getElementById("editorArea")?.innerHTML || "");
   };
@@ -81,7 +98,7 @@ export default function CreatePost() {
     setContent(document.getElementById("editorArea")?.innerHTML || "");
   };
 
-  // ---------- SUBMIT TO FIRESTORE ----------
+  // ---------- Firestore submit ----------
   const handleSubmit = async () => {
     if (!currentUser) {
       toast.error("Please log in to create a post");
@@ -100,7 +117,9 @@ export default function CreatePost() {
       if (media) {
         const file = media;
         const isImage = file.type.startsWith("image/");
-        const uploadFile = isImage ? await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : file;
+        const uploadFile = isImage
+          ? await imageCompression(file, { maxSizeMB: 1, maxWidthOrHeight: 1920 })
+          : file;
 
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
@@ -147,140 +166,48 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
-      <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
-
-      {/* Title Input */}
-      <div className="px-6 py-4 border-b border-gray-200">
-        <input
-          type="text"
-          placeholder="Write a captivating title..."
-          className="w-full p-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-      </div>
-
-      {/* Toolbar */}
-      <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50">
-        <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <button onClick={handleUndo} className="p-2 hover:bg-gray-200 rounded">
-            ↺
-          </button>
-          <button onClick={handleRedo} className="p-2 hover:bg-gray-200 rounded">
-            ↻
-          </button>
+    <>
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
+        {/* Header */}
+        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">
+          Create a Post
         </div>
-        <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <button onClick={handleBold} className="p-2 hover:bg-gray-200 rounded font-bold">
-            B
-          </button>
-          <button onClick={handleItalic} className="p-2 hover:bg-gray-200 rounded italic">
-            I
-          </button>
-          <button onClick={handleUnderline} className="p-2 hover:bg-gray-200 rounded underline">
-            U
-          </button>
-        </div>
-        <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <button onClick={handleHeading} className="p-2 hover:bg-gray-200 rounded">
-            H
-          </button>
-          <button onClick={handleBulletList} className="p-2 hover:bg-gray-200 rounded">
-            •
-          </button>
-          <button onClick={handleNumberList} className="p-2 hover:bg-gray-200 rounded">
-            1.
-          </button>
-        </div>
-        <div className="flex gap-1 border-r border-gray-300 pr-3">
-          <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
-            🖼️
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={(e) => e.target.files && handleAddImage(e.target.files[0])}
-            />
-          </label>
-          <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
-            🎥
-            <input
-              type="file"
-              accept="video/*"
-              hidden
-              onChange={(e) => e.target.files && handleAddVideo(e.target.files[0])}
-            />
-          </label>
-          <button onClick={handleInsertLink} className="p-2 hover:bg-gray-200 rounded">
-            🔗
-          </button>
-          <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">
-            ➖
-          </button>
-        </div>
-        <button className="ml-auto bg-[#1877f2] text-white px-3 py-1 rounded-md font-semibold">+ Add Block</button>
-      </div>
 
-      {/* Rich Text Area */}
-      <div className="p-6 space-y-5 min-h-[400px]">
-        <div
-          id="editorArea"
-          contentEditable
-          onInput={(e) => setContent((e.target as HTMLElement).innerHTML)}
-          onPaste={handlePaste}
-          className="w-full border border-gray-300 rounded-lg p-3 text-lg min-h-[200px] focus:outline-none"
-          style={{ color: fontColor, backgroundColor: bgColor }}
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
+        {/* Title */}
+        <div className="px-6 py-4 border-b border-gray-200">
+          <input
+            type="text"
+            placeholder="Write a captivating title..."
+            className="w-full p-3 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
 
-        <div className="flex gap-4 mt-4">
-          <div>
-            <label className="text-sm text-gray-600 block">Font Color</label>
-            <input
-              type="color"
-              value={fontColor}
-              onChange={(e) => {
-                setFontColor(e.target.value);
-                handleFontColor(e.target.value);
-              }}
-              className="w-10 h-10 border rounded-full cursor-pointer"
-            />
+        {/* Toolbar */}
+        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50">
+          <div className="flex gap-1 border-r border-gray-300 pr-3">
+            <button onClick={handleUndo} className="p-2 hover:bg-gray-200 rounded">↺</button>
+            <button onClick={handleRedo} className="p-2 hover:bg-gray-200 rounded">↻</button>
           </div>
-          <div>
-            <label className="text-sm text-gray-600 block">Background</label>
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => {
-                setBgColor(e.target.value);
-                handleBgColor(e.target.value);
-              }}
-              className="w-10 h-10 border rounded-full cursor-pointer"
-            />
+          <div className="flex gap-1 border-r border-gray-300 pr-3">
+            <button onClick={handleBold} className="p-2 hover:bg-gray-200 rounded font-bold">B</button>
+            <button onClick={handleItalic} className="p-2 hover:bg-gray-200 rounded italic">I</button>
+            <button onClick={handleUnderline} className="p-2 hover:bg-gray-200 rounded underline">U</button>
           </div>
-        </div>
-
-        {/* Upload Progress */}
-        {uploadProgress !== null && (
-          <div className="w-full bg-gray-200 h-2 rounded mt-2">
-            <div
-              className="bg-green-600 h-2 rounded transition-all duration-300"
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
+          <div className="flex gap-1 border-r border-gray-300 pr-3">
+            <button onClick={handleHeading} className="p-2 hover:bg-gray-200 rounded">H</button>
+            <button onClick={handleBulletList} className="p-2 hover:bg-gray-200 rounded">•</button>
+            <button onClick={handleNumberList} className="p-2 hover:bg-gray-200 rounded">1.</button>
           </div>
-        )}
-      </div>
-
-      {/* Footer */}
-      <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
-        <Button
-          onClick={handleSubmit}
-          disabled={isSubmitting}
-          className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-        >
-          {isSubmitting ? "Posting..." : "Publish"}
-        </Button>
-        <button className="px-4 py-2 rounded-md border font-semibold">Preview</button>
-      </div>
-    </div>
-  );
-}
+          <div className="flex gap-1 border-r border-gray-300 pr-3">
+            <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
+              🖼️
+              <input type="file" accept="image/*" hidden onChange={(e) => e.target.files && handleAddImage(e.target.files[0])} />
+            </label>
+            <label className="cursor-pointer p-2 hover:bg-gray-200 rounded">
+              🎥
+              <input type="file" accept="video/*" hidden onChange={(e) => e.target.files && handleAddVideo(e.target.files[0])} />
+            </label>
+            <button onClick={handleInsertLink} className="p-2 hover:bg-gray-200 rounded">🔗</button>
+            <button onClick={handleAddDivider} className="p-2 hover:bg-gray-200 rounded">➖</button>
+          </div>
+          <butto
