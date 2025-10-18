@@ -10,9 +10,10 @@ import { useLocation } from "react-router-dom";
 
 interface LayoutProps {
   children?: ReactNode;
+  onDashboardToggle?: () => void;
 }
 
-export function Layout({ children }: LayoutProps = {}) {
+export function Layout({ children, onDashboardToggle }: LayoutProps = {}) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [bannerHeight, setBannerHeight] = useState(0);
   const location = useLocation();
@@ -29,7 +30,10 @@ export function Layout({ children }: LayoutProps = {}) {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           {/* Top Bar */}
-          <TopBar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+          <TopBar 
+            onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+            onDashboardToggle={onDashboardToggle}
+          />
 
           {/* Header Banner */}
           <HeaderBanner onHeightChange={setBannerHeight} />

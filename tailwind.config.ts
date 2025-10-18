@@ -64,6 +64,13 @@ export default {
           green: "hsl(var(--pan-green))",
           gold: "hsl(var(--pan-gold))",
         },
+        // New dashboard colors
+        charcoal: "hsl(var(--charcoal))",
+        terracotta: "hsl(var(--terracotta))",
+        amber: "hsl(var(--amber))",
+        forest: "hsl(var(--forest))",
+        sage: "hsl(var(--sage))",
+        cream: "hsl(var(--cream))",
         light: {
           gold: "hsl(var(--light-gold))",
           green: "hsl(var(--light-green))",

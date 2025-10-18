@@ -19,6 +19,14 @@ All colors MUST be HSL.
     --light-green: 155 52% 90%;
     --light-red: 0 68% 96%;
 
+    /* Dashboard color palette */
+    --charcoal: 210 22% 22%;
+    --terracotta: 27 80% 52%;
+    --amber: 36 91% 51%;
+    --forest: 145 63% 42%;
+    --sage: 150 32% 65%;
+    --cream: 45 74% 95%;
+
     /* Social media grays */
     --fb-hover: 210 10% 96%;
     --fb-border: 210 8% 88%;

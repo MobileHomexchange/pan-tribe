@@ -3,12 +3,13 @@ import { Layout } from "@/components/layout/Layout";
 import { CreatePostInput } from "@/components/home/CreatePostInput";
 import { PostCard } from "@/components/home/PostCard";
 import { LiveSessionCard } from "@/components/home/LiveSessionCard";
-import { AdRotator } from "@/components/home/AdRotator";
-import { TribeDashboardWidget } from "@/components/home/TribeDashboardWidget";
-import { HomeLeftSidebar } from "@/components/home/HomeLeftSidebar";
-import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
+import { DashboardSidebar } from "@/components/home/DashboardSidebar";
+import { DashboardBanner } from "@/components/home/DashboardBanner";
+import { GrowYourTribeCard } from "@/components/home/GrowYourTribeCard";
+import { StatsCards } from "@/components/home/StatsCards";
+import { collection, query, orderBy, onSnapshot, limit, where, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Home as HomeIcon, Users, ShoppingBag, Film, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
@@ -42,9 +43,15 @@ interface TribeSession {
 export default function Home() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
   const [liveSessions, setLiveSessions] = useState<TribeSession[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({
+    tribeMembers: 1200,
+    activeNow: 245,
+    newPosts: 89,
+  });
 
   // Fetch real-time posts
   useEffect(() => {
@@ -87,147 +94,113 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  const navigationLinks = [
-    { 
-      icon: <HomeIcon className="w-5 h-5 text-white" />, 
-      label: "Dashboard", 
-      path: "/feed",
-      color: "bg-primary"
-    },
-    { 
-      icon: <Users className="w-5 h-5 text-white" />, 
-      label: "MyTribe", 
-      path: "/my-tribe",
-      color: "bg-primary"
-    },
-    { 
-      icon: <ShoppingBag className="w-5 h-5 text-white" />, 
-      label: "Marketplace", 
-      path: "/marketplace",
-      color: "bg-primary"
-    },
-    { 
-      icon: <Film className="w-5 h-5 text-white" />, 
-      label: "Reels", 
-      path: "/reels",
-      color: "bg-primary"
-    },
-  ];
+  // Fetch stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        // Get total members
+        const usersSnapshot = await getDocs(collection(db, "users"));
+        
+        // Get today's posts
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayPostsQuery = query(
+          collection(db, "posts"),
+          where("timestamp", ">=", today)
+        );
+        const todayPostsSnapshot = await getDocs(todayPostsQuery);
+
+        setStats({
+          tribeMembers: usersSnapshot.size || 1200,
+          activeNow: Math.floor(Math.random() * 300) + 200, // Simulated for now
+          newPosts: todayPostsSnapshot.size || 89,
+        });
+      } catch (error) {
+        console.error("Error fetching stats:", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
-    <Layout>
-      <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
-        <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
-          {/* LEFT SIDEBAR */}
-          <HomeLeftSidebar
-            userName={currentUser?.displayName || "User"}
-            userAvatar={currentUser?.photoURL || ""}
-            tribeName="My Tribe"
-            status="Active"
-            navigationLinks={navigationLinks}
-            onCreatePost={() => navigate("/create-post")}
-            onGoLive={() => navigate("/session")}
-            userTribes={[
-              { id: "1", name: "Faith Mobile Homes", memberCount: 234 },
-              { id: "2", name: "Tech Enthusiasts", memberCount: 156 },
-              { id: "3", name: "Affordable Housing", memberCount: 89 }
-            ]}
-          />
+    <>
+      {/* Dashboard Sidebar (Overlay) */}
+      <DashboardSidebar 
+        isOpen={dashboardOpen} 
+        onClose={() => setDashboardOpen(false)} 
+      />
 
-          {/* CENTER FEED - Flexible width */}
-          <main className="flex-1 max-w-3xl mx-auto space-y-6">
-            {/* Create Post Input */}
-            <CreatePostInput
-              userAvatar={currentUser?.photoURL || ""}
-              onCreatePost={() => navigate("/create-post")}
-            />
+      <Layout onDashboardToggle={() => setDashboardOpen(true)}>
+        <div className="min-h-screen bg-gradient-to-b from-cream/30 to-background">
+          <div className="max-w-7xl mx-auto flex gap-6 px-4 py-6">
+            {/* LEFT SIDEBAR (25% width) - Hidden on mobile */}
+            <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
+              {/* Dashboard Banner (Orange) */}
+              <DashboardBanner onOpenDashboard={() => setDashboardOpen(true)} />
 
-            {/* Live Sessions Block */}
-            {liveSessions.length > 0 && (
-              <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4">
-                <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                  <Video className="w-6 h-6 text-destructive animate-pulse" />
-                  Live Tribe Sessions
-                </h2>
-                <ScrollArea className="h-[200px]">
-                  <div className="space-y-3">
-                    {liveSessions.map((session) => (
-                      <LiveSessionCard
-                        key={session.id}
-                        session={session}
-                        onJoin={() => navigate(`/session?room=${session.roomName}`)}
-                      />
-                    ))}
-                  </div>
-                </ScrollArea>
+              {/* Grow Your Tribe Card (Green) */}
+              <GrowYourTribeCard />
+            </aside>
+
+            {/* MAIN CONTENT (75% width) */}
+            <main className="flex-1 space-y-4">
+              {/* Stats Cards */}
+              <StatsCards 
+                tribeMembers={stats.tribeMembers}
+                activeNow={stats.activeNow}
+                newPosts={stats.newPosts}
+              />
+
+              {/* Create Post Input (Sticky) */}
+              <div className="sticky top-20 z-10 bg-gradient-to-b from-cream/30 to-background pb-4">
+                <CreatePostInput
+                  userAvatar={currentUser?.photoURL || ""}
+                  onCreatePost={() => navigate("/create-post")}
+                />
               </div>
-            )}
 
-            {/* Posts Feed */}
-            {loading ? (
-              <div className="text-center py-12 text-muted-foreground">
-                Loading posts...
-              </div>
-            ) : posts.length === 0 ? (
-              <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-12 text-center">
-                <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
-            )}
-          </main>
-
-          {/* RIGHT SIDEBAR - Fixed width */}
-          <aside className="hidden lg:block w-96 space-y-6 sticky top-24 h-fit">
-            {/* Tribe Dashboard Widget */}
-            <TribeDashboardWidget
-              sessionsJoined={12}
-              followers={245}
-              tribeCount={3}
-              isAdmin={false}
-              onStartSession={() => navigate("/session")}
-            />
-
-            {/* Live Sessions Summary */}
-            {liveSessions.length > 0 && (
-              <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4">
-                <h3 className="font-semibold text-foreground mb-3">Trending Live</h3>
-                <div className="space-y-2">
-                  {liveSessions.slice(0, 3).map((session) => (
-                    <div
-                      key={session.id}
-                      className="p-3 bg-background rounded-lg hover:bg-social-hover cursor-pointer transition-colors"
-                      onClick={() => navigate(`/session?room=${session.roomName}`)}
-                    >
-                      <p className="font-medium text-sm text-foreground">
-                        {session.tribeName}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {session.participantCount} watching
-                      </p>
+              {/* Live Sessions Block */}
+              {liveSessions.length > 0 && (
+                <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4">
+                  <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Video className="w-6 h-6 text-destructive animate-pulse" />
+                    Live Tribe Sessions
+                  </h2>
+                  <ScrollArea className="h-[200px]">
+                    <div className="space-y-3">
+                      {liveSessions.map((session) => (
+                        <LiveSessionCard
+                          key={session.id}
+                          session={session}
+                          onJoin={() => navigate(`/session?room=${session.roomName}`)}
+                        />
+                      ))}
                     </div>
+                  </ScrollArea>
+                </div>
+              )}
+
+              {/* Posts Feed */}
+              {loading ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  Loading posts...
+                </div>
+              ) : posts.length === 0 ? (
+                <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-12 text-center">
+                  <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {posts.map((post) => (
+                    <PostCard key={post.id} post={post} />
                   ))}
                 </div>
-              </div>
-            )}
-
-            {/* Ad Rotation */}
-            <AdRotator />
-
-            {/* Google Ad Banners Placeholder */}
-            <div className="bg-muted rounded-lg p-4 text-center border border-border">
-              <p className="text-xs text-muted-foreground mb-2">Advertisement</p>
-              <div className="bg-background rounded h-[250px] flex items-center justify-center">
-                <span className="text-muted-foreground text-sm">300x250 Ad</span>
-              </div>
-            </div>
-          </aside>
+              )}
+            </main>
+          </div>
         </div>
-      </div>
-    </Layout>
+      </Layout>
+    </>
   );
 }
