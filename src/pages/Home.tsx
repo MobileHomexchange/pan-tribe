@@ -132,10 +132,10 @@ export default function Home() {
       />
 
       <Layout onDashboardToggle={() => setDashboardOpen(true)}>
-        <div className="min-h-screen bg-gradient-to-b from-cream/30 to-background">
+        <div className="min-h-screen bg-gradient-to-b from-cream/30 to-white pt-6">
           <div className="max-w-7xl mx-auto flex gap-6 px-4 py-6">
             {/* LEFT SIDEBAR (25% width) - Hidden on mobile */}
-            <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
+            <aside className="hidden lg:flex lg:flex-col w-80 flex-shrink-0 space-y-4 sticky top-24 h-fit">
               {/* Dashboard Banner (Orange) */}
               <DashboardBanner onOpenDashboard={() => setDashboardOpen(true)} />
 
@@ -144,7 +144,7 @@ export default function Home() {
             </aside>
 
             {/* MAIN CONTENT (75% width) */}
-            <main className="flex-1 space-y-4">
+            <main className="flex-1 min-w-0 space-y-4">
               {/* Stats Cards */}
               <StatsCards 
                 tribeMembers={stats.tribeMembers}

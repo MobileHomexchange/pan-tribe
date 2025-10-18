@@ -60,7 +60,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/feed" element={<ProtectedRoute><Index /></ProtectedRoute>} />
+              <Route path="/feed" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/my-tribe" element={<ProtectedRoute><MyTribe /></ProtectedRoute>} />
               <Route path="/my-tribe/group/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />

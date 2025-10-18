@@ -18,7 +18,7 @@ export function GrowYourTribeCard() {
         </p>
         <button
           onClick={() => navigate("/ads-manager")}
-          className="bg-white text-forest font-semibold px-8 py-3 rounded-full hover:shadow-2xl transition-all hover:-translate-y-1 active:translate-y-0"
+          className="bg-white text-[hsl(var(--forest))] font-semibold px-8 py-3 rounded-full hover:shadow-2xl transition-all hover:-translate-y-1 active:translate-y-0"
         >
           Get Started
         </button>
