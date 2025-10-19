@@ -1,4 +1,3 @@
-// Layout.tsx
 import React, { useState, ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -25,6 +24,11 @@ export function Layout({ children, onDashboardToggle }: LayoutProps = {}) {
 
   return (
     <SidebarProvider>
+      {/* Meta viewport ensures mobile scaling */}
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </head>
+
       <div className="min-h-screen flex w-full bg-background">
         {/* Left Sidebar - Hide on home and tribe pages */}
         {!shouldHideSidebar && <AppSidebar />}
@@ -32,22 +36,19 @@ export function Layout({ children, onDashboardToggle }: LayoutProps = {}) {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
           {/* Top Bar */}
-          <TopBar 
-            onMenuToggle={() => setSidebarOpen(!sidebarOpen)}
-            onDashboardToggle={onDashboardToggle}
-          />
+          <TopBar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} onDashboardToggle={onDashboardToggle} />
 
           {/* Header Banner */}
           <HeaderBanner onHeightChange={setBannerHeight} />
 
           {/* Main Content */}
-          <main className="flex-1 pb-5" style={{ paddingTop: `${64 + bannerHeight}px` }}>
+          <main className="flex-1 pb-5 px-2 sm:px-4 md:px-6 lg:px-8" style={{ paddingTop: `${64 + bannerHeight}px` }}>
             {children ? (
               children
             ) : (
-              <div className="w-full mx-auto grid grid-cols-1 lg:grid-cols-4 gap-5 px-4">
-                {/* Main Feed - Adjusted for better spacing */}
-                <div className="lg:col-span-2">
+              <div className="w-full mx-auto grid grid-cols-1 lg:grid-cols-4 gap-5">
+                {/* Main Feed - Responsive */}
+                <div className="lg:col-span-2 col-span-1">
                   <MainFeed />
                 </div>
 
