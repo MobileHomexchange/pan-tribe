@@ -27,7 +27,7 @@ export function PostCard({ post }: PostCardProps) {
   const [likeCount, setLikeCount] = useState(post.likes);
 
   const handleLike = () => {
-    setIsLiked((prev) => !prev);
+    setIsLiked(!isLiked);
     setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
   };
 
