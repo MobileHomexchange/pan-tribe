@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { 
-  Users, 
-  Bookmark, 
-  UserCheck, 
-  History, 
+import {
+  Users,
+  Bookmark,
+  UserCheck,
+  History,
   Calendar,
   TrendingUp,
   Music,
@@ -13,7 +13,7 @@ import {
   Code,
   ChevronDown,
   FileText,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
 import {
   Sidebar,
@@ -24,7 +24,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
 
@@ -53,31 +52,31 @@ export function AppSidebar() {
   const [shortcutsExpanded, setShortcutsExpanded] = useState(true);
   const collapsed = state === "collapsed";
 
-  // Filter menu items based on user role
-  const mainItems = allMainItems.filter(item => {
-    // Hide admin-only items from regular users
-    if (item.adminOnly && !isAdmin) {
-      return false;
-    }
-    return true;
-  });
-
+  const mainItems = allMainItems.filter((item) => !(item.adminOnly && !isAdmin));
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <Sidebar className={`${collapsed ? "w-14" : "w-60"} transition-all duration-300`} collapsible="icon">
-      <SidebarContent className="bg-sidebar border-r border-sidebar-border">
+    <Sidebar
+      className={`${collapsed ? "w-14" : "w-60"} transition-all duration-300 bg-white border-r border-gray-200`}
+      collapsible="icon"
+    >
+      <SidebarContent className="overflow-y-auto">
         {/* User Profile */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild className="h-12 p-2">
-                  <NavLink to="/" className={`flex items-center gap-3 hover:bg-sidebar-accent rounded-lg ${isActive("/") ? "bg-light-gold" : ""}`}>
+                  <NavLink
+                    to="/"
+                    className={`flex items-center gap-3 hover:bg-gray-100 rounded-lg transition-colors ${
+                      isActive("/") ? "bg-light-gold" : ""
+                    }`}
+                  >
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pan-green to-pan-black flex items-center justify-center text-pan-gold font-bold text-sm">
                       JS
                     </div>
-                    {!collapsed && <span className="font-medium text-sidebar-foreground">John Smith</span>}
+                    {!collapsed && <span className="font-medium text-gray-800 truncate">John Smith</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -92,16 +91,16 @@ export function AppSidebar() {
               {mainItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <NavLink 
-                      to={item.url} 
-                      className={`flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-sidebar-accent transition-colors ${
+                    <NavLink
+                      to={item.url}
+                      className={`flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors ${
                         isActive(item.url) ? "bg-light-gold" : ""
                       }`}
                     >
-                      <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center flex-shrink-0">
                         <item.icon className="h-4 w-4 text-pan-green" />
                       </div>
-                      {!collapsed && <span className="font-medium text-sidebar-foreground">{item.title}</span>}
+                      {!collapsed && <span className="font-medium text-gray-800 truncate">{item.title}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -111,45 +110,46 @@ export function AppSidebar() {
         </SidebarGroup>
 
         {/* Separator */}
-        {!collapsed && (
-          <div className="h-px bg-sidebar-border mx-2 my-2" />
-        )}
+        {!collapsed && <div className="h-px bg-gray-200 mx-2 my-2" />}
 
         {/* Shortcuts */}
         {!collapsed && (
           <SidebarGroup>
-            <SidebarGroupLabel className="px-2 text-sidebar-foreground font-semibold text-base">
-              Your shortcuts
-            </SidebarGroupLabel>
+            <SidebarGroupLabel className="px-2 text-gray-700 font-semibold text-base">Your shortcuts</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {shortcuts.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
-                      <NavLink 
-                        to={item.url} 
-                        className={`flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-sidebar-accent transition-colors ${
-                          isActive(item.url) ? "bg-light-gold" : ""
-                        }`}
-                      >
-                        <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center">
-                          <item.icon className="h-4 w-4 text-pan-green" />
-                        </div>
-                        <span className="font-medium text-sidebar-foreground">{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-                
+                {shortcutsExpanded &&
+                  shortcuts.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild>
+                        <NavLink
+                          to={item.url}
+                          className={`flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors ${
+                            isActive(item.url) ? "bg-light-gold" : ""
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center flex-shrink-0">
+                            <item.icon className="h-4 w-4 text-pan-green" />
+                          </div>
+                          <span className="font-medium text-gray-800 truncate">{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+
                 <SidebarMenuItem>
-                  <SidebarMenuButton 
+                  <SidebarMenuButton
                     onClick={() => setShortcutsExpanded(!shortcutsExpanded)}
-                    className="flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-sidebar-accent transition-colors"
+                    className="flex items-center gap-3 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center">
-                      <ChevronDown className={`h-4 w-4 text-pan-green transition-transform ${shortcutsExpanded ? 'rotate-180' : ''}`} />
+                    <div className="w-8 h-8 rounded-full bg-light-gold flex items-center justify-center flex-shrink-0">
+                      <ChevronDown
+                        className={`h-4 w-4 text-pan-green transition-transform ${
+                          shortcutsExpanded ? "rotate-180" : ""
+                        }`}
+                      />
                     </div>
-                    <span className="font-medium text-sidebar-foreground">See more</span>
+                    <span className="font-medium text-gray-800">{shortcutsExpanded ? "See less" : "See more"}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
@@ -160,3 +160,5 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+
+export default AppSidebar;
