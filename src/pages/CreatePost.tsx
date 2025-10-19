@@ -17,12 +17,24 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import ImageExtension from "@tiptap/extension-image";
 
 // --- Preview Modal ---
-function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
+function PreviewModal({
+  open,
+  onClose,
+  content,
+}: {
+  open: boolean;
+  onClose: () => void;
+  content: string;
+}) {
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
       <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative overflow-y-auto max-h-[80vh]">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
+        >
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
@@ -50,7 +62,7 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  // --- TipTap Editor Setup ---
+  // --- TipTap Editor ---
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -66,25 +78,28 @@ export default function CreatePost() {
   // --- Media Upload ---
   const handleAddImage = async (file: File) => {
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = async (e) => {
       const base64Src = e.target?.result as string;
-      // Insert temporary image while upload happens
       editor?.chain().focus().setImage({ src: base64Src }).run();
 
-      // Compress before uploading
       const compressed = await imageCompression(file, {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
       });
 
-      const fileRef = ref(storage, `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`);
+      const fileRef = ref(
+        storage,
+        `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`
+      );
       const uploadTask = uploadBytesResumable(fileRef, compressed);
 
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           setUploadProgress(progress);
         },
         (error) => {
@@ -93,11 +108,10 @@ export default function CreatePost() {
         },
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          // Insert the uploaded image using its final URL
           editor?.chain().focus().setImage({ src: downloadURL }).run();
-          toast.success("Image uploaded successfully!");
+          toast.success("✅ Image uploaded");
           setUploadProgress(null);
-        },
+        }
       );
     };
     reader.readAsDataURL(file);
@@ -105,7 +119,10 @@ export default function CreatePost() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) handleAddImage(file);
+    if (file) {
+      setMedia(file);
+      handleAddImage(file);
+    }
   };
 
   // --- Firestore Submit ---
@@ -115,34 +132,41 @@ export default function CreatePost() {
       navigate("/login");
       return;
     }
-    if (!content) {
+
+    if (!content.trim()) {
       toast.error("Please add some content first");
       return;
     }
 
     setIsSubmitting(true);
-    let mediaUrl = null;
+    let mediaUrl: string | null = null;
 
     try {
       if (media) {
         const isImage = media.type.startsWith("image/");
-        const uploadFile = isImage ? await imageCompression(media, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : media;
+        const uploadFile = isImage
+          ? await imageCompression(media, { maxSizeMB: 1, maxWidthOrHeight: 1920 })
+          : media;
 
-        const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
+        const fileRef = ref(
+          storage,
+          `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`
+        );
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
         mediaUrl = await new Promise((resolve, reject) => {
           uploadTask.on(
             "state_changed",
             (snapshot) => {
-              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              const progress =
+                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(progress);
             },
             reject,
             async () => {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
               resolve(url);
-            },
+            }
           );
         });
       }
@@ -161,7 +185,7 @@ export default function CreatePost() {
       await addDoc(collection(db, "posts"), postData);
       toast.success("✅ Post created successfully!");
       navigate(returnTo);
-    } catch (error: any) {
+    } catch (error) {
       console.error("❌ Error creating post:", error);
       toast.error("Failed to create post. Try again.");
     } finally {
@@ -177,7 +201,9 @@ export default function CreatePost() {
     <>
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
         {/* Header */}
-        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
+        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">
+          Create a Post
+        </div>
 
         {/* Toolbar */}
         <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50 items-center">
@@ -189,13 +215,17 @@ export default function CreatePost() {
           </button>
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-2 font-bold ${editor.isActive("bold") ? "bg-blue-100" : ""}`}
+            className={`p-2 font-bold ${
+              editor.isActive("bold") ? "bg-blue-100" : ""
+            }`}
           >
             B
           </button>
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-2 italic ${editor.isActive("italic") ? "bg-blue-100" : ""}`}
+            className={`p-2 italic ${
+              editor.isActive("italic") ? "bg-blue-100" : ""
+            }`}
           >
             I
           </button>
@@ -236,23 +266,4 @@ export default function CreatePost() {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
-          >
-            {isSubmitting ? "Posting..." : "Publish"}
-          </Button>
-          <button onClick={() => setShowPreview(true)} className="px-4 py-2 rounded-md border font-semibold">
-            Preview
-          </button>
-        </div>
-      </div>
-
-      {/* Preview Modal */}
-      <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} content={content} />
-    </>
-  );
-}
+        {
