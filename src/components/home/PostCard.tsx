@@ -27,8 +27,8 @@ export function PostCard({ post }: PostCardProps) {
   const [likeCount, setLikeCount] = useState(post.likes);
 
   const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+    setIsLiked((prev) => !prev);
+    setLikeCount((prev) => (isLiked ? prev - 1 : prev + 1));
   };
 
   const getTimestamp = () => {
@@ -41,41 +41,35 @@ export function PostCard({ post }: PostCardProps) {
   };
 
   return (
-    <article className="bg-card rounded-lg shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-elegant)] transition-shadow">
+    <article className="bg-card rounded-lg shadow-[var(--shadow-card)] overflow-hidden hover:shadow-[var(--shadow-elegant)] transition-shadow w-full">
       {/* Post Header */}
       <div className="p-4 flex items-center gap-3">
-        <Avatar className="w-10 h-10">
+        <Avatar className="w-10 h-10 flex-shrink-0">
           <AvatarImage src={post.userAvatar} alt={post.userName} />
           <AvatarFallback className="bg-primary text-primary-foreground">
             {post.userName.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <h4 className="font-semibold text-foreground">{post.userName}</h4>
+        <div className="flex-1 min-w-0">
+          <h4 className="font-semibold text-foreground truncate">{post.userName}</h4>
           <p className="text-xs text-muted-foreground">{getTimestamp()}</p>
         </div>
       </div>
 
       {/* Post Content */}
-      <div className="px-4 pb-3">
-        <p className="text-foreground whitespace-pre-wrap">{post.content}</p>
-      </div>
+      {post.content && (
+        <div className="px-4 pb-3">
+          <p className="text-foreground whitespace-pre-wrap break-words">{post.content}</p>
+        </div>
+      )}
 
       {/* Post Media */}
       {post.mediaUrl && (
-        <div className="w-full">
+        <div className="w-full bg-background flex justify-center items-center">
           {post.mediaType === "video" ? (
-            <video
-              src={post.mediaUrl}
-              controls
-              className="w-full max-h-[500px] object-contain bg-background"
-            />
+            <video src={post.mediaUrl} controls className="w-full max-h-[500px] object-contain" playsInline />
           ) : (
-            <img
-              src={post.mediaUrl}
-              alt="Post media"
-              className="w-full max-h-[500px] object-contain bg-background"
-            />
+            <img src={post.mediaUrl} alt="Post media" className="w-full max-h-[500px] object-contain" loading="lazy" />
           )}
         </div>
       )}
@@ -92,26 +86,20 @@ export function PostCard({ post }: PostCardProps) {
           variant="ghost"
           size="sm"
           onClick={handleLike}
-          className={`flex-1 gap-2 hover:bg-social-hover ${
+          className={`flex-1 gap-2 justify-center hover:bg-social-hover ${
             isLiked ? "text-social-like" : "text-foreground"
           }`}
         >
           <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
           Like
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex-1 gap-2 hover:bg-social-hover text-foreground"
-        >
+
+        <Button variant="ghost" size="sm" className="flex-1 gap-2 justify-center hover:bg-social-hover text-foreground">
           <MessageCircle className="w-5 h-5" />
           Comment
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="flex-1 gap-2 hover:bg-social-hover text-foreground"
-        >
+
+        <Button variant="ghost" size="sm" className="flex-1 gap-2 justify-center hover:bg-social-hover text-foreground">
           <Share2 className="w-5 h-5" />
           Share
         </Button>
@@ -119,3 +107,5 @@ export function PostCard({ post }: PostCardProps) {
     </article>
   );
 }
+
+export default PostCard;
