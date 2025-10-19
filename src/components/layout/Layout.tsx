@@ -18,14 +18,16 @@ export function Layout({ children, onDashboardToggle }: LayoutProps = {}) {
   const [bannerHeight, setBannerHeight] = useState(0);
   const location = useLocation();
 
-  // Check if we're on the "my tribe" page
+  // Check if we're on pages that should hide the sidebar
+  const isHomePage = location.pathname === "/feed" || location.pathname === "/home" || location.pathname === "/";
   const isMyTribePage = location.pathname === "/my-tribe" || location.pathname.includes("tribe");
+  const shouldHideSidebar = isHomePage || isMyTribePage;
 
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
-        {/* Left Sidebar - Hide on tribe pages */}
-        {!isMyTribePage && <AppSidebar />}
+        {/* Left Sidebar - Hide on home and tribe pages */}
+        {!shouldHideSidebar && <AppSidebar />}
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col">
