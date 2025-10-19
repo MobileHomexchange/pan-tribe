@@ -17,24 +17,13 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import ImageExtension from "@tiptap/extension-image";
 
 // --- Preview Modal ---
-function PreviewModal({
-  open,
-  onClose,
-  content,
-}: {
-  open: boolean;
-  onClose: () => void;
-  content: string;
-}) {
+function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
       <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative overflow-y-auto max-h-[80vh]">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
-        >
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl">
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
@@ -89,17 +78,13 @@ export default function CreatePost() {
         maxWidthOrHeight: 1920,
       });
 
-      const fileRef = ref(
-        storage,
-        `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`
-      );
+      const fileRef = ref(storage, `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`);
       const uploadTask = uploadBytesResumable(fileRef, compressed);
 
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           setUploadProgress(progress);
         },
         (error) => {
@@ -111,7 +96,7 @@ export default function CreatePost() {
           editor?.chain().focus().setImage({ src: downloadURL }).run();
           toast.success("✅ Image uploaded");
           setUploadProgress(null);
-        }
+        },
       );
     };
     reader.readAsDataURL(file);
@@ -144,29 +129,23 @@ export default function CreatePost() {
     try {
       if (media) {
         const isImage = media.type.startsWith("image/");
-        const uploadFile = isImage
-          ? await imageCompression(media, { maxSizeMB: 1, maxWidthOrHeight: 1920 })
-          : media;
+        const uploadFile = isImage ? await imageCompression(media, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : media;
 
-        const fileRef = ref(
-          storage,
-          `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`
-        );
+        const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
         mediaUrl = await new Promise((resolve, reject) => {
           uploadTask.on(
             "state_changed",
             (snapshot) => {
-              const progress =
-                (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
               setUploadProgress(progress);
             },
             reject,
             async () => {
               const url = await getDownloadURL(uploadTask.snapshot.ref);
               resolve(url);
-            }
+            },
           );
         });
       }
@@ -194,16 +173,13 @@ export default function CreatePost() {
     }
   };
 
-  // --- Render ---
   if (!editor) return <div className="p-6 text-center">Loading editor...</div>;
 
   return (
     <>
       <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
         {/* Header */}
-        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">
-          Create a Post
-        </div>
+        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
 
         {/* Toolbar */}
         <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50 items-center">
@@ -215,17 +191,13 @@ export default function CreatePost() {
           </button>
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`p-2 font-bold ${
-              editor.isActive("bold") ? "bg-blue-100" : ""
-            }`}
+            className={`p-2 font-bold ${editor.isActive("bold") ? "bg-blue-100" : ""}`}
           >
             B
           </button>
           <button
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`p-2 italic ${
-              editor.isActive("italic") ? "bg-blue-100" : ""
-            }`}
+            className={`p-2 italic ${editor.isActive("italic") ? "bg-blue-100" : ""}`}
           >
             I
           </button>
@@ -261,9 +233,31 @@ export default function CreatePost() {
               <div
                 className="bg-green-600 h-2 rounded transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
-              ></div>
+              />
             </div>
           )}
         </div>
 
-        {
+        {/* Footer */}
+        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto"
+          >
+            {isSubmitting ? "Posting..." : "Publish"}
+          </Button>
+          <button
+            onClick={() => setShowPreview(true)}
+            className="px-4 py-2 rounded-md border font-semibold w-full sm:w-auto"
+          >
+            Preview
+          </button>
+        </div>
+      </div>
+
+      {/* Preview Modal */}
+      <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} content={content} />
+    </>
+  );
+}
