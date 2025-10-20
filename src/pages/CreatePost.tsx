@@ -19,9 +19,6 @@ import ImageExtension from "@tiptap/extension-image";
 // --- Preview Modal ---
 function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
   if (!open) return null;
-
-  const safeContent = content.replace(/<script.*?>.*?<\/script>/gi, "");
-
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
       <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative overflow-y-auto max-h-[80vh]">
@@ -29,7 +26,12 @@ function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () =
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
-        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: safeContent }} />
+        <div
+          className="prose max-w-none"
+          dangerouslySetInnerHTML={{
+            __html: content.replace(/<script.*?>.*?<\/script>/gi, ""),
+          }}
+        />
       </div>
     </div>
   );
@@ -65,47 +67,52 @@ export default function CreatePost() {
   const handleAddImage = async (file: File) => {
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const base64Src = e.target?.result as string;
-      editor?.chain().focus().setImage({ src: base64Src }).run();
+    // Insert temporary preview
+    const base64 = await new Promise<string>((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.readAsDataURL(file);
+    });
+    editor?.chain().focus().setImage({ src: base64 }).run();
 
-      // Compress before uploading
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-      });
+    // Compress before uploading
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+    });
 
-      const fileRef = ref(storage, `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`);
-      const uploadTask = uploadBytesResumable(fileRef, compressed);
+    // Upload to Firebase Storage
+    const fileRef = ref(storage, `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`);
+    const uploadTask = uploadBytesResumable(fileRef, compressed);
 
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setUploadProgress(progress);
-        },
-        (error) => {
-          console.error("Image upload failed:", error);
-          toast.error("Image upload failed");
-        },
-        async () => {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          editor?.chain().focus().setImage({ src: downloadURL }).run();
-          toast.success("Image uploaded successfully!");
-          setUploadProgress(null);
-        },
-      );
-    };
-    reader.readAsDataURL(file);
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(progress);
+      },
+      (error) => {
+        console.error("Image upload failed:", error);
+        toast.error("Image upload failed");
+      },
+      async () => {
+        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+        // 🧹 Clean out the base64 image
+        const html = editor?.getHTML() ?? "";
+        const cleaned = html.replace(base64, downloadURL);
+        editor?.commands.setContent(cleaned);
+
+        toast.success("Image uploaded successfully!");
+        setUploadProgress(null);
+        setMedia(file);
+      },
+    );
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setMedia(file);
-      handleAddImage(file);
-    }
+    if (file) handleAddImage(file);
   };
 
   // --- Firestore Submit ---
@@ -115,13 +122,13 @@ export default function CreatePost() {
       navigate("/login");
       return;
     }
-    if (!content.trim()) {
+    if (!content) {
       toast.error("Please add some content first");
       return;
     }
 
     setIsSubmitting(true);
-    let mediaUrl: string | null = null;
+    let mediaUrl = null;
 
     try {
       if (media) {
@@ -131,7 +138,7 @@ export default function CreatePost() {
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
-        mediaUrl = (await new Promise((resolve, reject) => {
+        mediaUrl = await new Promise((resolve, reject) => {
           uploadTask.on(
             "state_changed",
             (snapshot) => {
@@ -144,7 +151,7 @@ export default function CreatePost() {
               resolve(url);
             },
           );
-        })) as string;
+        });
       }
 
       const postData = {
@@ -152,10 +159,10 @@ export default function CreatePost() {
         userName: currentUser.displayName || "Anonymous",
         userAvatar: currentUser.photoURL || "",
         content,
-        imageUrl: mediaUrl || null,
-        createdAt: serverTimestamp(),
-        likes: 0,
-        commentsCount: 0,
+        mediaUrl,
+        timestamp: serverTimestamp(),
+        likes: [],
+        comments: [],
       };
 
       await addDoc(collection(db, "posts"), postData);
