@@ -17,32 +17,20 @@ import { TextStyle } from "@tiptap/extension-text-style";
 import ImageExtension from "@tiptap/extension-image";
 
 // --- Preview Modal ---
-function PreviewModal({
-  open,
-  onClose,
-  content,
-}: {
-  open: boolean;
-  onClose: () => void;
-  content: string;
-}) {
+function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
   if (!open) return null;
-
-  const safeContent = content.replace(/<script.*?>.*?<\/script>/gi, "");
-
   return (
     <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
       <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative overflow-y-auto max-h-[80vh]">
-        <button
-          onClick={onClose}
-          className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl"
-        >
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl">
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
         <div
           className="prose max-w-none"
-          dangerouslySetInnerHTML={{ __html: safeContent }}
+          dangerouslySetInnerHTML={{
+            __html: content.replace(/<script.*?>.*?<\/script>/gi, ""),
+          }}
         />
       </div>
     </div>
@@ -78,27 +66,197 @@ export default function CreatePost() {
   // --- Media Upload ---
   const handleAddImage = async (file: File) => {
     if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const base64Src = e.target?.result as string;
+      // Insert temporary image while upload happens
+      editor?.chain().focus().setImage({ src: base64Src }).run();
 
-    // Insert temporary preview
-    const base64 = await new Promise<string>((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string);
-      reader.readAsDataURL(file);
-    });
-    editor?.chain().focus().setImage({ src: base64 }).run();
+      // Compress before uploading
+      const compressed = await imageCompression(file, {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+      });
 
-    // Compress before uploading
-    const compressed = await imageCompression(file, {
-      maxSizeMB: 1,
-      maxWidthOrHeight: 1920,
-    });
+      const fileRef = ref(storage, `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`);
+      const uploadTask = uploadBytesResumable(fileRef, compressed);
 
-    const fileRef = ref(
-      storage,
-      `posts/${currentUser?.uid}/${Date.now()}_${compressed.name}`
-    );
-    const uploadTask = uploadBytesResumable(fileRef, compressed);
+     uploadTask.on(
+  "state_changed",
+  (snapshot) => {
+    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    setUploadProgress(progress);
+  },
+  (error) => {
+    console.error("Image upload failed:", error);
+    toast.error("Image upload failed");
+  },
+  async () => {
+    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
+    // Replace base64 with Firebase Storage URL
+    const html = editor?.getHTML() ?? "";
+    const cleaned = html.replace(base64, downloadURL);
+    editor?.commands.setContent(cleaned);
+
+    toast.success("Image uploaded successfully!");
+    setUploadProgress(null);
+    setMedia(file);
+  }
+);
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleAddImage(file);
+  };
+
+  // --- Firestore Submit ---
+  const handleSubmit = async () => {
+    if (!currentUser) {
+      toast.error("Please log in to create a post");
+      navigate("/login");
+      return;
+    }
+    if (!content) {
+      toast.error("Please add some content first");
+      return;
+    }
+
+    setIsSubmitting(true);
+    let mediaUrl = null;
+
+    try {
+      if (media) {
+        const isImage = media.type.startsWith("image/");
+        const uploadFile = isImage ? await imageCompression(media, { maxSizeMB: 1, maxWidthOrHeight: 1920 }) : media;
+
+        const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
+        const uploadTask = uploadBytesResumable(fileRef, uploadFile);
+
+        mediaUrl = await new Promise((resolve, reject) => {
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+              setUploadProgress(progress);
+            },
+            reject,
+            async () => {
+              const url = await getDownloadURL(uploadTask.snapshot.ref);
+              resolve(url);
+            },
+          );
+        });
+      }
+
+      const postData = {
+        userId: currentUser.uid,
+        userName: currentUser.displayName || "Anonymous",
+        userAvatar: currentUser.photoURL || "",
+        content,
+        mediaUrl,
+        timestamp: serverTimestamp(),
+        likes: [],
+        comments: [],
+      };
+
+      await addDoc(collection(db, "posts"), postData);
+      toast.success("✅ Post created successfully!");
+      navigate(returnTo);
+    } catch (error: any) {
+      console.error("❌ Error creating post:", error);
+      toast.error("Failed to create post. Try again.");
+    } finally {
+      setIsSubmitting(false);
+      setUploadProgress(null);
+    }
+  };
+
+  // --- Render ---
+  if (!editor) return <div className="p-6 text-center">Loading editor...</div>;
+
+  return (
+    <>
+      <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden mt-8">
+        {/* Header */}
+        <div className="bg-[#1877f2] text-white px-6 py-4 text-lg font-bold">Create a Post</div>
+
+        {/* Toolbar */}
+        <div className="flex flex-wrap gap-2 px-6 py-3 border-b border-gray-200 bg-gray-50 items-center">
+          <button onClick={() => editor.chain().focus().undo().run()} className="p-2">
+            ↺
+          </button>
+          <button onClick={() => editor.chain().focus().redo().run()} className="p-2">
+            ↻
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleBold().run()}
+            className={`p-2 font-bold ${editor.isActive("bold") ? "bg-blue-100" : ""}`}
+          >
+            B
+          </button>
+          <button
+            onClick={() => editor.chain().focus().toggleItalic().run()}
+            className={`p-2 italic ${editor.isActive("italic") ? "bg-blue-100" : ""}`}
+          >
+            I
+          </button>
+          <button onClick={() => editor.chain().focus().toggleBulletList().run()} className="p-2">
+            •
+          </button>
+          <button onClick={() => editor.chain().focus().toggleOrderedList().run()} className="p-2">
+            1.
+          </button>
+          <button
+            onClick={() => {
+              const url = prompt("Enter link URL");
+              if (url) editor.chain().focus().setLink({ href: url }).run();
+            }}
+            className="p-2"
+          >
+            🔗
+          </button>
+          <label className="cursor-pointer p-2">
+            🖼️
+            <input type="file" accept="image/*" hidden onChange={handleFileChange} />
+          </label>
+        </div>
+
+        {/* Editor */}
+        <div className="p-6 space-y-5 min-h-[400px]">
+          <div className="border border-gray-300 rounded-lg p-3 min-h-[200px]">
+            <EditorContent editor={editor} />
+          </div>
+
+          {uploadProgress !== null && (
+            <div className="w-full bg-gray-200 h-2 rounded mt-2">
+              <div
+                className="bg-green-600 h-2 rounded transition-all duration-300"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
+          >
+            {isSubmitting ? "Posting..." : "Publish"}
+          </Button>
+          <button onClick={() => setShowPreview(true)} className="px-4 py-2 rounded-md border font-semibold">
+            Preview
+          </button>
+        </div>
+      </div>
+
+      {/* Preview Modal */}
+      <PreviewModal open={showPreview} onClose={() => setShowPreview(false)} content={content} />
+    </>
+  );
+}
