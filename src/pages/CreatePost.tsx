@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { db, storage } from "@/lib/firebase";
@@ -58,10 +58,7 @@ export default function CreatePost() {
       ImageExtension,
     ],
     content: "",
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
-      setContent(html);
-    },
+    onUpdate: ({ editor }) => setContent(editor.getHTML()),
   });
 
   // --- Media Upload ---
@@ -72,17 +69,16 @@ export default function CreatePost() {
     reader.onload = async (e) => {
       const base64Src = e.target?.result as string;
 
-      // Insert temp image preview
+      // Insert temporary image while upload happens
       editor?.chain().focus().setImage({ src: base64Src }).run();
 
       try {
-        // Compress image
+        // Compress before uploading
         const compressed = await imageCompression(file, {
           maxSizeMB: 1,
           maxWidthOrHeight: 1920,
         });
 
-        // Upload to Firebase
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${compressed.name}`);
         const uploadTask = uploadBytesResumable(fileRef, compressed);
 
