@@ -20,19 +20,16 @@ import ImageExtension from "@tiptap/extension-image";
 function PreviewModal({ open, onClose, content }: { open: boolean; onClose: () => void; content: string }) {
   if (!open) return null;
 
+  const safeContent = content.replace(/<script.*?>.*?<\/script>/gi, "");
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
       <div className="bg-white max-w-2xl w-full rounded-lg shadow-xl p-6 relative overflow-y-auto max-h-[80vh]">
         <button onClick={onClose} className="absolute top-3 right-3 text-gray-600 hover:text-black text-xl">
           ✕
         </button>
         <h2 className="text-xl font-bold mb-4">Post Preview</h2>
-        <div
-          className="prose max-w-none"
-          dangerouslySetInnerHTML={{
-            __html: content.replace(/<script.*?>.*?<\/script>/gi, ""),
-          }}
-        />
+        <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: safeContent }} />
       </div>
     </div>
   );
@@ -51,7 +48,7 @@ export default function CreatePost() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
 
-  // --- TipTap Editor ---
+  // --- TipTap Editor Setup ---
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -73,6 +70,7 @@ export default function CreatePost() {
       const base64Src = e.target?.result as string;
       editor?.chain().focus().setImage({ src: base64Src }).run();
 
+      // Compress before uploading
       const compressed = await imageCompression(file, {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
@@ -94,7 +92,7 @@ export default function CreatePost() {
         async () => {
           const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
           editor?.chain().focus().setImage({ src: downloadURL }).run();
-          toast.success("✅ Image uploaded");
+          toast.success("Image uploaded successfully!");
           setUploadProgress(null);
         },
       );
@@ -117,7 +115,6 @@ export default function CreatePost() {
       navigate("/login");
       return;
     }
-
     if (!content.trim()) {
       toast.error("Please add some content first");
       return;
@@ -134,7 +131,7 @@ export default function CreatePost() {
         const fileRef = ref(storage, `posts/${currentUser.uid}/${Date.now()}_${uploadFile.name}`);
         const uploadTask = uploadBytesResumable(fileRef, uploadFile);
 
-        mediaUrl = await new Promise((resolve, reject) => {
+        mediaUrl = (await new Promise((resolve, reject) => {
           uploadTask.on(
             "state_changed",
             (snapshot) => {
@@ -147,7 +144,7 @@ export default function CreatePost() {
               resolve(url);
             },
           );
-        });
+        })) as string;
       }
 
       const postData = {
@@ -155,16 +152,16 @@ export default function CreatePost() {
         userName: currentUser.displayName || "Anonymous",
         userAvatar: currentUser.photoURL || "",
         content,
-        mediaUrl,
-        timestamp: serverTimestamp(),
-        likes: [],
-        comments: [],
+        imageUrl: mediaUrl || null,
+        createdAt: serverTimestamp(),
+        likes: 0,
+        commentsCount: 0,
       };
 
       await addDoc(collection(db, "posts"), postData);
       toast.success("✅ Post created successfully!");
       navigate(returnTo);
-    } catch (error) {
+    } catch (error: any) {
       console.error("❌ Error creating post:", error);
       toast.error("Failed to create post. Try again.");
     } finally {
@@ -173,6 +170,7 @@ export default function CreatePost() {
     }
   };
 
+  // --- Render ---
   if (!editor) return <div className="p-6 text-center">Loading editor...</div>;
 
   return (
@@ -233,24 +231,21 @@ export default function CreatePost() {
               <div
                 className="bg-green-600 h-2 rounded transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
-              />
+              ></div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0 items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg"
           >
             {isSubmitting ? "Posting..." : "Publish"}
           </Button>
-          <button
-            onClick={() => setShowPreview(true)}
-            className="px-4 py-2 rounded-md border font-semibold w-full sm:w-auto"
-          >
+          <button onClick={() => setShowPreview(true)} className="px-4 py-2 rounded-md border font-semibold">
             Preview
           </button>
         </div>
