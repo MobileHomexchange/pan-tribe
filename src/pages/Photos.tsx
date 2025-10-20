@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PhotoGalleryModal, Photo } from "@/components/PhotoGalleryModal";
+import { DashboardSidebar } from "@/components/home/DashboardSidebar";
 import { cn } from "@/lib/utils";
 
 export default function Photos() {
@@ -11,6 +12,7 @@ export default function Photos() {
   const [selectedAlbum, setSelectedAlbum] = useState<string | null>(null);
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0);
+  const [dashboardOpen, setDashboardOpen] = useState(false);
 
   // Mock photo data
   const photos: Photo[] = [
@@ -76,8 +78,14 @@ export default function Photos() {
   };
 
   return (
-    <Layout>
-      <div className="max-w-6xl mx-auto px-6 py-8">
+    <>
+      <DashboardSidebar 
+        isOpen={dashboardOpen} 
+        onClose={() => setDashboardOpen(false)} 
+      />
+      
+      <Layout onDashboardToggle={() => setDashboardOpen(true)}>
+        <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-4">Photos</h1>
@@ -187,5 +195,6 @@ export default function Photos() {
         />
       </div>
     </Layout>
+    </>
   );
 }
