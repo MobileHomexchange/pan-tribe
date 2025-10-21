@@ -40,6 +40,7 @@
         padding-top: 60px;
       }
 
+      /* Header */
       header {
         background: linear-gradient(to right, var(--charcoal), #34495e);
         color: white;
@@ -168,6 +169,7 @@
         text-align: center;
       }
 
+      /* Ad Sidebar */
       .ad-sidebar {
         width: 25%;
         padding: 20px;
@@ -235,6 +237,7 @@
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
       }
 
+      /* Dashboard */
       .dashboard-sidebar {
         position: fixed;
         top: 0;
@@ -327,15 +330,278 @@
         text-align: center;
       }
 
-      /* other content styles stay unchanged ... */
+      /* Main Content */
+      .main-content {
+        width: 75%;
+        padding: 20px;
+      }
+
+      .stats-container {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+      }
+
+      .stat-item {
+        background-color: white;
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+        flex: 1;
+        margin: 0 5px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .stat-value {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--terracotta);
+        margin-bottom: 5px;
+      }
+
+      .stat-label {
+        font-size: 12px;
+        color: var(--dark-gray);
+      }
+
+      /* Sticky Post Creator */
+      .sticky-post-creator {
+        position: sticky;
+        top: 80px;
+        z-index: 99;
+        background-color: var(--light-gray);
+        padding: 10px 0 20px;
+        margin-bottom: 10px;
+      }
+
+      .create-post {
+        background-color: white;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+
+      .post-input {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+      }
+
+      .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--sage);
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+      }
+
+      .post-input input {
+        flex: 1;
+        padding: 12px 15px;
+        border-radius: 20px;
+        border: 1px solid var(--light-gray);
+        background-color: var(--light-gray);
+        font-size: 14px;
+      }
+
+      .post-actions {
+        display: flex;
+        justify-content: space-around;
+        border-top: 1px solid var(--light-gray);
+        padding-top: 10px;
+      }
+
+      .post-action {
+        display: flex;
+        align-items: center;
+        padding: 5px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .post-action:hover {
+        background-color: var(--light-gray);
+      }
+
+      .post-action-icon {
+        margin-right: 8px;
+        font-size: 18px;
+      }
+
+      .live-video .post-action-icon {
+        color: #e74c3c;
+      }
+
+      .photo-video .post-action-icon {
+        color: var(--forest);
+      }
+
+      .feeling-activity .post-action-icon {
+        color: var(--amber);
+      }
+
+      /* Blog Cards */
+      .blog-card {
+        background-color: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        margin-bottom: 20px;
+        transition: transform 0.3s, box-shadow 0.3s;
+      }
+
+      .blog-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .blog-card-header {
+        padding: 15px;
+        display: flex;
+        align-items: center;
+      }
+
+      .blog-author-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--sage);
+        margin-right: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+      }
+
+      .blog-author-info {
+        flex: 1;
+      }
+
+      .blog-author-name {
+        font-weight: 500;
+        margin-bottom: 3px;
+      }
+
+      .blog-post-date {
+        font-size: 12px;
+        color: var(--dark-gray);
+      }
+
+      .blog-category {
+        background-color: var(--terracotta);
+        color: white;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .blog-card-image {
+        height: 200px;
+        background-color: var(--sage);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .blog-card-content {
+        padding: 15px;
+      }
+
+      .blog-card-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: var(--charcoal);
+      }
+
+      .blog-card-excerpt {
+        font-size: 14px;
+        color: var(--dark-gray);
+        margin-bottom: 15px;
+        line-height: 1.5;
+      }
+
+      .blog-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        border-top: 1px solid var(--light-gray);
+      }
+
+      .reaction-icon {
+        margin-right: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .reaction-icon:hover {
+        transform: scale(1.2);
+      }
+
+      .flame-icon {
+        color: var(--terracotta);
+      }
+
+      .comment-icon {
+        color: var(--forest);
+      }
+
+      .share-icon {
+        color: var(--amber);
+      }
+
+      .blog-read-more {
+        color: var(--terracotta);
+        font-weight: 500;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .blog-read-more::after {
+        content: "→";
+        margin-left: 5px;
+        transition: transform 0.3s;
+      }
+
+      .blog-card:hover .blog-read-more::after {
+        transform: translateX(3px);
+      }
+
+      @media (max-width: 992px) {
+        .container {
+          flex-direction: column;
+        }
+        .ad-sidebar,
+        .main-content {
+          width: 100%;
+          position: static;
+        }
+        .ad-sidebar {
+          height: auto;
+          margin-bottom: 20px;
+        }
+      }
     </style>
   </head>
+
   <body>
-    <!-- header -->
     <header>
       <div class="header-container">
         <div class="logo"><span class="logo-icon">🔥</span>Tribe Pulse</div>
-        <div class="search-bar"><input type="text" placeholder="Search Tribe Pulse..." /></div>
+        <div class="search-bar">
+          <input type="text" placeholder="Search Tribe Pulse..." />
+        </div>
         <div class="nav-icons">
           <div class="nav-icon">🔔</div>
           <div class="nav-icon">💬</div>
@@ -356,27 +622,22 @@
       </div>
     </header>
 
-    <!-- dashboard -->
     <div class="dashboard-overlay" id="dashboardOverlay"></div>
     <div class="dashboard-sidebar" id="dashboardSidebar">
       <div class="dashboard-close" id="dashboardClose">×</div>
       <h2 class="dashboard-title"><span>📊</span>Dashboard</h2>
-
       <div class="dashboard-section">
         <h3 class="dashboard-section-title"><span>👥</span>Tribe Management</h3>
         <div class="dashboard-item"><span class="dashboard-item-icon">📈</span>Member Analytics</div>
         <div class="dashboard-item"><span class="dashboard-item-icon">📢</span>Announcements</div>
         <div class="dashboard-item"><span class="dashboard-item-icon">🛡️</span>Moderation Tools</div>
       </div>
-
       <div class="dashboard-section">
         <h3 class="dashboard-section-title"><span>📈</span>Growth Tools</h3>
         <div class="dashboard-item"><span class="dashboard-item-icon">🎯</span>Targeting Options</div>
         <div class="dashboard-item"><span class="dashboard-item-icon">📣</span>Promotion Tools</div>
         <div class="dashboard-item"><span class="dashboard-item-icon">📊</span>Conversion Tracking</div>
       </div>
-
-      <!-- replaced section -->
       <div class="dashboard-section">
         <h3 class="dashboard-section-title"><span>⭐</span>Quick Access</h3>
         <div class="dashboard-menu-item"><span class="dashboard-menu-icon">👥</span>Friends</div>
@@ -386,31 +647,114 @@
         <div class="dashboard-menu-item"><span class="dashboard-menu-icon">📅</span>Events</div>
         <div class="dashboard-menu-item"><span class="dashboard-menu-icon">💰</span>Ads Manager</div>
       </div>
-
       <div class="dashboard-section">
         <h3 class="dashboard-section-title"><span>📅</span>Upcoming Events</h3>
-        <div class="event-item">
-          <span class="event-icon">🔥</span>
-          <div class="event-name">Digital Campfire: Storytelling Night</div>
-        </div>
-        <div class="event-item">
-          <span class="event-icon">🌱</span>
-          <div class="event-name">Tribe Growth Workshop</div>
-        </div>
-        <div class="event-item">
-          <span class="event-icon">🌟</span>
-          <div class="event-name">Community Leaders Summit</div>
-        </div>
+        <div class="event-item"><span class="event-icon">🔥</span>Digital Campfire: Storytelling Night</div>
+        <div class="event-item"><span class="event-icon">🌱</span>Tribe Growth Workshop</div>
+        <div class="event-item"><span class="event-icon">🌟</span>Community Leaders Summit</div>
       </div>
     </div>
 
-    <!-- main content left intact from sticky post version ... -->
-    <!-- (you can keep your blog cards, sticky post creator, etc. unchanged here) -->
+    <div class="container">
+      <div class="main-content">
+        <div class="sticky-post-creator">
+          <div class="create-post">
+            <div class="post-input">
+              <div class="user-avatar">K</div>
+              <input type="text" placeholder="What's on your mind, Kevin?" />
+            </div>
+            <div class="post-actions">
+              <div class="post-action live-video"><span class="post-action-icon">🎥</span>Live Video</div>
+              <div class="post-action photo-video"><span class="post-action-icon">📷</span>Photo/Video</div>
+              <div class="post-action feeling-activity"><span class="post-action-icon">😊</span>Feeling/Activity</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-container">
+          <div class="stat-item">
+            <div class="stat-value">2.3K</div>
+            <div class="stat-label">Followers</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">482</div>
+            <div class="stat-label">Active Tribes</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value">96%</div>
+            <div class="stat-label">Engagement</div>
+          </div>
+        </div>
+
+        <div class="blog-card">
+          <div class="blog-card-header">
+            <div class="blog-author-avatar">S</div>
+            <div class="blog-author-info">
+              <div class="blog-author-name">Sashay</div>
+              <div class="blog-post-date">2 hours ago</div>
+            </div>
+            <div class="blog-category">Inspiration</div>
+          </div>
+          <div class="blog-card-content">
+            <div class="blog-card-title">Finding Strength in Community</div>
+            <div class="blog-card-excerpt">
+              Every connection adds a spark to your journey. Together, we build more than just a following — we create a
+              movement.
+            </div>
+          </div>
+          <div class="blog-card-footer">
+            <div>
+              <span class="reaction-icon flame-icon">🔥</span>
+              <span class="reaction-icon comment-icon">💬</span>
+              <span class="reaction-icon share-icon">🔗</span>
+            </div>
+            <div class="blog-read-more">Read More</div>
+          </div>
+        </div>
+
+        <div class="blog-card">
+          <div class="blog-card-header">
+            <div class="blog-author-avatar">K</div>
+            <div class="blog-author-info">
+              <div class="blog-author-name">Kevin</div>
+              <div class="blog-post-date">1 day ago</div>
+            </div>
+            <div class="blog-category">Business</div>
+          </div>
+          <div class="blog-card-content">
+            <div class="blog-card-title">The Art of Tribal Growth</div>
+            <div class="blog-card-excerpt">
+              Growth doesn’t happen by chance. It’s the result of shared purpose, trust, and staying true to your
+              tribe’s vision.
+            </div>
+          </div>
+          <div class="blog-card-footer">
+            <div>
+              <span class="reaction-icon flame-icon">🔥</span>
+              <span class="reaction-icon comment-icon">💬</span>
+              <span class="reaction-icon share-icon">🔗</span>
+            </div>
+            <div class="blog-read-more">Read More</div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="ad-sidebar">
+        <div class="ad-banner">
+          <div class="ad-banner-icon">🚀</div>
+          <div class="ad-banner-title">Grow Your Tribe!</div>
+          <div class="ad-banner-description">
+            Empower your community and reach more members with AI-powered engagement tools.
+          </div>
+          <div class="ad-banner-cta">Boost Now</div>
+        </div>
+      </aside>
+    </div>
 
     <script>
       const profileDropdown = document.querySelector(".profile-dropdown");
       const dropdownMenu = document.querySelector(".dropdown-menu");
-      profileDropdown.addEventListener("click", e => {
+      profileDropdown.addEventListener("click", (e) => {
         e.stopPropagation();
         dropdownMenu.classList.toggle("active");
       });
