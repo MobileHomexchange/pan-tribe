@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Image, Video } from "lucide-react";
+import { Image, Video, Smile } from "lucide-react";
 
 interface CreatePostInputProps {
   userAvatar: string;
@@ -29,8 +29,8 @@ export function CreatePostInput({ userAvatar, onCreatePost }: CreatePostInputPro
           onClick={onCreatePost}
           className="flex-1 gap-2 hover:bg-social-hover"
         >
-          <Image className="w-5 h-5 text-primary" />
-          <span className="text-foreground">Photo</span>
+          <Video className="w-5 h-5 text-destructive" />
+          <span className="text-foreground">Live Video</span>
         </Button>
         <Button
           variant="ghost"
@@ -38,8 +38,17 @@ export function CreatePostInput({ userAvatar, onCreatePost }: CreatePostInputPro
           onClick={onCreatePost}
           className="flex-1 gap-2 hover:bg-social-hover"
         >
-          <Video className="w-5 h-5 text-destructive" />
-          <span className="text-foreground">Video</span>
+          <Image className="w-5 h-5 text-primary" />
+          <span className="text-foreground">Photo/Video</span>
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onCreatePost}
+          className="flex-1 gap-2 hover:bg-social-hover"
+        >
+          <Smile className="w-5 h-5 text-amber" />
+          <span className="text-foreground">Feeling/Activity</span>
         </Button>
       </div>
     </div>

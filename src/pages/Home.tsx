@@ -4,7 +4,6 @@ import { CreatePostInput } from "@/components/home/CreatePostInput";
 import { PostCard } from "@/components/home/PostCard";
 import { LiveSessionCard } from "@/components/home/LiveSessionCard";
 import { DashboardSidebar } from "@/components/home/DashboardSidebar";
-import { DashboardBanner } from "@/components/home/DashboardBanner";
 import { GrowYourTribeCard } from "@/components/home/GrowYourTribeCard";
 import { StatsCards } from "@/components/home/StatsCards";
 import { collection, query, orderBy, onSnapshot, limit, where, getDocs } from "firebase/firestore";
@@ -133,18 +132,8 @@ export default function Home() {
 
       <Layout onDashboardToggle={() => setDashboardOpen(true)}>
         <div className="min-h-screen bg-gradient-to-b from-cream/30 to-white pt-6">
-          <div className="max-w-7xl mx-auto flex gap-6 px-4 py-6">
-            {/* LEFT SIDEBAR (25% width) - Hidden on mobile */}
-            <aside className="hidden lg:flex lg:flex-col w-80 flex-shrink-0 space-y-4 sticky top-24 h-fit">
-              {/* Dashboard Banner (Orange) */}
-              <DashboardBanner onOpenDashboard={() => setDashboardOpen(true)} />
-
-              {/* Grow Your Tribe Card (Green) */}
-              <GrowYourTribeCard />
-            </aside>
-
-            {/* MAIN CONTENT (75% width) */}
-            <main className="flex-1 min-w-0 space-y-4">
+          <div className="max-w-3xl mx-auto px-4 py-6">
+            <div className="space-y-5">
               {/* Stats Cards */}
               <StatsCards 
                 tribeMembers={stats.tribeMembers}
@@ -152,13 +141,14 @@ export default function Home() {
                 newPosts={stats.newPosts}
               />
 
-              {/* Create Post Input (Sticky) */}
-              <div className="sticky top-20 z-10 bg-gradient-to-b from-cream/30 to-background pb-4">
-                <CreatePostInput
-                  userAvatar={currentUser?.photoURL || ""}
-                  onCreatePost={() => navigate("/create-post")}
-                />
-              </div>
+              {/* Grow Your Tribe Banner */}
+              <GrowYourTribeCard />
+
+              {/* Create Post Input */}
+              <CreatePostInput
+                userAvatar={currentUser?.photoURL || ""}
+                onCreatePost={() => navigate("/create-post")}
+              />
 
               {/* Live Sessions Block */}
               {liveSessions.length > 0 && (
@@ -197,7 +187,7 @@ export default function Home() {
                   ))}
                 </div>
               )}
-            </main>
+            </div>
           </div>
         </div>
       </Layout>
