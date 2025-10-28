@@ -16,6 +16,7 @@ import { TribeFeed } from "@/components/tribe/TribeFeed";
 import { TribeAdBanner } from "@/components/tribe/TribeAdBanner";
 import { LiveNowCard } from "@/components/tribe/dashboard/LiveNowCard";
 import { SuggestedTribesCard } from "@/components/tribe/dashboard/SuggestedTribesCard";
+import { DashboardSidebar } from "@/components/home/DashboardSidebar";
 
 interface TribeData {
   id: string;
@@ -77,6 +78,7 @@ export default function MyTribe() {
   const [loading, setLoading] = useState(true);
   const [activeSessions, setActiveSessions] = useState<LiveSession[]>([]);
   const [pastSessions, setPastSessions] = useState<PastSession[]>([]);
+  const [dashboardOpen, setDashboardOpen] = useState(false);
   const [userTribes] = useState([
     { id: "tech", name: "Tech Innovators", memberCount: 234 },
     { id: "music", name: "African Beats", memberCount: 567 },
@@ -283,7 +285,8 @@ export default function MyTribe() {
   }
 
   return (
-    <Layout>
+    <Layout onDashboardToggle={() => setDashboardOpen(true)}>
+      <DashboardSidebar isOpen={dashboardOpen} onClose={() => setDashboardOpen(false)} />
       <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
         <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
           
