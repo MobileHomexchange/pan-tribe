@@ -1,5 +1,6 @@
 import React from "react";
-import { Menu } from "lucide-react";
+import { Menu, Home } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface TopBarProps {
   onMenuToggle?: () => void;
@@ -7,6 +8,8 @@ interface TopBarProps {
 }
 
 export function TopBar({ onMenuToggle, onDashboardToggle }: TopBarProps) {
+  const navigate = useNavigate();
+  
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm">
       <div className="flex items-center justify-between px-4 sm:px-6 py-3">
@@ -26,6 +29,14 @@ export function TopBar({ onMenuToggle, onDashboardToggle }: TopBarProps) {
 
         {/* Right - Dashboard / Actions */}
         <div className="flex items-center space-x-2">
+          <button
+            onClick={() => navigate('/home')}
+            className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-medium px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors"
+            aria-label="Go to Home"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Home</span>
+          </button>
           <button
             onClick={onDashboardToggle}
             className="hidden sm:inline-flex bg-blue-600 text-white text-sm font-medium px-3 py-1.5 rounded-md hover:bg-blue-700 transition-colors"
