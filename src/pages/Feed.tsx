@@ -7,6 +7,8 @@ import Composer from "../components/Composer";
 import ActionsBar from "../components/ActionsBar";
 import Feed from "../components/Feed";
 import PromoCard from "../components/PromoCard";
+import AdSense from "../components/ads/AdSense";
+import HouseAd from "../components/ads/HouseAd";
 
 // If you keep separate CSS, keep this import. Otherwise you can remove it.
 // import "../styles/Feed.css";
@@ -49,9 +51,20 @@ export default function FeedPage() {
       {/* Full-bleed hero (uses /public/images/hero-grow-your-tribe.png) */}
       <FullBleedHero />
 
+      {/* Leaderboard Ad */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 mt-4 mb-2">
+        <div className="flex justify-center">
+          <AdSense
+            slot="YOUR_LEADERBOARD_SLOT_ID"
+            className="w-full"
+            style={{ display: "block", minHeight: 90 }}
+          />
+        </div>
+      </div>
+
       {/* Top bar with a Dashboard button to open the sidebar */}
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="mt-4 mb-2 flex justify-end">
+        <div className="mb-2 flex justify-end">
           <button id="dashboardOpen" className="rounded-lg border px-3 py-2 bg-white hover:bg-gray-50">
             📊 Dashboard
           </button>
@@ -72,12 +85,38 @@ export default function FeedPage() {
           <div className="order-2 md:order-1 md:col-span-2">
             <Composer />
             <ActionsBar />
+            
+            {/* Optional In-Feed Ad */}
+            <div className="my-4">
+              <AdSense
+                slot="YOUR_INFEED_SLOT_ID"
+                format="fluid"
+                layoutKey="-gw-3+1f-3d+2z"
+                className="w-full"
+                style={{ display: "block" }}
+              />
+            </div>
+            
             <Feed />
           </div>
 
-          {/* Right column: promo card */}
-          <div className="order-1 md:order-2">
+          {/* Right column: promo card + ads */}
+          <div className="order-1 md:order-2 space-y-4">
             <PromoCard />
+            
+            {/* House Ad */}
+            <HouseAd
+              href="https://your-offer.example.com"
+              img="/ads/house-300x250.jpg"
+              alt="Your Offer"
+            />
+            
+            {/* AdSense Rectangle */}
+            <AdSense
+              slot="YOUR_RECTANGLE_SLOT_ID"
+              className="w-full"
+              style={{ display: "block", minHeight: 250 }}
+            />
           </div>
         </div>
       </div>

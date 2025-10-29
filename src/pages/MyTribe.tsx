@@ -17,6 +17,8 @@ import { TribeAdBanner } from "@/components/tribe/TribeAdBanner";
 import { LiveNowCard } from "@/components/tribe/dashboard/LiveNowCard";
 import { SuggestedTribesCard } from "@/components/tribe/dashboard/SuggestedTribesCard";
 import { DashboardSidebar } from "@/components/home/DashboardSidebar";
+import AdSense from "@/components/ads/AdSense";
+import HouseAd from "@/components/ads/HouseAd";
 
 interface TribeData {
   id: string;
@@ -288,7 +290,18 @@ export default function MyTribe() {
     <Layout onDashboardToggle={() => setDashboardOpen(true)}>
       <DashboardSidebar isOpen={dashboardOpen} onClose={() => setDashboardOpen(false)} />
       <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
-        <div className="max-w-[1920px] mx-auto flex gap-6 px-4 py-6">
+        {/* Leaderboard Ad */}
+        <div className="max-w-[1920px] mx-auto px-4 pt-6">
+          <div className="flex justify-center mb-6">
+            <AdSense
+              slot="YOUR_LEADERBOARD_SLOT_ID"
+              className="w-full"
+              style={{ display: "block", minHeight: 90 }}
+            />
+          </div>
+        </div>
+        
+        <div className="max-w-[1920px] mx-auto flex gap-6 px-4 pb-6">
           
           {/* LEFT COLUMN - Sessions & Memberships */}
           <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit">
@@ -362,6 +375,20 @@ export default function MyTribe() {
           
           {/* RIGHT COLUMN - Active Sessions, Live Now, Suggested Tribes */}
           <aside className="hidden lg:block w-80 space-y-4 sticky top-24 h-fit max-h-[calc(100vh-8rem)]">
+            {/* House Ad */}
+            <HouseAd
+              href="https://your-offer.example.com"
+              img="/ads/house-300x250.jpg"
+              alt="Your Offer"
+            />
+            
+            {/* AdSense Rectangle */}
+            <AdSense
+              slot="YOUR_RECTANGLE_SLOT_ID"
+              className="w-full"
+              style={{ display: "block", minHeight: 250 }}
+            />
+            
             {/* Active Sessions */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-foreground px-2">Active Sessions</h3>
