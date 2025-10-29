@@ -5,7 +5,7 @@ export default function PromoCard() {
       <p className="mt-2 text-sm opacity-90">
         Reach more like-minded people with our premium community growth tools and analytics.
       </p>
-      <button className="mt-4 rounded-lg bg-white/90 px-4 py-2 text-gray-900 hover:bg-white">
+      <button className="mt-4 rounded-lg bg-white/90 px-4 py-2 text-gray-900 hover:bg-white transition">
         Get Started
       </button>
     </div>
