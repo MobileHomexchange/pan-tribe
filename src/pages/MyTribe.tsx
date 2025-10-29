@@ -19,6 +19,7 @@ import { SuggestedTribesCard } from "@/components/tribe/dashboard/SuggestedTribe
 import { DashboardSidebar } from "@/components/home/DashboardSidebar";
 import AdSense from "@/components/ads/AdSense";
 import HouseAd from "@/components/ads/HouseAd";
+import FullBleedHero from "@/components/FullBleedHero";
 
 interface TribeData {
   id: string;
@@ -289,6 +290,7 @@ export default function MyTribe() {
   return (
     <Layout onDashboardToggle={() => setDashboardOpen(true)}>
       <DashboardSidebar isOpen={dashboardOpen} onClose={() => setDashboardOpen(false)} />
+      <FullBleedHero />
       <div className="min-h-screen bg-gradient-to-b from-light-green to-background">
         {/* Leaderboard Ad */}
         <div className="max-w-[1920px] mx-auto px-4 pt-6">

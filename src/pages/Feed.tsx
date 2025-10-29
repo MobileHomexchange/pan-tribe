@@ -14,7 +14,6 @@ import HouseAd from "../components/ads/HouseAd";
 // import "../styles/Feed.css";
 
 export default function FeedPage() {
-  // Tiny script to open/close the dashboard sidebar
   useEffect(() => {
     const overlay = document.getElementById("dashboardOverlay");
     const sidebar = document.getElementById("dashboardSidebar");
@@ -47,8 +46,7 @@ export default function FeedPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gray-50">
-      {/* Full-bleed hero (uses /public/images/hero-grow-your-tribe.png) */}
+    <main className="min-h-screen bg-background">
       <FullBleedHero />
 
       {/* Leaderboard Ad */}

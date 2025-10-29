@@ -9,7 +9,7 @@ import HouseAd from "../components/ads/HouseAd";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-background">
       <FullBleedHero />
       
       {/* Leaderboard Ad */}

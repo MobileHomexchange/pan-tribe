@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MessageCircle, Share2, Flame } from "lucide-react";
 import AdSense from "@/components/ads/AdSense";
+import FullBleedHero from "@/components/FullBleedHero";
 
 interface Post {
   id: string;
@@ -116,6 +117,8 @@ export default function Home() {
 
       <Layout onDashboardToggle={() => setDashboardOpen(true)}>
         <div className="min-h-screen bg-background">
+          <FullBleedHero />
+          
           {/* Single Column Layout */}
           <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
             
