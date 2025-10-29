@@ -1,5 +1,3 @@
-import { Users, Activity, MessageSquare } from "lucide-react";
-
 interface StatsCardsProps {
   tribeMembers: number;
   activeNow: number;
@@ -10,17 +8,14 @@ export function StatsCards({ tribeMembers, activeNow, newPosts }: StatsCardsProp
   return (
     <div className="grid grid-cols-3 gap-4">
       <StatCard
-        icon={<Users className="w-5 h-5 text-terracotta" />}
         value={formatNumber(tribeMembers)}
         label="Tribe Members"
       />
       <StatCard
-        icon={<Activity className="w-5 h-5 text-forest" />}
         value={formatNumber(activeNow)}
         label="Active Now"
       />
       <StatCard
-        icon={<MessageSquare className="w-5 h-5 text-amber" />}
         value={formatNumber(newPosts)}
         label="New Posts"
       />
@@ -29,17 +24,15 @@ export function StatsCards({ tribeMembers, activeNow, newPosts }: StatsCardsProp
 }
 
 interface StatCardProps {
-  icon: React.ReactNode;
   value: string;
   label: string;
 }
 
-function StatCard({ icon, value, label }: StatCardProps) {
+function StatCard({ value, label }: StatCardProps) {
   return (
-    <div className="bg-white rounded-xl p-4 text-center shadow-sm hover:shadow-md transition-all hover:-translate-y-1">
-      <div className="flex items-center justify-center mb-2">{icon}</div>
-      <div className="text-3xl font-bold text-charcoal mb-1">{value}</div>
-      <div className="text-xs text-muted-foreground font-medium">{label}</div>
+    <div className="bg-card rounded-xl p-6 text-center shadow hover:shadow-md transition-all">
+      <div className="text-4xl font-bold text-primary mb-2">{value}</div>
+      <div className="text-sm text-muted-foreground font-medium">{label}</div>
     </div>
   );
 }

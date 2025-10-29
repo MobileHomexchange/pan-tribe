@@ -4,10 +4,13 @@ import { Image, Video, Smile } from "lucide-react";
 
 interface CreatePostInputProps {
   userAvatar: string;
+  userName?: string;
   onCreatePost: () => void;
 }
 
-export function CreatePostInput({ userAvatar, onCreatePost }: CreatePostInputProps) {
+export function CreatePostInput({ userAvatar, userName, onCreatePost }: CreatePostInputProps) {
+  const displayName = userName || "John";
+  
   return (
     <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4">
       <div className="flex items-center gap-3 mb-4">
@@ -19,7 +22,7 @@ export function CreatePostInput({ userAvatar, onCreatePost }: CreatePostInputPro
           onClick={onCreatePost}
           className="flex-1 text-left px-4 py-3 bg-background rounded-full text-muted-foreground hover:bg-social-hover transition-colors cursor-pointer"
         >
-          What's on your mind?
+          What's on your mind, {displayName}?
         </button>
       </div>
       <div className="flex items-center justify-around pt-3 border-t border-border">

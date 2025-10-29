@@ -1,18 +1,17 @@
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { CreatePostInput } from "@/components/home/CreatePostInput";
-import { PostCard } from "@/components/home/PostCard";
-import { LiveSessionCard } from "@/components/home/LiveSessionCard";
 import { DashboardSidebar } from "@/components/home/DashboardSidebar";
-import { DashboardBanner } from "@/components/home/DashboardBanner";
 import { GrowYourTribeCard } from "@/components/home/GrowYourTribeCard";
 import { StatsCards } from "@/components/home/StatsCards";
-import { collection, query, orderBy, onSnapshot, limit, where, getDocs } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/contexts/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { MessageCircle, Share2, Flame } from "lucide-react";
+import AdSense from "@/components/ads/AdSense";
 
 interface Post {
   id: string;
@@ -21,6 +20,9 @@ interface Post {
   userAvatar: string;
   tribeId?: string;
   content: string;
+  title?: string;
+  category?: string;
+  readTime?: string;
   mediaUrl?: string;
   mediaType?: string;
   likes: number;
@@ -28,32 +30,19 @@ interface Post {
   timestamp: any;
 }
 
-interface TribeSession {
-  id: string;
-  tribeId: string;
-  tribeName: string;
-  hostId: string;
-  hostName: string;
-  roomName: string;
-  status: string;
-  participantCount: number;
-  startTime: any;
-}
-
 export default function Home() {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
   const [dashboardOpen, setDashboardOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
-  const [liveSessions, setLiveSessions] = useState<TribeSession[]>([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
+  const [stats] = useState({
     tribeMembers: 1200,
     activeNow: 245,
     newPosts: 89,
   });
 
-  // Fetch real-time posts
+  // Fetch real-time posts with mock blog data
   useEffect(() => {
     const postsQuery = query(
       collection(db, "posts"),
@@ -62,10 +51,45 @@ export default function Home() {
     );
 
     const unsubscribe = onSnapshot(postsQuery, (snapshot) => {
-      const postsData = snapshot.docs.map((doc) => ({
+      let postsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       })) as Post[];
+      
+      // Add mock blog-style data if empty
+      if (postsData.length === 0) {
+        postsData = [
+          {
+            id: "1",
+            userId: "tribe-pulse",
+            userName: "Tribe Pulse",
+            userAvatar: "",
+            title: "Building Stronger Communities in the Digital Age",
+            content: "Discover how modern tribes are forming around shared interests and values online, creating meaningful connections that transcend geographical boundaries.",
+            category: "Community",
+            readTime: "5 min read",
+            mediaUrl: "",
+            likes: 0,
+            comments: 0,
+            timestamp: new Date("2023-04-12"),
+          },
+          {
+            id: "2",
+            userId: "maya-sharma",
+            userName: "Maya Sharma",
+            userAvatar: "",
+            title: "The Art of Digital Storytelling",
+            content: "Learn how to craft compelling narratives that resonate with your audience and build authentic connections in the digital space.",
+            category: "Culture",
+            readTime: "8 min read",
+            mediaUrl: "",
+            likes: 0,
+            comments: 0,
+            timestamp: new Date("2023-04-10"),
+          },
+        ];
+      }
+      
       setPosts(postsData);
       setLoading(false);
     });
@@ -73,131 +97,157 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch real-time live sessions
-  useEffect(() => {
-    const sessionsQuery = query(
-      collection(db, "tribeSessions"),
-      orderBy("startTime", "desc"),
-      limit(10)
-    );
+  const formatDate = (timestamp: any) => {
+    if (!timestamp) return "";
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  };
 
-    const unsubscribe = onSnapshot(sessionsQuery, (snapshot) => {
-      const sessionsData = snapshot.docs
-        .map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }))
-        .filter((session: any) => session.status === "live") as TribeSession[];
-      setLiveSessions(sessionsData);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  // Fetch stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        // Get total members
-        const usersSnapshot = await getDocs(collection(db, "users"));
-        
-        // Get today's posts
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayPostsQuery = query(
-          collection(db, "posts"),
-          where("timestamp", ">=", today)
-        );
-        const todayPostsSnapshot = await getDocs(todayPostsQuery);
-
-        setStats({
-          tribeMembers: usersSnapshot.size || 1200,
-          activeNow: Math.floor(Math.random() * 300) + 200, // Simulated for now
-          newPosts: todayPostsSnapshot.size || 89,
-        });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      }
-    };
-
-    fetchStats();
-  }, []);
+  const getInitials = (name: string) => {
+    return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  };
 
   return (
     <>
-      {/* Dashboard Sidebar (Overlay) */}
       <DashboardSidebar 
         isOpen={dashboardOpen} 
         onClose={() => setDashboardOpen(false)} 
       />
 
       <Layout onDashboardToggle={() => setDashboardOpen(true)}>
-        <div className="min-h-screen bg-gradient-to-b from-cream/30 to-white pt-6">
-          <div className="max-w-7xl mx-auto flex gap-6 px-4 py-6">
-            {/* LEFT SIDEBAR (25% width) - Hidden on mobile */}
-            <aside className="hidden lg:flex lg:flex-col w-80 flex-shrink-0 space-y-4 sticky top-24 h-fit">
-              {/* Dashboard Banner (Orange) */}
-              <DashboardBanner onOpenDashboard={() => setDashboardOpen(true)} />
+        <div className="min-h-screen bg-background">
+          {/* Single Column Layout */}
+          <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+            
+            {/* Leaderboard Ad */}
+            <div className="flex justify-center">
+              <AdSense
+                slot="YOUR_LEADERBOARD_SLOT_ID"
+                className="w-full"
+                style={{ display: "block", minHeight: 90 }}
+              />
+            </div>
 
-              {/* Grow Your Tribe Card (Green) */}
-              <GrowYourTribeCard />
-            </aside>
+            {/* Grow Your Tribe Card - Full Width */}
+            <GrowYourTribeCard />
 
-            {/* MAIN CONTENT (75% width) */}
-            <main className="flex-1 min-w-0 space-y-4">
-              {/* Stats Cards + Create Post (Sticky) */}
-              <div className="sticky top-20 z-10 bg-gradient-to-b from-cream/30 to-background pb-4 space-y-4">
-                <StatsCards 
-                  tribeMembers={stats.tribeMembers}
-                  activeNow={stats.activeNow}
-                  newPosts={stats.newPosts}
-                />
+            {/* Stats Cards */}
+            <StatsCards 
+              tribeMembers={stats.tribeMembers}
+              activeNow={stats.activeNow}
+              newPosts={stats.newPosts}
+            />
 
-                {/* Create Post Input */}
-                <CreatePostInput
-                  userAvatar={currentUser?.photoURL || ""}
-                  onCreatePost={() => navigate("/create-post")}
-                />
+            {/* Create Post Input */}
+            <CreatePostInput
+              userAvatar={currentUser?.photoURL || ""}
+              userName={currentUser?.displayName || ""}
+              onCreatePost={() => navigate("/create-post")}
+            />
+
+            {/* Optional In-Feed Ad */}
+            <div className="my-4">
+              <AdSense
+                slot="YOUR_INFEED_SLOT_ID"
+                format="fluid"
+                layoutKey="-gw-3+1f-3d+2z"
+                className="w-full"
+                style={{ display: "block" }}
+              />
+            </div>
+
+            {/* Blog-Style Posts Feed */}
+            {loading ? (
+              <div className="text-center py-12 text-muted-foreground">
+                Loading posts...
               </div>
+            ) : posts.length === 0 ? (
+              <div className="bg-card rounded-lg shadow p-12 text-center">
+                <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {posts.map((post, index) => (
+                  <div key={post.id}>
+                    {/* Blog Post Card */}
+                    <article className="bg-card rounded-lg shadow overflow-hidden hover:shadow-lg transition-shadow">
+                      {/* Post Header */}
+                      <div className="p-4 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10">
+                            <AvatarImage src={post.userAvatar} />
+                            <AvatarFallback className="bg-primary/10 text-primary">
+                              {getInitials(post.userName)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-semibold text-foreground">{post.userName}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {formatDate(post.timestamp)} · {post.readTime || "5 min read"}
+                            </p>
+                          </div>
+                        </div>
+                        {post.category && (
+                          <Badge className="bg-primary hover:bg-primary/90">
+                            {post.category}
+                          </Badge>
+                        )}
+                      </div>
 
-              {/* Live Sessions Block */}
-              {liveSessions.length > 0 && (
-                <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-4">
-                  <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                    <Video className="w-6 h-6 text-destructive animate-pulse" />
-                    Live Tribe Sessions
-                  </h2>
-                  <ScrollArea className="h-[200px]">
-                    <div className="space-y-3">
-                      {liveSessions.map((session) => (
-                        <LiveSessionCard
-                          key={session.id}
-                          session={session}
-                          onJoin={() => navigate(`/session?room=${session.roomName}`)}
+                      {/* Featured Image Placeholder */}
+                      <div className="w-full h-64 bg-gradient-to-br from-sage/30 to-forest/20" />
+
+                      {/* Post Content */}
+                      <div className="p-6 space-y-4">
+                        {post.title && (
+                          <h2 className="text-2xl font-bold text-foreground hover:text-primary cursor-pointer">
+                            {post.title}
+                          </h2>
+                        )}
+                        <p className="text-muted-foreground leading-relaxed">
+                          {post.content}
+                        </p>
+
+                        {/* Engagement Bar */}
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                          <div className="flex items-center gap-6">
+                            <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                              <Flame className="w-5 h-5" />
+                              <span className="text-sm">{post.likes || 0}</span>
+                            </button>
+                            <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                              <MessageCircle className="w-5 h-5" />
+                              <span className="text-sm">{post.comments || 0}</span>
+                            </button>
+                            <button className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors">
+                              <Share2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                          <button 
+                            onClick={() => navigate(`/post/${post.id}`)}
+                            className="text-primary hover:text-primary/80 font-medium text-sm transition-colors"
+                          >
+                            Hear the Story →
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+
+                    {/* Inject ad every 20 posts */}
+                    {(index + 1) % 20 === 0 && (
+                      <div className="my-6">
+                        <AdSense
+                          slot="YOUR_INFEED_SLOT_ID"
+                          format="fluid"
+                          className="w-full"
+                          style={{ display: "block" }}
                         />
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </div>
-              )}
-
-              {/* Posts Feed */}
-              {loading ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  Loading posts...
-                </div>
-              ) : posts.length === 0 ? (
-                <div className="bg-card rounded-lg shadow-[var(--shadow-card)] p-12 text-center">
-                  <p className="text-muted-foreground">No posts yet. Be the first to share!</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {posts.map((post) => (
-                    <PostCard key={post.id} post={post} />
-                  ))}
-                </div>
-              )}
-            </main>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </Layout>
