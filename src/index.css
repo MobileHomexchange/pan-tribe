@@ -1,6 +1,23 @@
+/* Tailwind entry (keep if you already have them somewhere else) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== App-wide helpers (ADDED) ===== */
+html, body, #root { height: 100%; }
+body { overflow-x: hidden; }
+
+/* Make sections span the entire viewport width, outside containers */
+.full-bleed {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
+}
+/* ===== End helpers ===== */
+
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -140,6 +157,7 @@ All colors MUST be HSL.
     background-position: center;
   }
 }
+
 /* ===============================
    TribePulse Reels & Banner Styling
    =============================== */
