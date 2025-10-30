@@ -3,6 +3,7 @@ import { db } from "@/lib/firebaseConfig";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import PostCard from "@/components/home/PostCard";
 import { InlineFeedAd } from "./InlineFeedAd";
+import FullBleedHero from "@/components/FullBleedHero";
 
 interface Post {
   id: string;
@@ -36,30 +37,39 @@ export default function MainFeed() {
   }, []);
 
   return (
-    <div className="space-y-5 max-w-2xl mx-auto p-4">
-      {posts.length === 0 && <p className="text-center text-gray-500">No posts yet.</p>}
+    <>
+      {/* Full-bleed hero above the constrained feed */}
+      <FullBleedHero />
 
-      {posts.map((post, index) => (
-        <React.Fragment key={post.id}>
-          <PostCard
-            post={{
-              id: post.id,
-              userId: post.userId || "",
-              userName: post.authorName || "Anonymous",
-              userAvatar: post.userAvatar || "",
-              content: post.content || "",
-              mediaUrl: post.imageUrl || "",
-              mediaType: post.imageUrl ? "image" : undefined,
-              likes: post.likes ?? 0,
-              comments: post.commentsCount ?? 0,
-              timestamp: post.createdAt,
-            }}
-          />
+      <div id="feed" className="space-y-5 max-w-2xl mx-auto p-4">
+        {posts.length === 0 && (
+          <p className="text-center text-gray-500">No posts yet.</p>
+        )}
 
-          {/* Inject ad every 20 posts */}
-          {(index + 1) % 20 === 0 && <InlineFeedAd adIndex={Math.floor((index + 1) / 20)} />}
-        </React.Fragment>
-      ))}
-    </div>
+        {posts.map((post, index) => (
+          <React.Fragment key={post.id}>
+            <PostCard
+              post={{
+                id: post.id,
+                userId: post.userId || "",
+                userName: post.authorName || "Anonymous",
+                userAvatar: post.userAvatar || "",
+                content: post.content || "",
+                mediaUrl: post.imageUrl || "",
+                mediaType: post.imageUrl ? "image" : undefined,
+                likes: post.likes ?? 0,
+                comments: post.commentsCount ?? 0,
+                timestamp: post.createdAt,
+              }}
+            />
+
+            {/* Inject ad every 20 posts */}
+            {(index + 1) % 20 === 0 && (
+              <InlineFeedAd adIndex={Math.floor((index + 1) / 20)} />
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </>
   );
 }
