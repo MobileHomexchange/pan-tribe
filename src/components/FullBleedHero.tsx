@@ -1,38 +1,60 @@
 import React from "react";
 
-export default function FullBleedHero() {
-  const desktop = "/images/hero-grow-your-tribe.webp";       // 2560×1200
-  const mobile  = "/images/hero-grow-your-tribe-mobile.webp"; // 1080×1200
+type FullBleedHeroProps = {
+  title?: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  onCtaClick?: () => void;
+  /** Optional background image. Falls back to gradient if omitted. */
+  backgroundUrl?: string;
+};
+
+export default function FullBleedHero({
+  title = "Fresh listings. Real people.",
+  subtitle = "Discover what's new and relevant—curated for you.",
+  ctaLabel = "Create Post",
+  onCtaClick,
+  backgroundUrl,
+}: FullBleedHeroProps) {
+  const hasBg = Boolean(backgroundUrl);
 
   return (
-    // ⬇️ This breaks out of any page padding to span the full viewport width
-    <section className="relative full-bleed">
-      <div className="relative w-screen h-[44vh] sm:h-[52vh] lg:h-[60vh] overflow-hidden">
-        <picture>
-          <source media="(max-width: 640px)" srcSet={mobile} />
-          <img
-            src={desktop}
-            alt="Green African geometric pattern background"
-            className="h-full w-full object-cover"
-          />
-        </picture>
+    <section
+      className={[
+        "full-bleed relative isolate",
+        "min-h-[52vh] md:min-h-[60vh] lg:min-h-[68vh]",
+        hasBg
+          ? "bg-cover bg-center"
+          : "bg-gradient-to-br from-slate-800 via-slate-900 to-black",
+      ].join(" ")}
+      style={hasBg ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
+      aria-label="Featured"
+    >
+      {/* overlay for readability */}
+      <div className="absolute inset-0 bg-black/40" />
 
-        {/* Legibility overlay */}
-        <div className="absolute inset-0 bg-black/25" />
+      {/* content container */}
+      <div className="relative mx-auto max-w-6xl px-4 py-20 md:py-28">
+        <div className="max-w-2xl text-white">
+          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight tracking-tight">
+            {title}
+          </h1>
+          <p className="mt-4 text-lg md:text-xl text-white/90">{subtitle}</p>
 
-        {/* Centered content; NOT wrapped by a max-w container above */}
-        <div className="absolute inset-0 mx-auto flex max-w-6xl items-center px-4 sm:px-6">
-          <div className="text-white">
-            <div className="flex items-center gap-3 mb-2">
-              <span aria-hidden>🚀</span>
-              <h1 className="text-2xl sm:text-4xl lg:text-5xl font-semibold">Grow Your Tribe</h1>
-            </div>
-            <p className="max-w-xl text-sm sm:text-base lg:text-lg opacity-95">
-              Reach more like‑minded people with our premium community growth tools and analytics.
-            </p>
-            <button className="mt-5 inline-flex items-center rounded-2xl bg-white/95 px-5 py-3 font-medium text-gray-900 hover:bg-white">
-              Get Started
+          <div className="mt-8 flex items-center gap-3">
+            <button
+              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow hover:shadow-lg transition"
+              onClick={onCtaClick}
+              type="button"
+            >
+              {ctaLabel}
             </button>
+            <a
+              href="#feed"
+              className="rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white/90 hover:bg-white/10 transition"
+            >
+              Browse Feed
+            </a>
           </div>
         </div>
       </div>
