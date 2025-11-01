@@ -9,11 +9,24 @@
 }
 
 /* Light African pattern — keep it subtle so text is readable */
-@layer utilities {
-  .bg-pattern {
-    background-image: url('/src/assets/african-pattern.svg');
-    background-size: 420px 420px;
-    background-repeat: repeat;
-    background-position: center;
-  }
+/* Light African pattern — subtle by default */
+.bg-pattern {
+  /* Pattern on top, gradient underneath for depth */
+  background-image:
+    url('/src/assets/african-pattern.svg'),
+    radial-gradient(1200px 600px at 20% 0%, hsl(155 100% 30%), hsl(155 90% 22%));
+  background-size: 360px 360px, cover;
+  background-repeat: repeat, no-repeat;
+  background-position: center top, center;
+  opacity: 0.22;              /* keep it light so text stays readable */
+}
+
+/* Full-bleed helper stays as-is */
+.full-bleed {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
 }
