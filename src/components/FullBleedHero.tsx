@@ -1,13 +1,20 @@
 import React from "react";
 
+/**
+ * Full-bleed hero with NO white/glass layers.
+ * - Uses the full-bleed utility to span the viewport width
+ * - Background is your image (or fallback gradient)
+ * - A light *dark* overlay improves text readability without washing colors
+ * - Sticky filter bar lives directly beneath the hero
+ */
 type FullBleedHeroProps = {
   title?: string;
   subtitle?: string;
   ctaLabel?: string;
   onCtaClick?: () => void;
-  backgroundUrl?: string; // optional override
+  backgroundUrl?: string;
   activeFilter?: "all" | "following" | "nearby" | "popular";
-  onFilterChange?: (filter: FullBleedHeroProps["activeFilter"]) => void;
+  onFilterChange?: (filter: "all" | "following" | "nearby" | "popular") => void;
 };
 
 export default function FullBleedHero({
@@ -19,7 +26,7 @@ export default function FullBleedHero({
   activeFilter = "all",
   onFilterChange,
 }: FullBleedHeroProps) {
-  const filters: FullBleedHeroProps["activeFilter"][] = [
+  const filters: Array<"all" | "following" | "nearby" | "popular"> = [
     "all",
     "following",
     "nearby",
@@ -27,48 +34,38 @@ export default function FullBleedHero({
   ];
 
   return (
-    <section className="full-bleed relative isolate">
-      {/* Background: image fills the viewport width, no inner card */}
-      <picture>
-        <source
-          media="(max-width: 768px)"
-          srcSet={
-            backgroundUrl || "/images/hero-grow-your-tribe-mobile.webp"
-          }
-        />
-        <img
-          src={backgroundUrl || "/images/hero-grow-your-tribe.webp"}
-          alt=""
-          className="block w-screen h-[44vh] md:h-[60vh] lg:h-[68vh] object-cover"
-          fetchPriority="high"
-        />
-      </picture>
+    <section className="relative full-bleed isolate">
+      {/* Background (image or fallback gradient), no white layers */}
+      <div
+        className={[
+          "relative w-screen overflow-hidden",
+          "min-h-[44vh] md:min-h-[52vh] lg:min-h-[60vh]",
+          backgroundUrl ? "bg-cover bg-center" : "bg-gradient-to-br from-emerald-700 to-teal-700",
+        ].join(" ")}
+        style={backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
+      >
+        {/* Subtle dark overlay for legibility */}
+        <div className="absolute inset-0 bg-black/25 md:bg-black/20" />
 
-      {/* Subtle gradient & pattern mask (no box) */}
-      <div className="pointer-events-none absolute inset-0">
-        {/* Pan-African darkening gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/0" />
-        {/* Very light pattern mask so text pops but design shows through */}
-        <div className="absolute inset-0 mix-blend-soft-light opacity-25 bg-pattern" />
-      </div>
-
-      {/* Text content (no background) */}
-      <div className="absolute inset-0 flex items-center">
-        <div className="mx-auto max-w-6xl px-4 text-white">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+        {/* Content — pure text/buttons, no white cards */}
+        <div className="relative mx-auto max-w-6xl px-4 md:px-6 py-14 md:py-20 text-white">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
             {title}
           </h1>
-          <p className="mt-4 text-lg md:text-xl opacity-95">{subtitle}</p>
+          <p className="mt-4 text-lg md:text-xl opacity-95 max-w-3xl">
+            {subtitle}
+          </p>
+
           <div className="mt-8 flex items-center gap-3">
             <button
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow hover:shadow-lg transition"
+              className="rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] px-5 py-3 text-sm font-semibold shadow hover:opacity-95 transition"
               onClick={onCtaClick}
             >
               {ctaLabel}
             </button>
             <a
               href="#feed"
-              className="rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white/90 hover:bg-white/10 transition"
+              className="rounded-xl border border-white/50 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
             >
               Browse Feed
             </a>
@@ -76,23 +73,26 @@ export default function FullBleedHero({
         </div>
       </div>
 
-      {/* Sticky Sub-nav (clean, no box) */}
-      <nav className="sticky top-0 z-40 full-bleed bg-white/90 backdrop-blur-md border-t border-gray-200 shadow-sm">
-        <div className="mx-auto max-w-6xl flex items-center justify-center gap-6 px-4 py-3">
-          {filters.map((f) => (
-            <button
-              key={f}
-              onClick={() => onFilterChange?.(f)}
-              className={
-                "capitalize font-medium text-sm px-3 py-2 rounded-lg transition " +
-                (activeFilter === f
-                  ? "bg-[hsl(var(--primary))] text-white shadow"
-                  : "text-gray-700 hover:bg-gray-100")
-              }
-            >
-              {f === "all" ? "All" : f[0]!.toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+      {/* Sticky Filter Bar — neutral, not white-glassy */}
+      <nav className="sticky top-0 z-40 full-bleed border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 backdrop-blur">
+        <div className="mx-auto max-w-6xl flex flex-wrap items-center gap-2 px-4 md:px-6 py-3">
+          {filters.map((f) => {
+            const active = f === activeFilter;
+            return (
+              <button
+                key={f}
+                onClick={() => onFilterChange?.(f)}
+                className={
+                  "capitalize font-medium text-sm px-3 py-1.5 rounded-md border transition " +
+                  (active
+                    ? "bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))] shadow"
+                    : "text-[hsl(var(--foreground))] bg-[hsl(var(--input))] border-[hsl(var(--border))] hover:bg-[hsl(var(--fb-hover))]")
+                }
+              >
+                {f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)}
+              </button>
+            );
+          })}
         </div>
       </nav>
     </section>
