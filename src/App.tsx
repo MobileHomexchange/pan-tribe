@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
+
 import Index from "./pages/Index";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -14,11 +15,10 @@ import Signup from "./pages/Signup";
 import MyTribe from "./pages/MyTribe";
 import Friends from "./pages/Friends";
 import Profile from "./pages/Profile";
-import Memories from "./pages/Memories";
+// REMOVED: Memories
 import SocialCommerce from "./pages/SocialCommerce";
 import AdsManager from "./pages/AdsManager";
 import Events from "./pages/Events";
-import Saved from "./pages/Saved";
 import CreatePost from "./pages/CreatePost";
 import BlogSubmissions from "./pages/BlogSubmissions";
 import Photos from "./pages/Photos";
@@ -46,8 +46,9 @@ import BlogManagement from "./admin/blog/BlogManagement";
 import EventAnalytics from "./admin/events/EventAnalytics";
 import SocialCommerceAccountManagement from "./admin/socialcommerce/SocialCommerceAccountManagement";
 
-const queryClient = new QueryClient();
+// REMOVED: Saved
 
+const queryClient = new QueryClient();
 
 const App = () => (
   <ErrorBoundary>
@@ -61,31 +62,182 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/feed" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/home" element={<ProtectedRoute><Home /></ProtectedRoute>} />
-              <Route path="/my-tribe" element={<ProtectedRoute><MyTribe /></ProtectedRoute>} />
-              <Route path="/my-tribe/group/:groupId" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
-              <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-              <Route path="/profile/:userId" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/memories" element={<ProtectedRoute><Memories /></ProtectedRoute>} />
-              <Route path="/social-commerce" element={<ProtectedAdminRoute><SocialCommerce /></ProtectedAdminRoute>} />
-              <Route path="/ads" element={<ProtectedRoute><AdsManager /></ProtectedRoute>} />
-              <Route path="/events" element={<ProtectedRoute><Events /></ProtectedRoute>} />
-              <Route path="/create-post" element={<ProtectedRoute><CreatePost /></ProtectedRoute>} />
-              <Route path="/saved" element={<ProtectedRoute><Saved /></ProtectedRoute>} />
-              <Route path="/blog-submissions" element={<ProtectedAdminRoute><BlogSubmissions /></ProtectedAdminRoute>} />
-              <Route path="/blogs" element={<ProtectedAdminRoute><Blogs /></ProtectedAdminRoute>} />
-              <Route path="/photos" element={<ProtectedRoute><Photos /></ProtectedRoute>} />
-              <Route path="/music" element={<ProtectedRoute><Music /></ProtectedRoute>} />
-              <Route path="/art" element={<ProtectedRoute><Art /></ProtectedRoute>} />
-              <Route path="/tech" element={<ProtectedRoute><Tech /></ProtectedRoute>} />
-              <Route path="/create-event" element={<ProtectedRoute><CreateEvent /></ProtectedRoute>} />
-              <Route path="/my-events" element={<ProtectedRoute><MyEvents /></ProtectedRoute>} />
-              <Route path="/event-history" element={<ProtectedRoute><EventHistory /></ProtectedRoute>} />
-              <Route path="/event-settings" element={<ProtectedRoute><EventSettings /></ProtectedRoute>} />
+
+              <Route
+                path="/feed"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/home"
+                element={
+                  <ProtectedRoute>
+                    <Home />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-tribe"
+                element={
+                  <ProtectedRoute>
+                    <MyTribe />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-tribe/group/:groupId"
+                element={
+                  <ProtectedRoute>
+                    <GroupDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/friends"
+                element={
+                  <ProtectedRoute>
+                    <Friends />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/:userId"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* REMOVED: /memories */}
+              <Route
+                path="/social-commerce"
+                element={
+                  <ProtectedAdminRoute>
+                    <SocialCommerce />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/ads"
+                element={
+                  <ProtectedRoute>
+                    <AdsManager />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <Events />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-post"
+                element={
+                  <ProtectedRoute>
+                    <CreatePost />
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* REMOVED: /saved */}
+
+              <Route
+                path="/blog-submissions"
+                element={
+                  <ProtectedAdminRoute>
+                    <BlogSubmissions />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/blogs"
+                element={
+                  <ProtectedAdminRoute>
+                    <Blogs />
+                  </ProtectedAdminRoute>
+                }
+              />
+              <Route
+                path="/photos"
+                element={
+                  <ProtectedRoute>
+                    <Photos />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/music"
+                element={
+                  <ProtectedRoute>
+                    <Music />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/art"
+                element={
+                  <ProtectedRoute>
+                    <Art />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/tech"
+                element={
+                  <ProtectedRoute>
+                    <Tech />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create-event"
+                element={
+                  <ProtectedRoute>
+                    <CreateEvent />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/my-events"
+                element={
+                  <ProtectedRoute>
+                    <MyEvents />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/event-history"
+                element={
+                  <ProtectedRoute>
+                    <EventHistory />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/event-settings"
+                element={
+                  <ProtectedRoute>
+                    <EventSettings />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/firebase-test" element={<FirebaseTest />} />
-              
-              <Route path="/admin" element={<ProtectedAdminRoute><AdminLayout /></ProtectedAdminRoute>}>
+
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminLayout />
+                  </ProtectedAdminRoute>
+                }
+              >
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<UserManagement />} />
                 <Route path="tribes" element={<TribeManagement />} />
@@ -97,8 +249,8 @@ const App = () => (
                 <Route path="event-analytics" element={<EventAnalytics />} />
                 <Route path="social-commerce-accounts" element={<SocialCommerceAccountManagement />} />
               </Route>
-              
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+              {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
