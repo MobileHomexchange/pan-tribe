@@ -13,6 +13,10 @@ import PostCard from "@/components/home/PostCard";
 import { InlineFeedAd } from "./InlineFeedAd";
 import FullBleedHero from "@/components/FullBleedHero";
 
+// ⬇️ Add these two NEW imports at the top with the others
+import GoogleAd from "@/components/ads/GoogleAd";
+import PersonalBanner from "@/components/ads/PersonalBanner";
+
 /** TEMP: wire to your real auth + location later */
 const currentUserId = "TEMP_USER_ID";
 const userLocation = { lat: 34.0007, lon: -81.0348 }; // Columbia, SC default
