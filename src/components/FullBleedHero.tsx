@@ -1,18 +1,15 @@
 import React from "react";
 
 /**
- * Full-bleed hero with NO white/glass layers.
- * - Uses the full-bleed utility to span the viewport width
- * - Background is your image (or fallback gradient)
- * - A light *dark* overlay improves text readability without washing colors
- * - Sticky filter bar lives directly beneath the hero
+ * Full-bleed hero with Pan-African green background + gold pattern.
+ * No white/glass overlays. Text stays readable via a dark gradient veil.
  */
 type FullBleedHeroProps = {
   title?: string;
   subtitle?: string;
   ctaLabel?: string;
   onCtaClick?: () => void;
-  backgroundUrl?: string;
+  backgroundUrl?: string;           // optional override (keeps pattern if not provided)
   activeFilter?: "all" | "following" | "nearby" | "popular";
   onFilterChange?: (filter: "all" | "following" | "nearby" | "popular") => void;
 };
@@ -35,37 +32,58 @@ export default function FullBleedHero({
 
   return (
     <section className="relative full-bleed isolate">
-      {/* Background (image or fallback gradient), no white layers */}
+      {/* Background layer */}
       <div
         className={[
           "relative w-screen overflow-hidden",
-          "min-h-[44vh] md:min-h-[52vh] lg:min-h-[60vh]",
-          backgroundUrl ? "bg-cover bg-center" : "bg-gradient-to-br from-emerald-700 to-teal-700",
+          // taller on desktop for drama, shorter on mobile
+          "min-h-[44vh] md:min-h-[56vh] lg:min-h-[64vh]",
+          // base: gradient + African pattern (from index.css utilities)
+          "bg-[radial-gradient(1200px_600px_at_0%_-10%,hsl(155_60%_40%),transparent)]",
+          "bg-[linear-gradient(180deg,hsl(155_52%_35%)_0%,hsl(155_48%_28%)_60%,hsl(155_46%_23%)_100%)]",
+          "bg-pattern",
         ].join(" ")}
-        style={backgroundUrl ? { backgroundImage: `url(${backgroundUrl})` } : undefined}
+        style={
+          backgroundUrl
+            ? {
+                backgroundImage: `
+                  linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.45)),
+                  url(${backgroundUrl})
+                `,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }
+            : undefined
+        }
       >
-        {/* Subtle dark overlay for legibility */}
-        <div className="absolute inset-0 bg-black/25 md:bg-black/20" />
+        {/* Subtle dark veil for readability (no white/glass) */}
+        {!backgroundUrl && (
+          <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/30 to-black/40" />
+        )}
 
-        {/* Content — pure text/buttons, no white cards */}
-        <div className="relative mx-auto max-w-6xl px-4 md:px-6 py-14 md:py-20 text-white">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+        {/* Content */}
+        <div className="relative mx-auto max-w-6xl px-4 py-12 md:py-16 lg:py-20 text-white">
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.35)]">
             {title}
           </h1>
-          <p className="mt-4 text-lg md:text-xl opacity-95 max-w-3xl">
+          <p className="mt-4 text-lg md:text-xl opacity-95 max-w-3xl drop-shadow-[0_1px_6px_rgba(0,0,0,0.35)]">
             {subtitle}
           </p>
 
           <div className="mt-8 flex items-center gap-3">
             <button
-              className="rounded-xl bg-[hsl(var(--accent))] text-[hsl(var(--accent-foreground))] px-5 py-3 text-sm font-semibold shadow hover:opacity-95 transition"
               onClick={onCtaClick}
+              className="rounded-xl px-5 py-3 text-sm font-semibold shadow-md transition
+                         bg-[hsl(var(--pan-gold))] text-[hsl(var(--pan-black))]
+                         hover:brightness-105 active:brightness-95"
             >
               {ctaLabel}
             </button>
+
             <a
               href="#feed"
-              className="rounded-xl border border-white/50 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
+              className="rounded-xl px-5 py-3 text-sm font-semibold transition
+                         border border-white/35 text-white/95 hover:bg-white/10"
             >
               Browse Feed
             </a>
@@ -73,21 +91,21 @@ export default function FullBleedHero({
         </div>
       </div>
 
-      {/* Sticky Filter Bar — neutral, not white-glassy */}
-      <nav className="sticky top-0 z-40 full-bleed border-b border-[hsl(var(--border))] bg-[hsl(var(--background))]/90 backdrop-blur">
-        <div className="mx-auto max-w-6xl flex flex-wrap items-center gap-2 px-4 md:px-6 py-3">
+      {/* Sticky filter (no white background, slight translucent dark bar) */}
+      <nav className="sticky top-0 z-40 full-bleed border-t border-black/10 bg-black/20 backdrop-blur-[2px]">
+        <div className="mx-auto max-w-6xl px-4 py-3 flex flex-wrap gap-2">
           {filters.map((f) => {
-            const active = f === activeFilter;
+            const selected = activeFilter === f;
             return (
               <button
                 key={f}
                 onClick={() => onFilterChange?.(f)}
-                className={
-                  "capitalize font-medium text-sm px-3 py-1.5 rounded-md border transition " +
-                  (active
-                    ? "bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))] shadow"
-                    : "text-[hsl(var(--foreground))] bg-[hsl(var(--input))] border-[hsl(var(--border))] hover:bg-[hsl(var(--fb-hover))]")
-                }
+                className={[
+                  "capitalize text-sm font-medium px-3 py-1.5 rounded-md transition border",
+                  selected
+                    ? "bg-[hsl(var(--pan-gold))] text-[hsl(var(--pan-black))] border-[hsl(var(--pan-gold))]"
+                    : "text-white/90 border-white/25 hover:bg-white/10",
+                ].join(" ")}
               >
                 {f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)}
               </button>
