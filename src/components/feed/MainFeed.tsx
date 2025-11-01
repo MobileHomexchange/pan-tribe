@@ -13,7 +13,7 @@ import PostCard from "@/components/home/PostCard";
 import { InlineFeedAd } from "./InlineFeedAd";
 import FullBleedHero from "@/components/FullBleedHero";
 
-// ⬇️ Add these two NEW imports at the top with the others
+// Ads
 import GoogleAd from "@/components/ads/GoogleAd";
 import PersonalBanner from "@/components/ads/PersonalBanner";
 
@@ -88,7 +88,7 @@ export default function MainFeed() {
       setExhausted(nearby.length < PAGE);
       return;
     } else if (filter === "popular") {
-      // Simple proxy for "popular" — you can refine later
+      // Simple proxy for "popular" — refine later if needed
       q = query(collection(db, "posts"), orderBy("likes", "desc"), limit(PAGE));
     }
 
@@ -132,25 +132,19 @@ export default function MainFeed() {
   return (
     <>
       {/* ✅ Full-width hero. Do not wrap in a container. */}
-      <FullBleedHero />
+      <FullBleedHero
+        activeFilter={filter}
+        onFilterChange={(f) => setFilter(f)}
+      />
 
-      {/* Filter bar (sticky, lightweight) */}
-      <div className="sticky top-0 z-20 bg-background/70 backdrop-blur border-b">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex gap-2">
-          {(["all", "following", "nearby", "popular"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={
-                "px-3 py-1.5 rounded-md text-sm border transition " +
-                (filter === f
-                  ? "bg-[hsl(var(--primary))] text-white border-[hsl(var(--primary))]"
-                  : "bg-white text-[hsl(var(--foreground))] border-[hsl(var(--border))] hover:bg-[hsl(var(--fb-hover))]")
-              }
-            >
-              {f === "all" ? "All" : f[0].toUpperCase() + f.slice(1)}
-            </button>
-          ))}
+      {/* ✅ Leaderboard ad just under the hero (stays full-bleed, content centered) */}
+      <div className="full-bleed">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
+          <GoogleAd
+            slot="YOUR_LEADERBOARD_SLOT_ID"   // ← replace with your AdSense slot id
+            format="horizontal"
+            style={{ display: "block", minHeight: 90 }}
+          />
         </div>
       </div>
 
@@ -191,18 +185,24 @@ export default function MainFeed() {
             )}
           </div>
 
-          {/* Right rail (reserved for banners, offers, etc.) */}
+          {/* Right rail: AdSense unit + personal banner */}
           <aside className="hidden lg:block space-y-4">
-            {/* Example slot — we’ll wire AdSense / personal banner here next */}
-            <div className="rounded-lg border bg-white p-4 shadow-sm">
-              <div className="text-sm font-semibold mb-2">Grow Your Tribe</div>
-              <p className="text-sm text-gray-600">
-                Reach more like-minded people with our premium community growth tools and analytics.
-              </p>
-              <button className="mt-3 inline-flex items-center rounded-md bg-[hsl(var(--primary))] px-3 py-2 text-white">
-                Get Started
-              </button>
+            {/* 300×250 Med Rect */}
+            <div className="rounded-lg border bg-white p-3 shadow-sm flex items-center justify-center">
+              <GoogleAd
+                slot="YOUR_MEDRECT_SLOT_ID"     // ← replace with your AdSense slot id
+                format="rectangle"
+                style={{ display: "block", width: 300, height: 250 }}
+              />
             </div>
+
+            {/* Your personal (house) banner */}
+            <PersonalBanner
+              image="/images/your-offer.webp"   // put this file in public/images/
+              href="/offer"
+              title="Grow with Tribe Pulse"
+              subtitle="Premium tools to boost your community reach."
+            />
           </aside>
         </div>
       </div>
