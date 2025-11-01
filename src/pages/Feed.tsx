@@ -83,7 +83,7 @@ export default function FeedPage() {
           <div className="order-2 md:order-1 md:col-span-2">
             <Composer />
             <ActionsBar />
-            
+
             {/* Optional In-Feed Ad */}
             <div className="my-4">
               <AdSense
@@ -94,21 +94,21 @@ export default function FeedPage() {
                 style={{ display: "block" }}
               />
             </div>
-            
+
             <Feed />
           </div>
 
           {/* Right column: promo card + ads */}
           <div className="order-1 md:order-2 space-y-4">
             <PromoCard />
-            
+
             {/* House Ad */}
             <HouseAd
               href="https://your-offer.example.com"
               img="/ads/house-300x250.jpg"
               alt="Your Offer"
             />
-            
+
             {/* AdSense Rectangle */}
             <AdSense
               slot="YOUR_RECTANGLE_SLOT_ID"
@@ -119,7 +119,7 @@ export default function FeedPage() {
         </div>
       </div>
 
-      {/* === Your existing Dashboard sidebar + overlay (kept intact) === */}
+      {/* === Dashboard sidebar + overlay === */}
       <div className="dashboard-overlay" id="dashboardOverlay" />
       <aside className="dashboard-sidebar" id="dashboardSidebar" aria-hidden="true">
         <div className="dashboard-close" id="dashboardClose">×</div>
@@ -143,13 +143,13 @@ export default function FeedPage() {
           <div className="dashboard-item"><span className="dashboard-item-icon">📊</span> Conversion Tracking</div>
         </div>
 
-        {/* Quick Access */}
+        {/* Quick Access (Saved & Memories removed) */}
         <div className="dashboard-section">
           <h3 className="dashboard-section-title"><span>⭐</span> Quick Access</h3>
           <div className="dashboard-menu-item"><span className="dashboard-menu-icon">👥</span> Friends</div>
-          <div className="dashboard-menu-item"><span className="dashboard-menu-icon">💾</span> Saved</div>
+          {/* Removed: Saved */}
           <div className="dashboard-menu-item"><span className="dashboard-menu-icon">🏠</span> My Tribe</div>
-          <div className="dashboard-menu-item"><span className="dashboard-menu-icon">📸</span> Memories</div>
+          {/* Removed: Memories */}
           <div className="dashboard-menu-item"><span className="dashboard-menu-icon">📅</span> Events</div>
           <div className="dashboard-menu-item"><span className="dashboard-menu-icon">💰</span> Ads Manager</div>
         </div>
