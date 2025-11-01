@@ -1,4 +1,4 @@
-/* Tailwind entry (must be at the very top) */
+/* Tailwind entry */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +7,7 @@
 html, body, #root { height: 100%; }
 body { overflow-x: hidden; }
 
-/* Make sections span the entire viewport width, outside containers */
+/* Full-bleed: spans entire viewport width */
 .full-bleed {
   position: relative;
   left: 50%;
@@ -17,13 +17,120 @@ body { overflow-x: hidden; }
   width: 100vw;
 }
 
-/* Light African pattern — keep it subtle so text is readable */
-@layer utilities {
+/* Design tokens (CSS variables) */
+@layer base {
+  :root {
+    --pan-red: 0 77% 52%;
+    --pan-black: 0 0% 0%;
+    --pan-green: 155 100% 27%;
+    --pan-gold: 48 97% 54%;
+
+    --light-gold: 48 84% 92%;
+    --light-green: 155 52% 90%;
+    --light-red: 0 68% 96%;
+
+    --charcoal: 210 22% 22%;
+    --terracotta: 27 80% 52%;
+    --amber: 36 91% 51%;
+    --forest: 145 63% 42%;
+    --sage: 150 32% 65%;
+    --cream: 45 74% 95%;
+
+    --fb-hover: 210 10% 96%;
+    --fb-border: 210 8% 88%;
+    --text-muted: 210 6% 46%;
+
+    --background: 210 10% 96%;
+    --foreground: 0 0% 13%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 13%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 13%;
+
+    --primary: 155 100% 27%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 48 84% 92%;
+    --secondary-foreground: 0 0% 13%;
+    --muted: 210 10% 96%;
+    --muted-foreground: 210 6% 46%;
+    --accent: 48 97% 54%;
+    --accent-foreground: 0 0% 13%;
+    --destructive: 0 77% 52%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 8% 88%;
+    --input: 0 0% 100%;
+    --ring: 155 100% 27%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 13%;
+    --sidebar-primary: 155 100% 27%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 48 84% 92%;
+    --sidebar-accent-foreground: 0 0% 13%;
+    --sidebar-border: 210 8% 88%;
+    --sidebar-ring: 155 100% 27%;
+
+    --post-hover: 210 10% 98%;
+    --like-color: 155 100% 27%;
+    --comment-color: 210 6% 46%;
+
+    --gradient-pan: linear-gradient(135deg, hsl(var(--pan-green)), hsl(var(--pan-black)));
+    --gradient-gold: linear-gradient(135deg, hsl(var(--pan-gold)), hsl(var(--pan-red)));
+    --shadow-elegant: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  /* Keep it in @layer base to avoid the Vite error */
   .bg-pattern {
+    background-color: #ebebeb;
     background-image: url('/src/assets/african-pattern.svg');
-    background-size: 420px 420px;  /* tweak if you want tighter/looser motif */
+    background-size: 400px 400px;
     background-repeat: repeat;
     background-position: center;
-    opacity: 0.22;                 /* gentle! */
   }
 }
+
+/* Reels/banner helpers (unchanged)… */
+.reel-container { @apply relative w-screen h-screen flex items-center justify-center bg-black overflow-hidden; }
+.reel-container video { z-index: 10; pointer-events: none; }
+.mobile-banner { @apply fixed bottom-2 left-1/2 transform -translate-x-1/2 z-40 w-[95%] max-w-md bg-white/90 backdrop-blur-md rounded-lg shadow-lg border border-gray-300 transition-all duration-300 ease-in-out; }
+.mobile-banner img { @apply rounded-md object-cover w-full h-auto; }
+@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.slide-up { animation: slideUp 0.4s ease-out forwards; }
+.personal-ad-overlay { @apply absolute inset-0 flex items-center justify-center bg-black/70 z-50; }
+.personal-ad-card { @apply w-11/12 max-w-sm bg-white rounded-xl p-4 text-center shadow-2xl border border-gray-200; }
+.sponsored-label { @apply absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-md z-50; }
