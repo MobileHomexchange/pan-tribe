@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { ThumbsUp, MessageCircle, Share, Globe, Users, Landmark, Bookmark } from "lucide-react";
+import { ThumbsUp, MessageCircle, Share, Globe } from "lucide-react";
 import DOMPurify from "dompurify";
 import { Button } from "@/components/ui/button";
 import { Post as PostType, Comment } from "@/types";
 import { CommentsModal } from "@/components/CommentsModal";
 import { ShareModal } from "@/components/ShareModal";
 import { FirebaseService } from "@/lib/firebaseService";
-import { useSavedItems } from "@/hooks/useSavedItems";
+// removed: useSavedItems
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ClickableAvatar } from "@/components/ui/ClickableAvatar";
@@ -21,10 +21,8 @@ interface PostProps {
 export function Post({ post, onInteraction }: PostProps) {
   const { currentUser } = useAuth();
   const { toast } = useToast();
-  const { isSaved, toggleSave } = useSavedItems();
-  
+
   const [liked, setLiked] = useState(currentUser ? post.likes.includes(currentUser.uid) : false);
-  const [saved, setSaved] = useState(isSaved(post.id));
   const [likeCount, setLikeCount] = useState(post.likes.length);
   const [shareCount, setShareCount] = useState(post.shares);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -48,14 +46,14 @@ export function Post({ post, onInteraction }: PostProps) {
 
   const handleLike = async () => {
     if (!currentUser || loading) return;
-    
+
     setLoading(true);
     try {
       const { liked: newLiked, newCount } = await FirebaseService.toggleLike(post.id, currentUser.uid);
       setLiked(newLiked);
       setLikeCount(newCount);
       onInteraction?.('like');
-      
+
       toast({
         title: newLiked ? "Post liked!" : "Like removed",
         duration: 2000,
@@ -72,25 +70,6 @@ export function Post({ post, onInteraction }: PostProps) {
     }
   };
 
-  const handleSave = () => {
-    if (!currentUser) return;
-    
-    const savedItem = {
-      id: post.id,
-      title: post.content.substring(0, 50) + (post.content.length > 50 ? '...' : ''),
-      type: 'post' as const,
-      image: post.imageUrl,
-    };
-    
-    toggleSave(savedItem);
-    setSaved(!saved);
-    
-    toast({
-      title: saved ? "Post unsaved" : "Post saved!",
-      duration: 2000,
-    });
-  };
-
   const handleComment = () => {
     setCommentsOpen(true);
     onInteraction?.('comment');
@@ -103,7 +82,7 @@ export function Post({ post, onInteraction }: PostProps) {
 
   const handleAddComment = async (content: string) => {
     if (!currentUser) return;
-    
+
     try {
       await FirebaseService.addComment(post.id, currentUser.uid, currentUser.displayName || 'Anonymous', content);
       toast({
@@ -122,11 +101,11 @@ export function Post({ post, onInteraction }: PostProps) {
 
   const handleShareAction = async (platform?: string) => {
     if (!currentUser) return;
-    
+
     try {
       await FirebaseService.trackShare(post.id, currentUser.uid, platform);
       setShareCount(prev => prev + 1);
-      
+
       toast({
         title: "Post shared!",
         duration: 2000,
@@ -136,16 +115,14 @@ export function Post({ post, onInteraction }: PostProps) {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
+  const getInitials = (name: string) =>
+    name.split(' ').map(n => n[0]).join('').toUpperCase();
 
   const formatTimeAgo = (createdAt: any) => {
-    // Simple time ago formatting - you can enhance this
     const now = new Date();
     const postTime = createdAt?.toDate ? createdAt.toDate() : new Date(createdAt);
     const diffInHours = Math.floor((now.getTime() - postTime.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return "Just now";
     if (diffInHours < 24) return `${diffInHours}h ago`;
     return `${Math.floor(diffInHours / 24)}d ago`;
@@ -155,7 +132,7 @@ export function Post({ post, onInteraction }: PostProps) {
     <div className="w-full bg-card rounded-xl shadow-md p-5 border border-social-border">
       {/* Post Header */}
       <div className="flex items-center gap-3 mb-4">
-        <ClickableAvatar 
+        <ClickableAvatar
           userId={post.userId}
           userName={post.userName}
           userAvatar={post.userAvatar}
@@ -173,9 +150,9 @@ export function Post({ post, onInteraction }: PostProps) {
 
       {/* Post Content */}
       <div className="mb-4">
-        <div 
+        <div
           className="text-card-foreground whitespace-pre-wrap leading-relaxed"
-          dangerouslySetInnerHTML={{ 
+          dangerouslySetInnerHTML={{
             __html: DOMPurify.sanitize(detectAndEmbedMedia(post.content), {
               ALLOWED_TAGS: ['p', 'br', 'b', 'i', 'u', 'a', 'strong', 'em', 'div', 'iframe'],
               ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'style', 'src', 'frameborder', 'allow', 'allowfullscreen']
@@ -185,19 +162,19 @@ export function Post({ post, onInteraction }: PostProps) {
       </div>
 
       {/* Post Image/Video */}
-      {(post.imageUrl || post.videoUrl) && (
+      {(post.imageUrl || (post as any).videoUrl) && (
         <div className="mb-4">
           {post.imageUrl && (
-            <img 
-              src={post.imageUrl} 
-              alt="Post content" 
+            <img
+              src={post.imageUrl}
+              alt="Post content"
               className="w-full h-auto max-h-96 object-cover rounded-lg"
             />
           )}
-          {post.videoUrl && (
-            <video 
-              src={post.videoUrl} 
-              controls 
+          {(post as any).videoUrl && (
+            <video
+              src={(post as any).videoUrl}
+              controls
               className="w-full h-auto max-h-96 rounded-lg"
             />
           )}
@@ -235,7 +212,7 @@ export function Post({ post, onInteraction }: PostProps) {
           <ThumbsUp className="h-4 w-4" />
           <span className="font-medium">{liked ? "Liked" : "Like"}</span>
         </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
@@ -245,19 +222,7 @@ export function Post({ post, onInteraction }: PostProps) {
           <MessageCircle className="h-4 w-4" />
           <span className="font-medium">Comment</span>
         </Button>
-        
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSave}
-          className={`flex items-center gap-2 flex-1 justify-center py-2 rounded-md transition-colors ${
-            saved ? "text-social-like bg-light-green" : "text-social-muted hover:bg-social-hover"
-          }`}
-        >
-          <Bookmark className="h-4 w-4" />
-          <span className="font-medium">{saved ? "Saved" : "Save"}</span>
-        </Button>
-        
+
         <Button
           variant="ghost"
           size="sm"
