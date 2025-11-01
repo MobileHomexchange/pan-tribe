@@ -1,12 +1,19 @@
-/* Ensure hero text wrapper never picks up a card-style background */
-.hero-text-wrap { 
-  background: transparent !important; 
-  box-shadow: none !important;
+/* Full-width section helper */
+.full-bleed {
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  width: 100vw;
 }
 
-/* Safety: prevent any generic "card" class from tinting the hero */
-.full-bleed .card,
-.full-bleed [class*="card"] {
-  background: transparent !important;
-  box-shadow: none !important;
+/* Light African pattern — keep it subtle so text is readable */
+@layer utilities {
+  .bg-pattern {
+    background-image: url('/src/assets/african-pattern.svg');
+    background-size: 420px 420px;
+    background-repeat: repeat;
+    background-position: center;
+  }
 }
