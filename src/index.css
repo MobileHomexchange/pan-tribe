@@ -1,4 +1,13 @@
-/* Full-width section helper */
+/* Tailwind entry (must be at the very top) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== App-wide helpers ===== */
+html, body, #root { height: 100%; }
+body { overflow-x: hidden; }
+
+/* Make sections span the entire viewport width, outside containers */
 .full-bleed {
   position: relative;
   left: 50%;
@@ -9,24 +18,12 @@
 }
 
 /* Light African pattern — keep it subtle so text is readable */
-/* Light African pattern — subtle by default */
-.bg-pattern {
-  /* Pattern on top, gradient underneath for depth */
-  background-image:
-    url('/src/assets/african-pattern.svg'),
-    radial-gradient(1200px 600px at 20% 0%, hsl(155 100% 30%), hsl(155 90% 22%));
-  background-size: 360px 360px, cover;
-  background-repeat: repeat, no-repeat;
-  background-position: center top, center;
-  opacity: 0.22;              /* keep it light so text stays readable */
-}
-
-/* Full-bleed helper stays as-is */
-.full-bleed {
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  width: 100vw;
+@layer utilities {
+  .bg-pattern {
+    background-image: url('/src/assets/african-pattern.svg');
+    background-size: 420px 420px;  /* tweak if you want tighter/looser motif */
+    background-repeat: repeat;
+    background-position: center;
+    opacity: 0.22;                 /* gentle! */
+  }
 }
