@@ -1,19 +1,28 @@
+import React from "react";
+
 type Props = {
-  href: string;         // clickthrough
-  img: string;          // /ads/your-banner.jpg (public folder)
-  alt: string;
-  className?: string;
-  newTab?: boolean;
+  image: string;        // e.g., "/images/your-offer.webp"
+  href?: string;        // e.g., "/offer"
+  title?: string;       // e.g., "Grow with Tribe Pulse"
+  subtitle?: string;    // e.g., "Premium tools to boost your community reach."
 };
 
-export default function HouseAd({ href, img, alt, className = "", newTab = true }: Props) {
+export default function HouseAd({
+  image,
+  href = "#",
+  title = "Your Offer",
+  subtitle = "Premium tools to boost your community reach.",
+}: Props) {
   return (
     <a
       href={href}
-      {...(newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      className={`block ${className}`}
+      className="block rounded-lg overflow-hidden border bg-white shadow-sm hover:shadow-md transition"
     >
-      <img src={img} alt={alt} className="w-full h-auto rounded-xl shadow" />
+      <img src={image} alt={title} className="w-full h-auto object-cover" />
+      <div className="p-4">
+        <div className="text-sm font-semibold">{title}</div>
+        <div className="text-sm text-gray-600">{subtitle}</div>
+      </div>
     </a>
   );
 }
