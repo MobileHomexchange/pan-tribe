@@ -35,29 +35,28 @@ export default function FullBleedHero({
         ].join(" ")}
       >
         {/* Content */}
-        <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24 text-white">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
-            {title}
-          </h1>
-          <p className="mt-4 text-lg md:text-xl opacity-95 drop-shadow-[0_1px_2px_rgba(0,0,0,0.35)]">
-            {subtitle}
-          </p>
-          <div className="mt-8 flex items-center gap-3">
-            <button
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow hover:shadow-lg transition"
-              onClick={onCtaClick}
-            >
-              {ctaLabel}
-            </button>
-            <a
-              href="#feed"
-              className="rounded-2xl border border-white/50 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10 transition"
-            >
-              Browse Feed
-            </a>
-          </div>
-        </div>
-      </div>
+        {/* Text content (no glass card) */}
+<div className="relative mx-auto max-w-6xl px-4 py-20 md:py-28 text-white">
+  <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+    {title}
+  </h1>
+  <p className="mt-4 text-lg md:text-xl opacity-90">{subtitle}</p>
+  <div className="mt-8 flex items-center gap-3">
+    <button
+      className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow hover:shadow-lg transition"
+      onClick={onCtaClick}
+    >
+      {ctaLabel}
+    </button>
+    <a
+      href="#feed"
+      className="rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white/90 hover:bg-white/10 transition"
+    >
+      Browse Feed
+    </a>
+  </div>
+</div>
+    </div>
 
       {/* Sticky Sub-Navigation (no glass, no white bg) */}
       <nav className="sticky top-0 z-40 full-bleed bg-white/90 backdrop-blur-md border-t border-gray-200 shadow-sm">
