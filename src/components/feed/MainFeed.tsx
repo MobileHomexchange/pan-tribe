@@ -13,9 +13,9 @@ import PostCard from "@/components/home/PostCard";
 import { InlineFeedAd } from "./InlineFeedAd";
 import FullBleedHero from "@/components/FullBleedHero";
 
-// Ads
-import GoogleAd from "@/components/ads/GoogleAd";
-import PersonalBanner from "@/components/ads/PersonalBanner";
+// Ads (standardized)
+import AdSense from "@/components/ads/AdSense";
+import HouseAd from "@/components/ads/HouseAd";
 
 /** TEMP: wire to your real auth + location later */
 const currentUserId = "TEMP_USER_ID";
@@ -48,10 +48,10 @@ export default function MainFeed() {
     if (loading || exhausted) return;
     setLoading(true);
 
-    // --- Base query (default: "all") ---
+    // Base query
     let q: any = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE));
 
-    // --- Filters ---
+    // Filters
     if (filter === "following") {
       const followingRef = collection(db, "users", currentUserId, "following");
       const followingSnap = await getDocs(followingRef);
@@ -72,7 +72,7 @@ export default function MainFeed() {
         return;
       }
     } else if (filter === "nearby") {
-      // Fetch a larger page and filter locally by distance
+      // Fetch bigger and filter locally
       const allSnap = await getDocs(
         query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE * 3))
       );
@@ -88,11 +88,10 @@ export default function MainFeed() {
       setExhausted(nearby.length < PAGE);
       return;
     } else if (filter === "popular") {
-      // Simple proxy for "popular" — refine later if needed
       q = query(collection(db, "posts"), orderBy("likes", "desc"), limit(PAGE));
     }
 
-    // Pagination (all / following / popular)
+    // Pagination
     const q2 = cursor ? query(q, startAfter(cursor)) : q;
     const snap = await getDocs(q2);
 
@@ -109,7 +108,7 @@ export default function MainFeed() {
     setLoading(false);
   };
 
-  // reload when filter changes
+  // reload on filter change
   useEffect(() => {
     setPosts([]);
     setCursor(null);
@@ -131,24 +130,21 @@ export default function MainFeed() {
 
   return (
     <>
-      {/* ✅ Full-width hero. Do not wrap in a container. */}
-      <FullBleedHero
-        activeFilter={filter}
-        onFilterChange={(f) => setFilter(f)}
-      />
+      {/* Full-width hero (with sticky sub-nav via props) */}
+      <FullBleedHero activeFilter={filter} onFilterChange={(f) => setFilter(f)} />
 
-      {/* ✅ Leaderboard ad just under the hero (stays full-bleed, content centered) */}
+      {/* Leaderboard just under the hero */}
       <div className="full-bleed">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-4">
-          <GoogleAd
-            slot="YOUR_LEADERBOARD_SLOT_ID"   // ← replace with your AdSense slot id
+          <AdSense
+            slot="YOUR_LEADERBOARD_SLOT_ID"   // replace with your slot
             format="horizontal"
             style={{ display: "block", minHeight: 90 }}
           />
         </div>
       </div>
 
-      {/* Feed content container */}
+      {/* Feed container */}
       <div id="feed" className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
         {posts.length === 0 && !loading && (
           <p className="text-center text-gray-500">No posts found.</p>
@@ -185,20 +181,18 @@ export default function MainFeed() {
             )}
           </div>
 
-          {/* Right rail: AdSense unit + personal banner */}
+          {/* Right rail: 300x250 + House ad */}
           <aside className="hidden lg:block space-y-4">
-            {/* 300×250 Med Rect */}
             <div className="rounded-lg border bg-white p-3 shadow-sm flex items-center justify-center">
-              <GoogleAd
-                slot="YOUR_MEDRECT_SLOT_ID"     // ← replace with your AdSense slot id
+              <AdSense
+                slot="YOUR_MEDRECT_SLOT_ID"   // replace with your slot
                 format="rectangle"
                 style={{ display: "block", width: 300, height: 250 }}
               />
             </div>
 
-            {/* Your personal (house) banner */}
-            <PersonalBanner
-              image="/images/your-offer.webp"   // put this file in public/images/
+            <HouseAd
+              image="/images/your-offer.webp"
               href="/offer"
               title="Grow with Tribe Pulse"
               subtitle="Premium tools to boost your community reach."
