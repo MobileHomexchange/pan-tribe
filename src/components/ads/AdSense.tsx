@@ -1,37 +1,44 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 
 declare global {
-  interface Window { adsbygoogle?: unknown[]; }
+  interface Window {
+    adsbygoogle: any[];
+  }
 }
 
 type Props = {
-  slot: string;                  // AdSense slot id from your AdSense UI
-  format?: "auto" | "fluid";     // default "auto"
-  className?: string;
+  /** Your AdSense slot ID */
+  slot: string;
+  /** Default "auto". Can be "auto" | "fluid" | "rectangle" | "horizontal" */
+  format?: string;
+  /** If true, <ins> can grow/shrink to full width */
+  responsive?: boolean;
+  /** Optional: AdSense layout key for fluid units */
+  layoutKey?: string;
+  /** Optional style (width/height/minHeight, etc.) */
   style?: React.CSSProperties;
-  responsive?: boolean;          // default true
-  layoutKey?: string;            // for fluid units (optional)
 };
 
 export default function AdSense({
   slot,
   format = "auto",
-  className = "",
-  style,
   responsive = true,
   layoutKey,
+  style,
 }: Props) {
   useEffect(() => {
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch { /* ignore if blocked */ }
-  }, []);
+    } catch {
+      /* ignore if blocked */
+    }
+  }, [slot]);
 
   return (
     <ins
-      className={`adsbygoogle block ${className}`}
+      className="adsbygoogle"
       style={style ?? { display: "block" }}
-      data-ad-client={import.meta.env.VITE_GADS_CLIENT}
+      data-ad-client={import.meta.env.VITE_GADS_CLIENT}  // set in .env
       data-ad-slot={slot}
       data-ad-format={format}
       data-full-width-responsive={responsive ? "true" : "false"}
