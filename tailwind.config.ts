@@ -1,22 +1,14 @@
+// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  // Make sure Tailwind scans every template + the Vite entry html
   content: [
     "./index.html",
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    "./src/**/*.{ts,tsx,html}", // <= simple + safe
   ],
-  prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: { "2xl": "1400px" },
-    },
+    container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
     extend: {
       colors: {
         border: "hsl(var(--border))",
@@ -31,8 +23,6 @@ export default {
         accent: { DEFAULT: "hsl(var(--accent))", foreground: "hsl(var(--accent-foreground))" },
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
         card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
-
-        // sidebar
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -43,22 +33,18 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
-
-        // Pan-African theme
         pan: {
           red: "hsl(var(--pan-red))",
           black: "hsl(var(--pan-black))",
           green: "hsl(var(--pan-green))",
           gold: "hsl(var(--pan-gold))",
         },
-
         charcoal: "hsl(var(--charcoal))",
         terracotta: "hsl(var(--terracotta))",
         amber: "hsl(var(--amber))",
         forest: "hsl(var(--forest))",
         sage: "hsl(var(--sage))",
         cream: "hsl(var(--cream))",
-
         light: { gold: "hsl(var(--light-gold))", green: "hsl(var(--light-green))", red: "hsl(var(--light-red))" },
         social: {
           hover: "hsl(var(--fb-hover))",
