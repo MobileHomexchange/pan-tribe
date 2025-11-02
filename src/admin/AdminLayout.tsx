@@ -1,163 +1,54 @@
-import React, { useState } from 'react';
-import { Outlet, NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { 
-  LayoutDashboard, 
-  Users, 
-  Crown, 
-  FileText, 
-  DollarSign, 
-  Settings, 
-  Shield, 
-  Bell, 
-  Menu,
-  LogOut,
-  Search,
-  BookOpen,
-  BarChart3,
-  TrendingUp
-} from 'lucide-react';
+import { useState } from "react";
+import { Outlet, NavLink } from "react-router-dom";
 
-const AdminLayout = () => {
-  const { currentUser, logout } = useAuth();
-  const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+export default function AdminLayout() {
+  const [open, setOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
-  const sidebarItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin' },
-    { icon: Users, label: 'Users', path: '/admin/users' },
-    { icon: Crown, label: 'Tribes', path: '/admin/tribes' },
-    { icon: FileText, label: 'Content', path: '/admin/content' },
-    { icon: BookOpen, label: 'Blog Management', path: '/admin/blog-management' },
-    { icon: BarChart3, label: 'Event Analytics', path: '/admin/event-analytics' },
-    { icon: TrendingUp, label: 'Social Commerce', path: '/admin/social-commerce-accounts' },
-    { icon: DollarSign, label: 'Monetization', path: '/admin/monetization' },
-    { icon: Settings, label: 'Features', path: '/admin/features' },
-    { icon: Shield, label: 'Safety', path: '/admin/safety' },
-    { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' }
+  const items = [
+    { label: "Dashboard", path: "/admin" },
+    { label: "Users", path: "/admin/users" },
+    { label: "Tribes", path: "/admin/tribes" },
+    { label: "Content", path: "/admin/content" },
+    { label: "Blog Management", path: "/admin/blog-management" },
+    { label: "Event Analytics", path: "/admin/event-analytics" },
+    { label: "Social Commerce", path: "/admin/social-commerce-accounts" },
+    { label: "Monetization", path: "/admin/monetization" },
+    { label: "Features", path: "/admin/features" },
+    { label: "Ads Dashboard", path: "/admin/ads-dashboard" },
   ];
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
+    <div className="min-h-screen flex">
       {/* Sidebar */}
-      <aside className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-card border-r border-border
-        transform transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-6 border-b border-border">
-            <h1 className="text-xl font-bold text-foreground">TribalPulse Admin</h1>
-            <Badge variant="secondary" className="mt-1">v1.0</Badge>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
-            {sidebarItems.map((item) => (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors
-                  ${isActive 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                  }`
-                }
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          {/* User Profile */}
-          <div className="p-4 border-t border-border">
-            <div className="flex items-center gap-3 mb-3">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={currentUser?.photoURL || ''} />
-                <AvatarFallback>
-                  {currentUser?.displayName?.[0] || currentUser?.email?.[0] || 'A'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {currentUser?.displayName || 'Admin'}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {currentUser?.email}
-                </p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleLogout}
-              className="w-full"
+      <aside className={`w-64 border-r ${open ? "" : "hidden md:block"}`}>
+        <div className="p-4 font-bold">Admin</div>
+        <nav className="p-2 space-y-1">
+          {items.map((i) => (
+            <NavLink
+              key={i.path}
+              to={i.path}
+              end={i.path === "/admin"}
+              className={({ isActive }) =>
+                "block px-3 py-2 rounded " + (isActive ? "bg-gray-200" : "hover:bg-gray-100")
+              }
             >
-              <LogOut className="h-4 w-4 mr-2" />
-              Logout
-            </Button>
-          </div>
-        </div>
+              {i.label}
+            </NavLink>
+          ))}
+        </nav>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <header className="h-16 bg-card border-b border-border flex items-center px-6 gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search users, tribes, content..."
-                className="w-full pl-10 pr-4 py-2 bg-background border border-input rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-          </div>
-
-          {/* Notifications */}
-          <Button variant="ghost" size="sm">
-            <Bell className="h-5 w-5" />
-          </Button>
+      {/* Content */}
+      <div className="flex-1">
+        <header className="h-12 border-b flex items-center px-4 md:hidden">
+          <button onClick={() => setOpen(!open)} className="border px-3 py-1 rounded">
+            Menu
+          </button>
         </header>
-
-        {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="p-4">
           <Outlet />
         </main>
       </div>
     </div>
   );
-};
-
-export default AdminLayout;
+}
