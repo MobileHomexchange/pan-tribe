@@ -2,7 +2,7 @@ import React from "react";
 
 /**
  * Full-bleed hero with responsive background and a clean CTA row.
- * Requires the helper `.full-bleed` in index.css and these images:
+ * Requires:
  *   /public/images/hero-grow-your-tribe.webp (2560×1200)
  *   /public/images/hero-grow-your-tribe-mobile.webp (1080×1200)
  */
@@ -21,7 +21,6 @@ export default function FullBleedHero({
 }: Props) {
   return (
     <section className="relative full-bleed isolate">
-      {/* Background (mobile -> desktop) */}
       <picture>
         <source
           media="(max-width: 640px)"
@@ -30,32 +29,31 @@ export default function FullBleedHero({
         <img
           src="/images/hero-grow-your-tribe.webp"
           alt="TribalPulse hero"
-          className="w-screen h-[44vh] sm:h-[52vh] md:h-[60vh] lg:h-[68vh] object-cover object-center"
+          className="w-screen h-[38vh] sm:h-[44vh] md:h-[48vh] lg:h-[52vh] object-cover object-center"
           loading="eager"
         />
       </picture>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/35" />
+      {/* Slightly stronger overlay for readability */}
+      <div className="absolute inset-0 bg-black/40" />
 
-      {/* Copy block */}
       <div className="absolute inset-0 flex items-end">
-        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 pb-8 text-white">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight leading-tight">
+        <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 pb-6 text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight leading-tight">
             {title}
           </h1>
-          <p className="mt-3 text-base sm:text-lg md:text-xl opacity-95">{subtitle}</p>
+          <p className="mt-2 text-sm sm:text-base md:text-lg opacity-95">{subtitle}</p>
 
-          <div className="mt-6 flex items-center gap-3">
+          <div className="mt-4 flex items-center gap-2">
             <button
-              className="rounded-2xl bg-white px-5 py-3 text-sm font-semibold text-slate-900 shadow hover:shadow-lg transition"
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-slate-900 shadow hover:shadow-lg transition"
               onClick={onCtaClick}
             >
               {ctaLabel}
             </button>
             <a
               href="#feed"
-              className="rounded-2xl border border-white/40 px-5 py-3 text-sm font-semibold text-white/90 hover:bg-white/10 transition"
+              className="rounded-xl border border-white/40 px-4 py-2 text-sm font-semibold text-white/90 hover:bg-white/10 transition"
             >
               Browse Feed
             </a>
