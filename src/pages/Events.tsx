@@ -107,9 +107,7 @@ export default function Events() {
       id: event.id.toString(),
       title: event.title,
       type: 'event',
-      image: event.image,
-      description: `${event.date} • ${event.location}`,
-      location: event.location
+      image: event.image
     });
   };
 
