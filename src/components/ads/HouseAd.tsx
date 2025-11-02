@@ -1,10 +1,6 @@
 import React from "react";
 
-/**
- * Simple house ad / personal banner card.
- * Use for your own offers or static sponsor images.
- */
-type HouseAdProps = {
+type Props = {
   image: string;
   href: string;
   title?: string;
@@ -18,7 +14,7 @@ export default function HouseAd({
   title = "Your Offer",
   subtitle = "Promote something here",
   alt = "House Ad",
-}: HouseAdProps) {
+}: Props) {
   return (
     <a
       href={href}
