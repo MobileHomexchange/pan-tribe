@@ -1,27 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { db } from "@/lib/firebaseConfig";
+import { db } from "../../lib/firebaseConfig";
 import {
-  collection,
-  getDocs,
-  orderBy,
-  query,
-  limit,
-  startAfter,
-  where,
+  collection, getDocs, orderBy, query, limit, startAfter, where,
 } from "firebase/firestore";
+import PostCard from "../home/PostCard";
+import FullBleedHero from "../FullBleedHero";
+import AdSense from "../ads/AdSense";
+import HouseAd from "../ads/HouseAd";
 
-import PostCard from "@/components/home/PostCard";
-import FullBleedHero from "@/components/FullBleedHero";
-
-// Ads (we already created these earlier)
-import AdSense from "@/components/ads/AdSense";
-import HouseAd from "@/components/ads/HouseAd";
-
-/** TEMP until auth/location is wired */
 const currentUserId = "TEMP_USER_ID";
 const userLocation = { lat: 34.0007, lon: -81.0348 }; // Columbia, SC
-
-type FeedFilter = "all" | "following" | "nearby" | "popular";
+const PAGE = 20;
+const MAX_DISTANCE_KM = 100;
 
 interface Post {
   id: string;
@@ -36,103 +26,70 @@ interface Post {
   location?: { lat: number; lon: number };
 }
 
-const PAGE = 20;
-const MAX_DISTANCE_KM = 100;
-
-/** Simple haversine distance calculator (km) */
-function haversine(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
-  const R = 6371;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLon = ((b.lon - a.lon) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-
-  const h =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-}
-
 export default function MainFeed() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
   const [exhausted, setExhausted] = useState(false);
   const [cursor, setCursor] = useState<any>(null);
-  const [filter, setFilter] = useState<FeedFilter>("all");
+  const [filter, setFilter] = useState<"all" | "following" | "nearby" | "popular">("all");
 
   const loadPage = async (reset = false) => {
     if (loading || exhausted) return;
     setLoading(true);
 
-    // Base
-    let q: any = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE));
+    let qBase: any = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE));
 
-    // Filters
     if (filter === "following") {
       const followingRef = collection(db, "users", currentUserId, "following");
       const followingSnap = await getDocs(followingRef);
       const followingIds = followingSnap.docs.map((d) => d.id);
-      if (followingIds.length > 0) {
-        q = query(
-          collection(db, "posts"),
-          where("userId", "in", followingIds.slice(0, 10)), // Firestore limit
-          orderBy("createdAt", "desc"),
-          limit(PAGE)
-        );
-      } else {
-        setPosts([]);
-        setExhausted(true);
-        setLoading(false);
-        return;
+      if (followingIds.length === 0) {
+        setPosts([]); setLoading(false); setExhausted(true); return;
       }
+      qBase = query(
+        collection(db, "posts"),
+        where("userId", "in", followingIds.slice(0, 10)),
+        orderBy("createdAt", "desc"),
+        limit(PAGE)
+      );
     } else if (filter === "nearby") {
-      // Pull a bit extra and filter locally
       const allSnap = await getDocs(
         query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE * 3))
       );
-      const all = allSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Post));
-      const nearby = all.filter((p) => {
+      const allPosts = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) } as Post));
+      const nearby = allPosts.filter((p) => {
         if (!p.location) return false;
-        return haversine(userLocation, p.location) <= MAX_DISTANCE_KM;
+        const dist = haversine(userLocation, p.location);
+        return dist <= MAX_DISTANCE_KM;
       });
       setPosts(reset ? nearby.slice(0, PAGE) : [...posts, ...nearby.slice(0, PAGE)]);
-      setExhausted(nearby.length < PAGE);
       setLoading(false);
+      setExhausted(nearby.length < PAGE);
       return;
     } else if (filter === "popular") {
-      q = query(collection(db, "posts"), orderBy("likes", "desc"), limit(PAGE));
+      qBase = query(collection(db, "posts"), orderBy("likes", "desc"), limit(PAGE));
     }
 
-    const q2 = cursor ? query(q, startAfter(cursor)) : q;
-    const snap = await getDocs(q2);
+    const q = cursor ? query(qBase, startAfter(cursor)) : qBase;
+    const snap = await getDocs(q);
+    if (snap.empty) { setExhausted(true); setLoading(false); return; }
 
-    if (snap.empty) {
-      setExhausted(true);
-      setLoading(false);
-      return;
-    }
-
-    const next = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Post));
+    const next = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) } as Post));
     setPosts((prev) => (reset ? next : [...prev, ...next]));
     setCursor(snap.docs[snap.docs.length - 1]);
     if (snap.size < PAGE) setExhausted(true);
     setLoading(false);
   };
 
-  // Reload when filter changes
   useEffect(() => {
-    setPosts([]);
-    setCursor(null);
-    setExhausted(false);
+    setPosts([]); setCursor(null); setExhausted(false);
     void loadPage(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filter]);
 
-  // Infinite scroll
   useEffect(() => {
     const onScroll = () => {
-      const nearBottom =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 600;
+      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 600;
       if (nearBottom) void loadPage();
     };
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -141,11 +98,21 @@ export default function MainFeed() {
 
   return (
     <>
-      {/* Full-width hero — keep it outside containers */}
       <FullBleedHero />
 
-      {/* Sticky filter bar, like /my-tribe */}
-      <div className="sticky top-0 z-30 bg-background/80 backdrop-blur border-b">
+      {/* Leaderboard under hero (placeholder config) */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 mt-4 mb-2">
+        <div className="flex justify-center">
+          <AdSense
+            client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
+            slot="YOUR_LEADERBOARD_SLOT_ID"
+            style={{ display: "block", minHeight: 90 }}
+          />
+        </div>
+      </div>
+
+      {/* Sticky filter bar */}
+      <div className="sticky top-0 z-20 bg-[hsl(var(--background))]/70 backdrop-blur border-b">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex gap-2">
           {(["all", "following", "nearby", "popular"] as const).map((f) => (
             <button
@@ -164,36 +131,22 @@ export default function MainFeed() {
         </div>
       </div>
 
-      {/* Leaderboard Ad under the hero (visible on desktop/tablet), mobile hides */}
-      <div className="hidden sm:block mx-auto max-w-6xl px-4 sm:px-6 mt-4">
-        <AdSense
-          adSlot="LEADERBOARD_SLOT_ID"
-          layout="responsive"
-          style={{ display: "block" }}
-        />
-      </div>
-
-      {/* Main content + Right rail */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
-        {/* Feed column */}
-        <div className="space-y-5">
-          {/* Mobile inline banner (small house ad) */}
-          <div className="sm:hidden">
-            <HouseAd
-              imageSrc="/images/your-offer-mobile.jpg"
-              href="#"
-              alt="Your Offer"
-              aspect="16/9"
+      <div id="feed" className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
+          {/* Main column */}
+          <div className="space-y-5">
+            {/* Optional in-feed ad */}
+            <AdSense
+              client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
+              slot="YOUR_INFEED_SLOT_ID"
+              format="fluid"
+              layoutKey="-gw-3+1f-3d+2z"
+              style={{ display: "block" }}
             />
-          </div>
 
-          {posts.length === 0 && !loading && (
-            <p className="text-center text-gray-500">No posts found.</p>
-          )}
-
-          {posts.map((post, index) => (
-            <React.Fragment key={post.id}>
+            {posts.map((post) => (
               <PostCard
+                key={post.id}
                 post={{
                   id: post.id,
                   userId: post.userId || "",
@@ -207,49 +160,44 @@ export default function MainFeed() {
                   timestamp: post.createdAt,
                 }}
               />
+            ))}
 
-              {/* Insert a mobile house ad every ~8 posts */}
-              {index > 0 && (index + 1) % 8 === 0 && (
-                <div className="sm:hidden">
-                  <HouseAd
-                    imageSrc="/images/your-offer-mobile.jpg"
-                    href="#"
-                    alt="Sponsored"
-                    aspect="16/9"
-                  />
-                </div>
-              )}
-            </React.Fragment>
-          ))}
-
-          {loading && <p className="text-center text-gray-400">Loading…</p>}
-          {exhausted && posts.length > 0 && (
-            <p className="text-center text-gray-400">You’re all caught up.</p>
-          )}
-        </div>
-
-        {/* Right rail: two sticky banners (desktop/tablet only) */}
-        <aside className="hidden lg:block">
-          <div className="sticky top-[88px] space-y-4">
-            {/* Sticky Banner #1 - AdSense rectangle */}
-            <div className="rounded-lg border bg-white p-3 shadow-sm">
-              <AdSense
-                adSlot="SIDEBAR_RECT_SLOT_ID"
-                layout="in-article"
-                style={{ display: "block" }}
-              />
-            </div>
-
-            {/* Sticky Banner #2 - House ad (your personal promo) */}
-            <HouseAd
-              imageSrc="/images/your-offer-rect.jpg"
-              href="#"
-              alt="Your Offer"
-              aspect="4/5"
-            />
+            {loading && <p className="text-center text-gray-400">Loading…</p>}
+            {exhausted && posts.length > 0 && (
+              <p className="text-center text-gray-400">You’re all caught up.</p>
+            )}
           </div>
-        </aside>
+
+          {/* Right rail */}
+          <aside className="hidden lg:block space-y-4">
+            <HouseAd
+              href="https://your-offer.example.com"
+              image="/ads/house-300x250.jpg"
+              title="Grow Your Tribe"
+              subtitle="Promote your community today."
+            />
+            <AdSense
+              client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
+              slot="YOUR_RECTANGLE_SLOT_ID"
+              style={{ display: "block", minHeight: 250 }}
+            />
+          </aside>
+        </div>
       </div>
     </>
   );
+}
+
+/** haversine (km) */
+function haversine(a: { lat: number; lon: number }, b: { lat: number; lon: number }) {
+  const R = 6371;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLon = ((b.lon - a.lon) * Math.PI) / 180;
+  const lat1 = (a.lat * Math.PI) / 180;
+  const lat2 = (b.lat * Math.PI) / 180;
+
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.sin(dLon / 2) ** 2 * Math.cos(lat1) * Math.cos(lat2);
+  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
 }
