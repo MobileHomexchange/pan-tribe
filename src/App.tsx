@@ -1,13 +1,7 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { ProtectedAdminRoute } from "@/components/auth/ProtectedAdminRoute";
-
-// Public / Core
+// Public
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -37,119 +31,47 @@ import SocialCommerceAccountManagement from "./admin/socialcommerce/SocialCommer
 // Tribe detail
 import { GroupDetail } from "./components/tribe/GroupDetail";
 
+// TEMP: routes are public to verify rendering. Re-wrap with your ProtectedRoute later.
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <div>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            {/* Public */}
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
+export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <Routes>
+          {/* Public */}
+          <Route path="/" element={<Index />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
 
-            {/* App (protected) */}
-            <Route
-              path="/feed"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/home"
-              element={
-                <ProtectedRoute>
-                  <Home />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-tribe"
-              element={
-                <ProtectedRoute>
-                  <MyTribe />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/my-tribe/group/:groupId"
-              element={
-                <ProtectedRoute>
-                  <GroupDetail />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/friends"
-              element={
-                <ProtectedRoute>
-                  <Friends />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile/:userId"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/events"
-              element={
-                <ProtectedRoute>
-                  <Events />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/create-post"
-              element={
-                <ProtectedRoute>
-                  <CreatePost />
-                </ProtectedRoute>
-              }
-            />
+          {/* App (TEMP public) */}
+          <Route path="/feed" element={<Home />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/my-tribe" element={<MyTribe />} />
+          <Route path="/my-tribe/group/:groupId" element={<GroupDetail />} />
+          <Route path="/friends" element={<Friends />} />
+          <Route path="/profile/:userId" element={<Profile />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/create-post" element={<CreatePost />} />
 
-            {/* Admin (protected + nested via <Outlet/> in AdminLayout) */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminLayout />
-                </ProtectedAdminRoute>
-              }
-            >
-              <Route index element={<AdminDashboard />} />
-              <Route path="users" element={<UserManagement />} />
-              <Route path="tribes" element={<TribeManagement />} />
-              <Route path="content" element={<ContentModeration />} />
-              <Route path="features" element={<FeatureToggles />} />
-              <Route path="monetization" element={<MonetizationManagement />} />
-              <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
-              <Route path="blog-management" element={<BlogManagement />} />
-              <Route path="event-analytics" element={<EventAnalytics />} />
-              <Route
-                path="social-commerce-accounts"
-                element={<SocialCommerceAccountManagement />}
-              />
-              {/* Keep admin-only routes here as you add pages */}
-            </Route>
+          {/* Admin (nested) */}
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboard />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="tribes" element={<TribeManagement />} />
+            <Route path="content" element={<ContentModeration />} />
+            <Route path="features" element={<FeatureToggles />} />
+            <Route path="monetization" element={<MonetizationManagement />} />
+            <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
+            <Route path="blog-management" element={<BlogManagement />} />
+            <Route path="event-analytics" element={<EventAnalytics />} />
+            <Route path="social-commerce-accounts" element={<SocialCommerceAccountManagement />} />
+          </Route>
 
-            {/* Catch-all */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </div>
-    </AuthProvider>
-  </QueryClientProvider>
-);
-
-export default App;
+          {/* Catch-all */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
