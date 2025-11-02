@@ -6,10 +6,11 @@ import {
 import PostCard from "../home/PostCard";
 import FullBleedHero from "../FullBleedHero";
 import AdSense from "../ads/AdSense";
-import HouseAd from "../ads/HouseAd";
+import StickyRightRail from "../ads/StickyRightRail";
+import MobileStickyBanner from "../ads/MobileStickyBanner";
 
 const currentUserId = "TEMP_USER_ID";
-const userLocation = { lat: 34.0007, lon: -81.0348 }; // Columbia, SC
+const userLocation = { lat: 34.0007, lon: -81.0348 };
 const PAGE = 20;
 const MAX_DISTANCE_KM = 100;
 
@@ -100,11 +101,10 @@ export default function MainFeed() {
     <>
       <FullBleedHero />
 
-      {/* Leaderboard under hero (placeholder config) */}
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 mt-4 mb-2">
+      {/* Leaderboard under hero */}
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 mt-3 mb-2">
         <div className="flex justify-center">
           <AdSense
-            client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
             slot="YOUR_LEADERBOARD_SLOT_ID"
             style={{ display: "block", minHeight: 90 }}
           />
@@ -113,7 +113,7 @@ export default function MainFeed() {
 
       {/* Sticky filter bar */}
       <div className="sticky top-0 z-20 bg-[hsl(var(--background))]/70 backdrop-blur border-b">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-3 flex gap-2">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 py-2.5 flex gap-2">
           {(["all", "following", "nearby", "popular"] as const).map((f) => (
             <button
               key={f}
@@ -131,13 +131,12 @@ export default function MainFeed() {
         </div>
       </div>
 
-      <div id="feed" className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
+      <div id="feed" className="mx-auto max-w-6xl px-4 sm:px-6 py-5">
         <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] gap-6">
           {/* Main column */}
           <div className="space-y-5">
-            {/* Optional in-feed ad */}
+            {/* In-feed fluid ad (optional) */}
             <AdSense
-              client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
               slot="YOUR_INFEED_SLOT_ID"
               format="fluid"
               layoutKey="-gw-3+1f-3d+2z"
@@ -168,22 +167,26 @@ export default function MainFeed() {
             )}
           </div>
 
-          {/* Right rail */}
-          <aside className="hidden lg:block space-y-4">
-            <HouseAd
-              href="https://your-offer.example.com"
-              image="/ads/house-300x250.jpg"
-              title="Grow Your Tribe"
-              subtitle="Promote your community today."
-            />
-            <AdSense
-              client={import.meta.env.VITE_ADSENSE_CLIENT_ID}
-              slot="YOUR_RECTANGLE_SLOT_ID"
-              style={{ display: "block", minHeight: 250 }}
-            />
-          </aside>
+          {/* Sticky right rail with two banners (desktop) */}
+          <StickyRightRail
+            topHouse={{
+              image: "/ads/house-300x250.jpg",
+              href: "https://your-offer.example.com",
+              title: "Grow Your Tribe",
+              subtitle: "Promote your community today."
+            }}
+            bottomSlot="YOUR_RECTANGLE_SLOT_ID"
+          />
         </div>
       </div>
+
+      {/* Mobile sticky banner */}
+      <MobileStickyBanner
+        adsenseSlot="YOUR_MOBILE_SLOT_ID"
+        // houseImage="/ads/house-300x250.jpg"
+        // houseHref="https://your-offer.example.com"
+        delayMs={800}
+      />
     </>
   );
 }
