@@ -21,25 +21,26 @@ export default function Index() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-12 border-b border-gray-200">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="text-center">
-            <h2 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
-              Building Stronger Communities in the Digital Age
-            </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Discover how modern tribes are forming around shared interests and values online, 
-              creating meaningful connections that transcend geographical boundaries.
-            </p>
-            <Link
-              to="/login" // or wherever "Hear the Story" should link to
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
-            >
-              Hear the Story →
-            </Link>
-          </div>
-        </div>
-      </section>
+      // Alternative with tighter spacing
+<section className="py-8 border-b border-gray-200"> {/* Reduced padding */}
+  <div className="max-w-3xl mx-auto px-4"> {/* Narrower container */}
+    <div className="text-center">
+      <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-snug"> {/* Smaller text, tighter leading */}
+        Building Stronger Communities in the Digital Age
+      </h2>
+      <p className="text-lg text-gray-600 mb-6 leading-relaxed"> {/* Smaller paragraph */}
+        Discover how modern tribes are forming around shared interests and values online, 
+        creating meaningful connections that transcend geographical boundaries.
+      </p>
+      <Link
+        to="/login"
+        className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200"
+      >
+        Hear the Story →
+      </Link>
+    </div>
+  </div>
+</section>
 
       {/* Article Meta */}
       <section className="py-8">
