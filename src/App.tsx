@@ -1,5 +1,6 @@
+// App.tsx - FIXED VERSION
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom"; // ← Remove BrowserRouter import
 
 // Public
 import Index from "./pages/Index";
@@ -37,41 +38,40 @@ const queryClient = new QueryClient();
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
-          {/* Public */}
-          <Route path="/" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+      {/* REMOVED BrowserRouter wrapper - it's already in main.tsx */}
+      <Routes>
+        {/* Public */}
+        <Route path="/" element={<Index />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
 
-          {/* App (TEMP public) */}
-          <Route path="/feed" element={<Home />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/my-tribe" element={<MyTribe />} />
-          <Route path="/my-tribe/group/:groupId" element={<GroupDetail />} />
-          <Route path="/friends" element={<Friends />} />
-          <Route path="/profile/:userId" element={<Profile />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/create-post" element={<CreatePost />} />
+        {/* App (TEMP public) */}
+        <Route path="/feed" element={<Home />} />
+        <Route path="/home" element={<Home />} />
+        <Route path="/my-tribe" element={<MyTribe />} />
+        <Route path="/my-tribe/group/:groupId" element={<GroupDetail />} />
+        <Route path="/friends" element={<Friends />} />
+        <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/create-post" element={<CreatePost />} />
 
-          {/* Admin (nested) */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="tribes" element={<TribeManagement />} />
-            <Route path="content" element={<ContentModeration />} />
-            <Route path="features" element={<FeatureToggles />} />
-            <Route path="monetization" element={<MonetizationManagement />} />
-            <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
-            <Route path="blog-management" element={<BlogManagement />} />
-            <Route path="event-analytics" element={<EventAnalytics />} />
-            <Route path="social-commerce-accounts" element={<SocialCommerceAccountManagement />} />
-          </Route>
+        {/* Admin (nested) */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="tribes" element={<TribeManagement />} />
+          <Route path="content" element={<ContentModeration />} />
+          <Route path="features" element={<FeatureToggles />} />
+          <Route path="monetization" element={<MonetizationManagement />} />
+          <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
+          <Route path="blog-management" element={<BlogManagement />} />
+          <Route path="event-analytics" element={<EventAnalytics />} />
+          <Route path="social-commerce-accounts" element={<SocialCommerceAccountManagement />} />
+        </Route>
 
-          {/* Catch-all */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+        {/* Catch-all */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </QueryClientProvider>
   );
 }
