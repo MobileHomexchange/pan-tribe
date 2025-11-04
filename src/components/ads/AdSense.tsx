@@ -1,58 +1,74 @@
-// src/components/ads/AdSense.tsx
-import { useEffect, useRef } from "react";
-
-declare global {
-  interface Window {
-    adsbygoogle?: any[];
-  }
-}
+import React, { useEffect, useRef } from "react";
 
 type Props = {
-  slot: string;                   // your ad slot id
-  format?: "auto" | "fluid";
-  responsive?: boolean;           // true => data-full-width-responsive="true"
-  layoutKey?: string;             // for fluid in-feed
-  style?: React.CSSProperties;    // optional style
+  slot: string;              // required: "xxxxxxxxxx"
+  format?: "auto" | "fluid"; // default: auto
+  responsive?: boolean;      // default: true
+  layoutKey?: string;        // only for fluid in-feed formats
+  style?: React.CSSProperties;
 };
+
+// Pull your client id from an env or hardcode for now.
+// If you use Vite envs, set VITE_ADSENSE_CLIENT in the Lovable env UI.
+const ADS_CLIENT = import.meta.env.VITE_ADSENSE_CLIENT || ""; // e.g. "ca-pub-1234567890"
 
 export default function AdSense({
   slot,
   format = "auto",
-  responsive,
+  responsive = true,
   layoutKey,
   style,
 }: Props) {
-  const insRef = useRef<HTMLModElement | null>(null);
+  const insRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    // Guard: DOM not ready or adsbygoogle not present? bail quietly.
-    const canPush =
-      typeof window !== "undefined" &&
-      window.adsbygoogle &&
-      typeof window.adsbygoogle.push === "function" &&
-      insRef.current;
+    // Don’t even try if:
+    // - no client id
+    // - no window (SSR/preview hydration)
+    // - ad blockers remove the script
+    if (!ADS_CLIENT || typeof window === "undefined") return;
 
-    if (!canPush) return;
+    // If the script isn’t present yet, inject it once.
+    const SCRIPT_SRC = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${encodeURIComponent(
+      ADS_CLIENT
+    )}`;
 
-    try {
-      // re-init (in case React reuses the node)
-      (insRef.current as any).innerHTML = "";
-      window.adsbygoogle!.push({});
-    } catch {
-      // never throw in production preview
+    const already = Array.from(document.scripts).some((s) => s.src === SCRIPT_SRC);
+    if (!already) {
+      const s = document.createElement("script");
+      s.async = true;
+      s.src = SCRIPT_SRC;
+      s.crossOrigin = "anonymous";
+      document.head.appendChild(s);
     }
-  }, [slot, format, responsive, layoutKey]);
 
+    // Try to push after a microtask; if blocked, swallow it
+    const t = setTimeout(() => {
+      try {
+        // @ts-ignore — Google attaches this at runtime
+        (window.adsbygoogle = window.adsbygoogle || []).push({});
+      } catch {
+        // Ignore errors in preview/ad-blocked environments
+      }
+    }, 50);
+
+    return () => clearTimeout(t);
+  }, []);
+
+  // If no client id configured, render nothing — avoids crashes in preview.
+  if (!ADS_CLIENT) return null;
+
+  // IMPORTANT: the <ins> tag must have these data-* attributes for AdSense
   return (
     <ins
       ref={insRef as any}
       className="adsbygoogle"
-      style={style ?? { display: "block" }}
-      data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+      style={{ display: "block", ...(style || {}) }}
+      data-ad-client={ADS_CLIENT}
       data-ad-slot={slot}
-      {...(format ? { "data-ad-format": format } : {})}
-      {...(responsive ? { "data-full-width-responsive": "true" } : {})}
-      {...(layoutKey ? { "data-ad-layout-key": layoutKey } : {})}
+      data-ad-format={format}
+      data-full-width-responsive={responsive ? "true" : "false"}
+      {...(format === "fluid" && layoutKey ? { "data-ad-layout-key": layoutKey } : {})}
     />
   );
 }
