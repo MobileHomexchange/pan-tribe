@@ -57,10 +57,7 @@ export default function MainFeed() {
       const allSnap = await getDocs(
         query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(PAGE * 3))
       );
-      const allPosts = allSnap.docs.map((d) => {
-        const data = d.data() as Partial<Post>;
-        return { id: d.id, ...data } as Post;
-      });
+      const allPosts = allSnap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) } as Post));
       const nearby = allPosts.filter((p) => {
         if (!p.location) return false;
         const dist = haversine(userLocation, p.location);
@@ -78,10 +75,7 @@ export default function MainFeed() {
     const snap = await getDocs(q);
     if (snap.empty) { setExhausted(true); setLoading(false); return; }
 
-    const next = snap.docs.map((d) => {
-      const data = d.data() as Partial<Post>;
-      return { id: d.id, ...data } as Post;
-    });
+    const next = snap.docs.map((d) => ({ id: d.id, ...(d.data() || {}) } as Post));
     setPosts((prev) => (reset ? next : [...prev, ...next]));
     setCursor(snap.docs[snap.docs.length - 1]);
     if (snap.size < PAGE) setExhausted(true);
