@@ -5,7 +5,12 @@ export default {
   darkMode: ["class"],
   content: [
     "./index.html",
-    "./src/**/*.{ts,tsx,html}", // <= simple + safe
+    "./src/**/*.{ts,tsx,html}",
+  ],
+  // Safelist only if you sometimes build classes dynamically at runtime
+  safelist: [
+    "bg-[hsl(var(--primary))]",
+    "text-[hsl(var(--foreground))]",
   ],
   theme: {
     container: { center: true, padding: "2rem", screens: { "2xl": "1400px" } },
