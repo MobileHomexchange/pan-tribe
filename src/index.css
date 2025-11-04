@@ -3,8 +3,13 @@
 @tailwind utilities;
 
 /* Minimal base */
-html, body, #root { height: 100%; }
-body { margin: 0; overflow-x: hidden; }
+html, body, #root { 
+  height: 100%; 
+}
+body { 
+  margin: 0; 
+  overflow-x: hidden; 
+}
 
 /* Full-bleed helper for hero sections */
 .full-bleed {
@@ -16,7 +21,15 @@ body { margin: 0; overflow-x: hidden; }
   width: 100vw;
 }
 
-/* Media elements behave nicely and don’t overflow */
+/* Hero section styling for blog layout */
+.hero-section {
+  text-align: center;
+  padding: 60px 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Media elements behave nicely and don't overflow */
 img, video {
   display: block;
   max-width: 100%;
@@ -29,5 +42,58 @@ img, video {
 }
 
 /* Optional: hide scrollbars on WebKit without breaking scroll */
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { 
+  display: none; 
+}
+.no-scrollbar { 
+  -ms-overflow-style: none; 
+  scrollbar-width: none; 
+}
+
+/* Additional styles for the blog layout */
+.prose {
+  line-height: 1.75;
+  color: #374151; /* gray-700 */
+}
+
+.prose p {
+  margin-bottom: 1.5rem;
+}
+
+/* Ensure proper spacing for the header */
+header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: white;
+  backdrop-blur: bg-opacity-80;
+}
+
+/* Smooth transitions for interactive elements */
+a, button {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Focus styles for accessibility */
+input:focus, button:focus {
+  outline: 2px solid #3b82f6; /* blue-500 */
+  outline-offset: 2px;
+}
+
+/* Custom scrollbar for webkit (optional) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9; /* slate-100 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
