@@ -1,77 +1,63 @@
-// App.tsx - FIXED VERSION
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route } from "react-router-dom"; // ← Remove BrowserRouter import
+// src/pages/Index.tsx
+import { Link } from "react-router-dom";
 
-// Public
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import NotFound from "./pages/NotFound";
-
-// App pages
-import Home from "./pages/Home";
-import MyTribe from "./pages/MyTribe";
-import Friends from "./pages/Friends";
-import Profile from "./pages/Profile";
-import Events from "./pages/Events";
-import CreatePost from "./pages/CreatePost";
-
-// Admin
-import AdminLayout from "./admin/AdminLayout";
-import AdminDashboard from "./admin/dashboard/AdminDashboard";
-import UserManagement from "./admin/users/UserManagement";
-import TribeManagement from "./admin/tribes/TribeManagement";
-import ContentModeration from "./admin/content/ContentModeration";
-import FeatureToggles from "./admin/features/FeatureToggles";
-import MonetizationManagement from "./admin/monetization/MonetizationManagement";
-import UnifiedAdsDashboard from "./admin/monetization/UnifiedAdsDashboard";
-import BlogManagement from "./admin/blog/BlogManagement";
-import EventAnalytics from "./admin/events/EventAnalytics";
-import SocialCommerceAccountManagement from "./admin/socialcommerce/SocialCommerceAccountManagement";
-
-// Tribe detail
-import { GroupDetail } from "./components/tribe/GroupDetail";
-
-// TEMP: routes are public to verify rendering. Re-wrap with your ProtectedRoute later.
-const queryClient = new QueryClient();
-
-export default function App() {
+export default function Index() {
   return (
-    <QueryClientProvider client={queryClient}>
-      {/* REMOVED BrowserRouter wrapper - it's already in main.tsx */}
-      <Routes>
-        {/* Public */}
-        <Route path="/" element={<Index />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+    <div className="min-h-screen bg-white">
+      {/* Header */}
+      <header className="border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900">Tribe Pulse</h1>
+            <div className="relative w-64">
+              <input
+                type="text"
+                placeholder="Search Tribe Pulse"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+        </div>
+      </header>
 
-        {/* App (TEMP public) */}
-        <Route path="/feed" element={<Home />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/my-tribe" element={<MyTribe />} />
-        <Route path="/my-tribe/group/:groupId" element={<GroupDetail />} />
-        <Route path="/friends" element={<Friends />} />
-        <Route path="/profile/:userId" element={<Profile />} />
-        <Route path="/events" element={<Events />} />
-        <Route path="/create-post" element={<CreatePost />} />
+      {/* Hero Section */}
+      <section className="py-12 border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="text-center">
+            <h2 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
+              Building Stronger Communities in the Digital Age
+            </h2>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+              Discover how modern tribes are forming around shared interests and values online, 
+              creating meaningful connections that transcend geographical boundaries.
+            </p>
+            <Link
+              to="/login" // or wherever "Hear the Story" should link to
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-200"
+            >
+              Hear the Story →
+            </Link>
+          </div>
+        </div>
+      </section>
 
-        {/* Admin (nested) */}
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="tribes" element={<TribeManagement />} />
-          <Route path="content" element={<ContentModeration />} />
-          <Route path="features" element={<FeatureToggles />} />
-          <Route path="monetization" element={<MonetizationManagement />} />
-          <Route path="ads-dashboard" element={<UnifiedAdsDashboard />} />
-          <Route path="blog-management" element={<BlogManagement />} />
-          <Route path="event-analytics" element={<EventAnalytics />} />
-          <Route path="social-commerce-accounts" element={<SocialCommerceAccountManagement />} />
-        </Route>
-
-        {/* Catch-all */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </QueryClientProvider>
+      {/* Article Meta */}
+      <section className="py-8">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-gray-500 text-sm">
+            <div className="flex items-center space-x-4 mb-4 sm:mb-0">
+              <span className="font-medium text-gray-900">Maya Sharma</span>
+              <span>April 10, 2023</span>
+              <span>8 min read</span>
+            </div>
+            <div>
+              <span className="inline-block bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+                Culture
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
   );
 }
