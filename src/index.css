@@ -2,13 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Custom Properties from your Index.tsx */
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 222.2 84% 4.9%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+  }
+}
+
 /* Minimal base */
 html, body, #root { 
   height: 100%; 
 }
+
 body { 
   margin: 0; 
   overflow-x: hidden; 
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
 }
 
 /* Full-bleed helper for hero sections */
@@ -45,6 +73,7 @@ img, video {
 .no-scrollbar::-webkit-scrollbar { 
   display: none; 
 }
+
 .no-scrollbar { 
   -ms-overflow-style: none; 
   scrollbar-width: none; 
@@ -66,7 +95,8 @@ header {
   top: 0;
   z-index: 40;
   background-color: white;
-  backdrop-blur: bg-opacity-80;
+  backdrop-blur: 8px;
+  backdrop-filter: blur(8px);
 }
 
 /* Smooth transitions for interactive elements */
@@ -96,4 +126,43 @@ input:focus, button:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8; /* slate-400 */
+}
+
+/* Utility classes for your components */
+.bg-background {
+  background-color: hsl(var(--background));
+}
+
+.bg-card {
+  background-color: hsl(var(--card));
+}
+
+.text-foreground {
+  color: hsl(var(--foreground));
+}
+
+.text-muted-foreground {
+  color: hsl(var(--muted-foreground));
+}
+
+.border-border {
+  border-color: hsl(var(--border));
+}
+
+/* Loading states */
+.loading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 40px 16px;
+  }
+  
+  .full-bleed {
+    margin-left: -50vw;
+    margin-right: -50vw;
+  }
 }
