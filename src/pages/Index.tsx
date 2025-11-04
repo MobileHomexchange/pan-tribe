@@ -1,4 +1,4 @@
-// src/pages/Index.tsx - COMBINED VERSION
+// src/pages/Index.tsx
 import React from "react";
 import { useNavigate, Link } from "react-router-dom";
 import FullBleedHero from "@/components/FullBleedHero";
@@ -11,7 +11,7 @@ export default function Index() {
   return (
     <main className="min-h-screen bg-background">
       {/* Simple Header matching your screenshot */}
-      <header className="border-b border-gray-200 py-6 bg-white">
+      <header className="border-b border-gray-200 py-6 bg-white sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Tribe Pulse</h1>
@@ -27,7 +27,7 @@ export default function Index() {
       </header>
 
       {/* Blog Hero Section matching your screenshot */}
-      <section className="hero-section bg-white py-16">
+      <section className="hero-section bg-white">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-4xl font-bold text-gray-900 mb-6 leading-tight">
             Building Stronger Communities in the Digital Age
