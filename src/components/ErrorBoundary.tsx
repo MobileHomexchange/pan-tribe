@@ -1,74 +1,35 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+// src/components/ErrorBoundary.tsx
+import React from "react";
 
-interface Props {
-  children: ReactNode;
-}
+type State = { hasError: boolean; err?: any };
 
-interface State {
-  hasError: boolean;
-  error?: Error;
-}
+export default class ErrorBoundary extends React.Component<
+  React.PropsWithChildren,
+  State
+> {
+  state: State = { hasError: false };
 
-class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false
-  };
-
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(err: any) {
+    return { hasError: true, err };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Uncaught error:', error, errorInfo);
+  componentDidCatch(err: any, info: any) {
+    // eslint-disable-next-line no-console
+    console.error("App crashed:", err, info);
   }
 
-  private handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
-
-  public render() {
+  render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
-          <Card className="max-w-md w-full">
-            <CardHeader className="text-center">
-              <div className="flex justify-center mb-4">
-                <AlertTriangle className="w-12 h-12 text-destructive" />
-              </div>
-              <CardTitle className="text-xl">Something went wrong</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <p className="text-muted-foreground">
-                We encountered an unexpected error. Please try refreshing the page.
-              </p>
-              {this.state.error && (
-                <details className="text-xs text-left bg-muted p-2 rounded">
-                  <summary className="cursor-pointer">Error details</summary>
-                  <pre className="mt-2 whitespace-pre-wrap">
-                    {this.state.error.message}
-                  </pre>
-                </details>
-              )}
-              <div className="flex gap-2 justify-center">
-                <Button onClick={this.handleReset} variant="outline">
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Try Again
-                </Button>
-                <Button onClick={() => window.location.href = "/"}>
-                  Go Home
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <div style={{ padding: 24, fontFamily: "system-ui, sans-serif" }}>
+          <h1>Something went wrong.</h1>
+          <p style={{ opacity: 0.7 }}>
+            The UI failed to render. Check the console for details. We’ve
+            disabled the broken widget so you can keep working.
+          </p>
         </div>
       );
     }
-
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;
