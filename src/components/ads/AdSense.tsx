@@ -1,44 +1,57 @@
-import React, { useEffect } from "react";
+// src/components/ads/AdSense.tsx
+import { useEffect, useRef } from "react";
 
 declare global {
   interface Window {
-    adsbygoogle: unknown[];
+    adsbygoogle?: any[];
   }
 }
 
 type Props = {
-  slot: string;
-  client?: string;
+  slot: string;                   // your ad slot id
   format?: "auto" | "fluid";
-  responsive?: boolean;
-  layoutKey?: string;
-  style?: React.CSSProperties;
+  responsive?: boolean;           // true => data-full-width-responsive="true"
+  layoutKey?: string;             // for fluid in-feed
+  style?: React.CSSProperties;    // optional style
 };
 
 export default function AdSense({
   slot,
-  client,
   format = "auto",
-  responsive = true,
+  responsive,
   layoutKey,
   style,
 }: Props) {
+  const insRef = useRef<HTMLModElement | null>(null);
+
   useEffect(() => {
+    // Guard: DOM not ready or adsbygoogle not present? bail quietly.
+    const canPush =
+      typeof window !== "undefined" &&
+      window.adsbygoogle &&
+      typeof window.adsbygoogle.push === "function" &&
+      insRef.current;
+
+    if (!canPush) return;
+
     try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
+      // re-init (in case React reuses the node)
+      (insRef.current as any).innerHTML = "";
+      window.adsbygoogle!.push({});
     } catch {
-      /* ignore dev errors */
+      // never throw in production preview
     }
-  }, [slot, client, format, responsive, layoutKey]);
+  }, [slot, format, responsive, layoutKey]);
 
   return (
     <ins
+      ref={insRef as any}
       className="adsbygoogle"
       style={style ?? { display: "block" }}
+      data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
       data-ad-slot={slot}
-      {...(client ? { "data-ad-client": client } : {})}
-      data-ad-format={format}
-      data-full-width-responsive={responsive ? "true" : "false"}
+      {...(format ? { "data-ad-format": format } : {})}
+      {...(responsive ? { "data-full-width-responsive": "true" } : {})}
       {...(layoutKey ? { "data-ad-layout-key": layoutKey } : {})}
     />
   );
